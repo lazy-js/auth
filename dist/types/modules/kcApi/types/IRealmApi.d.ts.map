@@ -1,0 +1,1 @@
+{"version":3,"file":"IRealmApi.d.ts","sourceRoot":"","sources":["../../../../../src/modules/kcApi/types/IRealmApi.ts"],"names":[],"mappings":"AAAA,MAAM,WAAW,SAAS;IACxB,WAAW,IAAI,OAAO,CAAC;QAAE,SAAS,EAAE,MAAM,CAAA;KAAE,CAAC,CAAC;IAC9C,WAAW,IAAI,OAAO,CAAC,OAAO,CAAC,CAAC;IAChC,WAAW,IAAI,OAAO,CAAC,OAAO,CAAC,CAAC;CACjC"}

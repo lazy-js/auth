@@ -1,0 +1,100 @@
+classDiagram
+    direction LR
+
+    class Realm {
+        +name: string
+        +apps: App[]
+        +realmAttributes: Attribute
+        +seperatedUserCollections: boolean
+        +addApp(app: App): Realm
+        +setIsSeperatedUserCollections(v: boolean): Realm
+        +addGlobalAttribute(key: string, value: AttributeValue): Realm
+    }
+
+    class App {
+        +name: string
+        +clients: Client[]
+        +realmName: string
+        +realmPath: string
+        +appAttributes: Attribute
+        +setRealmPath(realmPath: string): App
+        +setRealmName(name: string): App
+        +addClient(client: Client): App
+        +addClients(clients: Client[]): App
+        +addGlobalAttribute(key: string, value: AttributeValue): App
+    }
+
+    class Client {
+        +name: string
+        +clientId: string
+        +appPath: string
+        +appName: string
+        +clientDescription: string
+        +rolesTree: Role[]
+        +groups: Group[]
+        +globalRoles: Role[]
+        +clientAuthConfiguration: ClientAuthConfig
+        +clientAttributes: Attribute
+        +clientAttributesSchema: any
+        +groupAttributesSchema: any
+        +addGroup(group: Group): Client
+        +setAppName(name: string): Client
+        +setAppPath(parentPath: string): Client
+        +setClientDescription(description: string): Client
+        +setGroupAttributesSchema(schema: any): Client
+        +setClientAttributesSchema(schema: any): Client
+        +addGlobalAttribute(key: string, value: AttributeValue): Client
+        +registerRole(role: Role): Client
+        +registerRoles(roles: Role[]): Client
+        +applyGlobalRole(role: Role): Client
+    }
+
+    class Group {
+        +name: string
+        +clientPath: string
+        +clientName: string
+        +groupAttributes: Attribute
+        +roles: Role[]
+        +rolesFlaten: string[]
+        +isDefault: boolean
+        +setClientName(name: string): Group
+        +setClientPath(parentPath: string): Group
+        +addAttribute(key: string, value: AttributeValue): Group
+        +addRole(role: Role): Group
+        +addRoles(roles: Role[]): Group
+    }
+
+    class Role {
+        +name: string
+        +description: string
+        +roles: Role[]
+        +rolesFlaten: string[]
+        +hasChildren(): boolean
+        +addChildRole(role: Role): Role
+        +setDescription(desc: string): Role
+        +addChildRoles(roles: Role[]): Role
+    }
+
+
+
+    class ClientAuthConfig {
+        +registerSchema: any
+        +loginSchema: any
+        +primaryField: "email" | "phone" | "username"[]
+        +registerStatus:"private" | "public" | "disabled"
+        +loginStatus: "disabled" | "all_clients" | "only_this_client"
+        +privateRegisterAccessRoles: Role[]
+        +verifiedByDefault: boolean
+        +setRegisterConfig(status: any, verified?: boolean, privateAccessRoles?: Role | Role[], validationSchema?: any): ClientAuthConfig
+        +setLoginConfig(status: any, validationSchema?: any): ClientAuthConfig
+    }
+
+    %% Relationships
+    Realm --> App : contains
+    App --> Client : contains
+    Client --> Group : contains
+    Client --> Role : rolesTree/globalRoles
+    Client --> ClientAuthConfig : uses
+    Group --> Role : contains
+    Role --> Role : child roles
+    ClientAuthConfig --> Role : uses
