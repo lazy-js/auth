@@ -1,0 +1,1 @@
+{"version":3,"file":"MockNotificationClientSdk.js","sourceRoot":"","sources":["../../../src/utils/MockNotificationClientSdk.ts"],"names":[],"mappings":";;;AAEA,MAAa,yBAAyB;IACpC,gBAAe,CAAC;IAChB,KAAK,CAAC,SAAS;QACb,OAAO,IAAI,CAAC;IACd,CAAC;IAED,KAAK,CAAC,SAAS,CAAC,IAAmB;QACjC,OAAO,CAAC,GAAG,CAAC,IAAI,CAAC,CAAC;IACpB,CAAC;CACF;AATD,8DASC"}
