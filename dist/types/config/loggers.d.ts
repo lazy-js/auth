@@ -1,4 +1,5 @@
 import { Logger } from '@lazy-js/utils';
+export declare const realmBuilderLogger: Logger;
 declare const userModuleLogger: Logger;
 declare const userServiceLogger: Logger;
 declare const userControllerLogger: Logger;

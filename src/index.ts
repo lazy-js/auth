@@ -1,12 +1,10 @@
 import { App, handleMainException } from '@lazy-js/server';
 import { Database } from '@lazy-js/mongo-db';
-
 import { RealmBuilder } from './modules/RealmBuilder/index';
 import { RealmManipulator } from './modules/RealmManipulator/index';
-
-import { appLogger } from './config/loggers';
 import { IRealm } from './modules/Realm';
 import { INotificationClientSdk } from './types';
+import { Logger } from '@lazy-js/utils';
 
 export * from './modules/Realm';
 export * from './utils';
@@ -33,22 +31,32 @@ export interface ServiceConfig {
 
   // realm config
   logRealmSummary?: boolean;
+  disableServiceLogging?: boolean;
 }
 
 export class LazyAuth {
+  private stateLogger: Logger;
   constructor(
     private readonly keycloakConfig: KeycloakConfig,
     private readonly serviceConfig: ServiceConfig,
     private realm: IRealm,
     private notificationSdk: INotificationClientSdk,
-  ) {}
+  ) {
+    const disable = this.serviceConfig.disableServiceLogging;
+    this.stateLogger = new Logger({
+      module: 'Lazy Auth - ',
+      disableDebug: disable,
+      disableError: disable,
+      disableInfo: disable,
+      disableWarn: disable,
+    });
+  }
 
   async _isKeycloakServiceAvailable() {
     return await checkServerRequest(this.keycloakConfig.keycloakServiceUrl);
   }
 
-  async buildRealm() {
-    console.log(this.keycloakConfig);
+  private async buildRealm() {
     const realmBuilderModule = await RealmBuilder.create(
       this.realm,
       {
@@ -61,23 +69,26 @@ export class LazyAuth {
     return realmBuilderModule;
   }
 
-  async connectDatabase() {
+  private async connectDatabase() {
     const database = new Database(this.serviceConfig.mongoDbUrl);
 
     database.on('connected', () => {
-      appLogger.info('Connected to database');
+      this.stateLogger.info('Monogo database connected successfully');
     });
     database.on('disconnected', () => {
-      appLogger.info('Disconnected from database successfully');
+      this.stateLogger.info('Monogo database disconnected successfully');
     });
     database.on('error', (err: any) => {
-      appLogger.error('Error happened when connecting to database');
+      this.stateLogger.error(
+        'Monogo database error \n',
+        JSON.stringify(err, null, 4),
+      );
     });
     await database.connect();
     return database;
   }
 
-  async prepareApp() {
+  private async prepareApp() {
     const app = new App({
       port: this.serviceConfig.port,
       prefix: this.serviceConfig.routerPrefix,
@@ -87,13 +98,15 @@ export class LazyAuth {
       enableRoutesLogging: this.serviceConfig.enableRoutesLogging,
       serviceName: this.serviceConfig.serviceName,
     });
-
     app.on('error', (err: any) => {
-      console.log(err);
+      this.stateLogger.error(
+        'App Service Request Error \n',
+        JSON.stringify(err, null, 4),
+      );
     });
 
     app.on('started', () => {
-      appLogger.info('App started');
+      this.stateLogger.info('App service started successfully');
     });
     return app;
   }
@@ -101,9 +114,14 @@ export class LazyAuth {
   async start() {
     try {
       if (!(await this._isKeycloakServiceAvailable())) {
-        console.log('Keycloak server is down');
-
+        this.stateLogger.error(
+          `Keycloak on url ${this.keycloakConfig.keycloakServiceUrl} is DOWN`,
+        );
         return;
+      } else {
+        this.stateLogger.info(
+          `Keycloak on url ${this.keycloakConfig.keycloakServiceUrl} is UP`,
+        );
       }
       await this.connectDatabase();
 
@@ -115,13 +133,11 @@ export class LazyAuth {
         routerPrefix: this.serviceConfig.routerPrefix,
       });
 
-      if (this.serviceConfig.logRealmSummary) {
+      if (this.serviceConfig.logRealmSummary)
         realmManipulator.getRealmSummary();
-      }
 
       const app = await this.prepareApp();
       app.mountModule(realmBuilderModule);
-
       app.start();
     } catch (err) {
       const error = await handleMainException(
@@ -129,7 +145,10 @@ export class LazyAuth {
         this.start.bind(this),
         2,
       );
-      appLogger.error(error);
+      this.stateLogger.error(
+        'Error Starting App: \n',
+        JSON.stringify(error, null, 4),
+      );
     }
   }
 }

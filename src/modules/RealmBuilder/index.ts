@@ -15,11 +15,9 @@ import {
 } from './types';
 
 import { BaseController } from '@lazy-js/server';
-import { Logger } from '@lazy-js/utils';
 import { UserController } from '../User';
 import { INotificationClientSdk } from '../../types';
-
-const logger = new Logger({ disableInfo: false, disableDebug: false });
+import { realmBuilderLogger } from '../../config/loggers';
 
 export class RealmBuilder extends BaseController implements IRealmBuilder {
   public realm: IRealm;
@@ -52,7 +50,7 @@ export class RealmBuilder extends BaseController implements IRealmBuilder {
 
   async build() {
     const initedRealm = await this._initRealm();
-    logger.info('Realm inited: ', initedRealm?.id);
+    realmBuilderLogger.info('Realm inited: ', initedRealm?.id);
     for (const app of this.realm.apps) {
       const initedApp = await this._initApp({
         app: app,
@@ -176,7 +174,7 @@ export class RealmBuilder extends BaseController implements IRealmBuilder {
     clientInDatabase = subGroupsOfAppGroup.find(
       (group) => group.name === client.name,
     );
-    logger.debug('clientInDatabase cheked: ', clientInDatabase);
+    realmBuilderLogger.debug('clientInDatabase cheked: ', clientInDatabase);
     if (!clientInDatabase)
       clientInDatabase = await this.kcApi.groups.createGroup({
         groupName: client.name,
@@ -192,13 +190,13 @@ export class RealmBuilder extends BaseController implements IRealmBuilder {
         name: client.appName + '-' + client.name,
         description: client.clientDescription,
       });
-    logger.debug(
+    realmBuilderLogger.debug(
       'publicClientExistInDatabase created: ',
       publicClientExistInDatabase,
     );
 
     for (let role of client.rolesTree) {
-      logger.debug('role init:', role.name);
+      realmBuilderLogger.debug('role init:', role.name);
       await this._initRole(role, publicClientExistInDatabase.id as string);
     }
 
@@ -217,7 +215,9 @@ export class RealmBuilder extends BaseController implements IRealmBuilder {
       roleName: role.name,
       clientUuid: publicClientUuid,
     });
-    logger.debug(`does role ${role.name} exists ? ${doesRoleExists}`);
+    realmBuilderLogger.debug(
+      `does role ${role.name} exists ? ${doesRoleExists}`,
+    );
     if (!doesRoleExists) {
       doesRoleExists = await this.kcApi.publicClients.addRole({
         roleName: role.name,

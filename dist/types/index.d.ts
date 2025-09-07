@@ -1,6 +1,3 @@
-import { App } from '@lazy-js/server';
-import { Database } from '@lazy-js/mongo-db';
-import { RealmBuilder } from './modules/RealmBuilder/index';
 import { IRealm } from './modules/Realm';
 import { INotificationClientSdk } from './types';
 export * from './modules/Realm';
@@ -20,17 +17,19 @@ export interface ServiceConfig {
     serviceName?: string;
     mongoDbUrl: string;
     logRealmSummary?: boolean;
+    disableServiceLogging?: boolean;
 }
 export declare class LazyAuth {
     private readonly keycloakConfig;
     private readonly serviceConfig;
     private realm;
     private notificationSdk;
+    private stateLogger;
     constructor(keycloakConfig: KeycloakConfig, serviceConfig: ServiceConfig, realm: IRealm, notificationSdk: INotificationClientSdk);
     _isKeycloakServiceAvailable(): Promise<boolean>;
-    buildRealm(): Promise<RealmBuilder>;
-    connectDatabase(): Promise<Database>;
-    prepareApp(): Promise<App>;
+    private buildRealm;
+    private connectDatabase;
+    private prepareApp;
     start(): Promise<void>;
 }
 export declare function checkServerRequest(url: string): Promise<boolean>;

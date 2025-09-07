@@ -20,7 +20,7 @@ const server_1 = require("@lazy-js/server");
 const mongo_db_1 = require("@lazy-js/mongo-db");
 const index_1 = require("./modules/RealmBuilder/index");
 const index_2 = require("./modules/RealmManipulator/index");
-const loggers_1 = require("./config/loggers");
+const utils_1 = require("@lazy-js/utils");
 __exportStar(require("./modules/Realm"), exports);
 __exportStar(require("./utils"), exports);
 class LazyAuth {
@@ -29,12 +29,19 @@ class LazyAuth {
         this.serviceConfig = serviceConfig;
         this.realm = realm;
         this.notificationSdk = notificationSdk;
+        const disable = this.serviceConfig.disableServiceLogging;
+        this.stateLogger = new utils_1.Logger({
+            module: 'Lazy Auth - ',
+            disableDebug: disable,
+            disableError: disable,
+            disableInfo: disable,
+            disableWarn: disable,
+        });
     }
     async _isKeycloakServiceAvailable() {
         return await checkServerRequest(this.keycloakConfig.keycloakServiceUrl);
     }
     async buildRealm() {
-        console.log(this.keycloakConfig);
         const realmBuilderModule = await index_1.RealmBuilder.create(this.realm, {
             url: this.keycloakConfig.keycloakServiceUrl,
             password: this.keycloakConfig.keycloakAdminPassword,
@@ -45,13 +52,13 @@ class LazyAuth {
     async connectDatabase() {
         const database = new mongo_db_1.Database(this.serviceConfig.mongoDbUrl);
         database.on('connected', () => {
-            loggers_1.appLogger.info('Connected to database');
+            this.stateLogger.info('Monogo database connected successfully');
         });
         database.on('disconnected', () => {
-            loggers_1.appLogger.info('Disconnected from database successfully');
+            this.stateLogger.info('Monogo database disconnected successfully');
         });
         database.on('error', (err) => {
-            loggers_1.appLogger.error('Error happened when connecting to database');
+            this.stateLogger.error('Monogo database error \n', JSON.stringify(err, null, 4));
         });
         await database.connect();
         return database;
@@ -67,18 +74,21 @@ class LazyAuth {
             serviceName: this.serviceConfig.serviceName,
         });
         app.on('error', (err) => {
-            console.log(err);
+            this.stateLogger.error('App Service Request Error \n', JSON.stringify(err, null, 4));
         });
         app.on('started', () => {
-            loggers_1.appLogger.info('App started');
+            this.stateLogger.info('App service started successfully');
         });
         return app;
     }
     async start() {
         try {
             if (!(await this._isKeycloakServiceAvailable())) {
-                console.log('Keycloak server is down');
+                this.stateLogger.error(`Keycloak on url ${this.keycloakConfig.keycloakServiceUrl} is DOWN`);
                 return;
+            }
+            else {
+                this.stateLogger.info(`Keycloak on url ${this.keycloakConfig.keycloakServiceUrl} is UP`);
             }
             await this.connectDatabase();
             const realmBuilderModule = await this.buildRealm();
@@ -87,16 +97,15 @@ class LazyAuth {
                 port: this.serviceConfig.port.toString(),
                 routerPrefix: this.serviceConfig.routerPrefix,
             });
-            if (this.serviceConfig.logRealmSummary) {
+            if (this.serviceConfig.logRealmSummary)
                 realmManipulator.getRealmSummary();
-            }
             const app = await this.prepareApp();
             app.mountModule(realmBuilderModule);
             app.start();
         }
         catch (err) {
             const error = await (0, server_1.handleMainException)(err, this.start.bind(this), 2);
-            loggers_1.appLogger.error(error);
+            this.stateLogger.error('Error Starting App: \n', JSON.stringify(error, null, 4));
         }
     }
 }
