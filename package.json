@@ -39,7 +39,6 @@
   },
   "type": "commonjs",
   "devDependencies": {
-    "mongodb-memory-server": "^10.2.0",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
   }
