@@ -15,14 +15,17 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LazyAuth = void 0;
-exports.checkServerRequest = checkServerRequest;
 const server_1 = require("@lazy-js/server");
 const mongo_db_1 = require("@lazy-js/mongo-db");
+// modules
 const index_1 = require("./modules/RealmBuilder/index");
 const index_2 = require("./modules/RealmManipulator/index");
 const utils_1 = require("@lazy-js/utils");
+const utils_2 = require("./utils");
+// exports
 __exportStar(require("./modules/Realm"), exports);
 __exportStar(require("./utils"), exports);
+__exportStar(require("./types"), exports);
 class LazyAuth {
     constructor(keycloakConfig, serviceConfig, realm, notificationSdk) {
         this.keycloakConfig = keycloakConfig;
@@ -31,7 +34,7 @@ class LazyAuth {
         this.notificationSdk = notificationSdk;
         const disable = this.serviceConfig.disableServiceLogging;
         this.stateLogger = new utils_1.Logger({
-            module: 'Lazy Auth - ',
+            module: "Lazy Auth - ",
             disableDebug: disable,
             disableError: disable,
             disableInfo: disable,
@@ -39,26 +42,27 @@ class LazyAuth {
         });
     }
     async _isKeycloakServiceAvailable() {
-        return await checkServerRequest(this.keycloakConfig.keycloakServiceUrl);
+        return await (0, utils_2.checkServerRequest)(this.keycloakConfig.keycloakServiceUrl);
     }
     async buildRealm() {
         const realmBuilderModule = await index_1.RealmBuilder.create(this.realm, {
             url: this.keycloakConfig.keycloakServiceUrl,
             password: this.keycloakConfig.keycloakAdminPassword,
+            reAuthenticateIntervalMs: this.keycloakConfig.keycloakAdminReAuthenticateIntervalMs || 30000,
         }, this.notificationSdk);
         await realmBuilderModule.build();
         return realmBuilderModule;
     }
     async connectDatabase() {
         const database = new mongo_db_1.Database(this.serviceConfig.mongoDbUrl);
-        database.on('connected', () => {
-            this.stateLogger.info('Monogo database connected successfully');
+        database.on("connected", () => {
+            this.stateLogger.info("Monogo database connected successfully");
         });
-        database.on('disconnected', () => {
-            this.stateLogger.info('Monogo database disconnected successfully');
+        database.on("disconnected", () => {
+            this.stateLogger.info("Monogo database disconnected successfully");
         });
-        database.on('error', (err) => {
-            this.stateLogger.error('Monogo database error \n', JSON.stringify(err, null, 4));
+        database.on("error", (err) => {
+            this.stateLogger.error("Monogo database error \n", JSON.stringify(err, null, 4));
         });
         await database.connect();
         return database;
@@ -73,13 +77,21 @@ class LazyAuth {
             enableRoutesLogging: this.serviceConfig.enableRoutesLogging,
             serviceName: this.serviceConfig.serviceName,
         });
-        app.on('error', (err) => {
-            this.stateLogger.error('App Service Request Error \n', JSON.stringify(err, null, 4));
+        app.on("error", (err) => {
+            this.stateLogger.error("App Service Request Error \n", JSON.stringify(err, null, 4));
         });
-        app.on('started', () => {
-            this.stateLogger.info('App service started successfully');
+        app.on("started", () => {
+            this.stateLogger.info("App service started successfully");
         });
         return app;
+    }
+    logSummary() {
+        const realmManipulator = new index_2.RealmManipulator({
+            realm: this.realm,
+            port: this.serviceConfig.port.toString(),
+            routerPrefix: this.serviceConfig.routerPrefix,
+        });
+        realmManipulator.getRealmSummary();
     }
     async start() {
         try {
@@ -92,31 +104,18 @@ class LazyAuth {
             }
             await this.connectDatabase();
             const realmBuilderModule = await this.buildRealm();
-            const realmManipulator = new index_2.RealmManipulator({
-                realm: this.realm,
-                port: this.serviceConfig.port.toString(),
-                routerPrefix: this.serviceConfig.routerPrefix,
-            });
-            if (this.serviceConfig.logRealmSummary)
-                realmManipulator.getRealmSummary();
+            if (this.serviceConfig.logRealmSummary) {
+                this.logSummary();
+            }
             const app = await this.prepareApp();
             app.mountModule(realmBuilderModule);
             app.start();
         }
         catch (err) {
             const error = await (0, server_1.handleMainException)(err, this.start.bind(this), 2);
-            this.stateLogger.error('Error Starting App: \n', JSON.stringify(error, null, 4));
+            this.stateLogger.error("Error Starting App: \n", JSON.stringify(error, null, 4));
         }
     }
 }
 exports.LazyAuth = LazyAuth;
-async function checkServerRequest(url) {
-    try {
-        const res = await fetch(url);
-        return true;
-    }
-    catch (err) {
-        return false;
-    }
-}
 //# sourceMappingURL=index.js.map

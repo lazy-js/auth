@@ -1,4 +1,4 @@
-import { IRole, IGroup, Attribute, AttributeValue } from '../types';
+import { IRole, IGroup, Attribute, AttributeValue, GroupJson } from "../types";
 export declare class Group implements IGroup {
     name: string;
     clientPath: string;
@@ -7,17 +7,12 @@ export declare class Group implements IGroup {
     roles: IRole[];
     rolesFlaten: string[];
     isDefault: boolean;
-    constructor(name: string, isDefualt: boolean);
+    constructor(name: string, isDefault: boolean);
     setClientName(name: string): IGroup;
     setClientPath(parentPath: string): IGroup;
     addAttribute(key: string, value: AttributeValue): IGroup;
     addRole(role: IRole): IGroup;
     addRoles(roles: IRole[]): IGroup;
-    toDto(): {
-        name: string;
-        isDefault: boolean;
-        clientName: string;
-        clientPath: string;
-    };
+    toJson(): GroupJson;
 }
 //# sourceMappingURL=Group.d.ts.map

@@ -1,135 +1,104 @@
 "use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RealmApi = void 0;
-class RealmApi {
-    constructor(kcAdmin) {
+const KcAdminApi_1 = require("./KcAdminApi");
+const ErrorTransformer_1 = require("../../../error/src/ErrorTransformer");
+const decorators_1 = require("../../../error/src/decorators");
+/**
+ * @description RealmApi class implements the IRealmApi interface and is used to interact with the Keycloak Realm API
+ * @implements IRealmApi
+ * @author Mahmoud Karsha
+ * @version 1.0.0
+ * @since 1.0.0
+ */
+let RealmApi = class RealmApi {
+    constructor(kcAdmin, errorTransformer) {
         this.kcAdmin = kcAdmin;
+        this.errorTransformer = errorTransformer;
         this.kcAdmin = kcAdmin;
+        this.errorTransformer = errorTransformer;
     }
+    /**
+     * @description Create a realm
+     * @returns Promise<CreateRealmReturn> - The realm as { realmName: string }
+     */
     async createRealm() {
         const realm = await this.kcAdmin.realms.create({
             realm: this.kcAdmin.workingRealmName,
             verifyEmail: false,
             enabled: true,
             defaultRoles: [],
-            requiredActions: [
-                {
-                    alias: 'update_user_locale',
-                    name: 'Update User Locale',
-                    providerId: 'update_user_locale',
-                    enabled: false,
-                    defaultAction: false,
-                    priority: 10,
-                    config: {},
-                },
-                {
-                    alias: 'CONFIGURE_TOTP',
-                    name: 'Configure OTP',
-                    providerId: 'CONFIGURE_TOTP',
-                    enabled: false,
-                    defaultAction: false,
-                    priority: 20,
-                    config: {},
-                },
-                {
-                    alias: 'TERMS_AND_CONDITIONS',
-                    name: 'Terms and Conditions',
-                    providerId: 'TERMS_AND_CONDITIONS',
-                    enabled: false,
-                    defaultAction: false,
-                    priority: 30,
-                    config: {},
-                },
-                {
-                    alias: 'UPDATE_PASSWORD',
-                    name: 'Update Password',
-                    providerId: 'UPDATE_PASSWORD',
-                    enabled: false,
-                    defaultAction: false,
-                    priority: 40,
-                    config: {},
-                },
-                {
-                    alias: 'UPDATE_PROFILE',
-                    name: 'Update Profile',
-                    providerId: 'UPDATE_PROFILE',
-                    enabled: false,
-                    defaultAction: false,
-                    priority: 50,
-                    config: {},
-                },
-                {
-                    alias: 'VERIFY_EMAIL',
-                    name: 'Verify Email',
-                    providerId: 'VERIFY_EMAIL',
-                    enabled: false,
-                    defaultAction: false,
-                    priority: 60,
-                    config: {},
-                },
-                {
-                    alias: 'delete_account',
-                    name: 'Delete Account',
-                    providerId: 'delete_account',
-                    enabled: false,
-                    defaultAction: false,
-                    priority: 70,
-                    config: {},
-                },
-                {
-                    alias: 'webauthn-register',
-                    name: 'Webauthn Register',
-                    providerId: 'webauthn-register',
-                    enabled: false,
-                    defaultAction: false,
-                    priority: 80,
-                    config: {},
-                },
-                {
-                    alias: 'webauthn-register-passwordless',
-                    name: 'Webauthn Register Passwordless',
-                    providerId: 'webauthn-register-passwordless',
-                    enabled: false,
-                    defaultAction: false,
-                    priority: 90,
-                    config: {},
-                },
-                {
-                    alias: 'VERIFY_PROFILE',
-                    name: 'Verify Profile',
-                    providerId: 'VERIFY_PROFILE',
-                    enabled: false,
-                    defaultAction: false,
-                    priority: 100,
-                    config: {},
-                },
-                {
-                    alias: 'delete_credential',
-                    name: 'Delete Credential',
-                    providerId: 'delete_credential',
-                    enabled: false,
-                    defaultAction: false,
-                    priority: 1000,
-                    config: {},
-                },
-            ],
+            requiredActions: realmRequiredActions,
         });
-        return realm;
+        return { realmName: realm.realmName };
     }
+    /**
+     * @description Check if a realm exists
+     * @returns Promise<boolean> - true if the realm exists, false otherwise
+     */
     async realmExists() {
-        // if the realm not exists the KcAdmin returns null
         const realm = await this.kcAdmin.realms.findOne({
             realm: this.kcAdmin.workingRealmName,
         });
         return !!realm;
     }
+    /**
+     * @description Delete a realm if it exists and nothing if not exists
+     * @returns Promise<void> - void
+     */
     async deleteRealm() {
         if (await this.realmExists())
             await this.kcAdmin.realms.del({
                 realm: this.kcAdmin.workingRealmName,
             });
-        return true;
     }
-}
+};
 exports.RealmApi = RealmApi;
+exports.RealmApi = RealmApi = __decorate([
+    (0, decorators_1.AutoTransform)(),
+    __metadata("design:paramtypes", [KcAdminApi_1.KcAdmin, ErrorTransformer_1.ErrorTransformer])
+], RealmApi);
+/**
+ * @description Realm required actions provided ids
+ * @type {Object}
+ * @property {Object} realmRequiredActionsProvidedIds - The realm required actions provided ids
+ */
+const realmRequiredActionsProvidedIds = {
+    update_user_locale: { priority: 10, enabled: false, defaultAction: false },
+    CONFIGURE_TOTP: { priority: 20, enabled: false, defaultAction: false },
+    TERMS_AND_CONDITIONS: { priority: 30, enabled: false, defaultAction: false },
+    UPDATE_PASSWORD: { priority: 40, enabled: false, defaultAction: false },
+    UPDATE_PROFILE: { priority: 50, enabled: false, defaultAction: false },
+    VERIFY_EMAIL: { priority: 60, enabled: false, defaultAction: false },
+    delete_account: { priority: 70, enabled: false, defaultAction: false },
+    "webauthn-register": { priority: 80, enabled: false, defaultAction: false },
+    "webauthn-register-passwordless": { priority: 90, enabled: false, defaultAction: false },
+    VERIFY_PROFILE: { priority: 100, enabled: false, defaultAction: false },
+    delete_credential: { priority: 1000, enabled: false, defaultAction: false },
+};
+/**
+ * @description Realm required actions
+ * @type {Object}
+ * @property {Object} realmRequiredActions - The realm required actions
+ */
+const realmRequiredActions = Object.keys(realmRequiredActionsProvidedIds).map((id) => {
+    return {
+        alias: id,
+        name: id,
+        providerId: id,
+        enabled: realmRequiredActionsProvidedIds[id].enabled,
+        defaultAction: realmRequiredActionsProvidedIds[id].defaultAction,
+        priority: realmRequiredActionsProvidedIds[id].priority,
+        config: {},
+    };
+});
 //# sourceMappingURL=RealmApi.js.map

@@ -1,14 +1,12 @@
-import { IRole, IClientAuthConfig, PrimaryField, RegisterStatus, LoginStatus, IUser } from '../types';
+import { IClientAuthConfig, PrimaryField, IUser, RegisterConfig, LoginConfig } from "../types";
 export declare class ClientAuthConfig implements IClientAuthConfig {
-    primaryField: PrimaryField[];
-    registerStatus: RegisterStatus;
-    loginStatus: LoginStatus;
-    privateRegisterAccessRoles: IRole[];
-    verifiedByDefault: boolean;
+    readonly primaryFields: PrimaryField[];
+    registerConfig: RegisterConfig;
+    loginConfig: LoginConfig;
     builtInUser?: IUser;
-    constructor(primaryField: PrimaryField[]);
-    setRegisterConfig(status: RegisterStatus, verified?: boolean, privateAccessRoles?: IRole | IRole[]): IClientAuthConfig;
-    setLoginConfig(status: LoginStatus): IClientAuthConfig;
+    constructor(primaryFields: PrimaryField[]);
+    setRegisterConfig(registerConfig: RegisterConfig): IClientAuthConfig;
+    setLoginConfig(loginConfig: LoginConfig): IClientAuthConfig;
     setBuiltInUser(user: IUser): IClientAuthConfig;
 }
 //# sourceMappingURL=ClientAuthConfig.d.ts.map

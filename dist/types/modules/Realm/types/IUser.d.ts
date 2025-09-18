@@ -1,27 +1,30 @@
-import { IGroup } from './IGroup';
-interface IUser {
-    username: string;
-    phone?: string;
-    email?: string;
+import { IGroup, GroupJson } from "./IGroup";
+interface CreateUserBaseDto {
+    method: "email" | "phone" | "username";
     password: string;
     firstName?: string;
     lastName?: string;
+}
+interface CreateUserWithUsernameDto extends CreateUserBaseDto {
+    method: "username";
+    username: string;
+}
+interface CreateUserWithEmailDto extends CreateUserBaseDto {
+    method: "email";
+    email: string;
+}
+interface CreateUserWithPhoneDto extends CreateUserBaseDto {
+    method: "phone";
+    phone: string;
+}
+export type CreateUserDto = (CreateUserWithEmailDto | CreateUserWithPhoneDto | CreateUserWithUsernameDto) & {
     group: IGroup;
-    method: 'email' | 'phone' | 'username';
-    toDto(): {
-        username: string;
-        email?: string;
-        phone?: string;
-        password: string;
-        firstName?: string;
-        lastName?: string;
-        method: 'email' | 'phone' | 'username';
-        group: {
-            name: string;
-            isDefault: boolean;
-            clientPath: string;
-        };
-    };
+};
+export type UserJson = (CreateUserWithEmailDto | CreateUserWithPhoneDto | CreateUserWithUsernameDto) & {
+    group: GroupJson;
+};
+interface IUser {
+    toJson(): UserJson;
 }
 export type { IUser };
 //# sourceMappingURL=IUser.d.ts.map

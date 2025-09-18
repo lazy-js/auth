@@ -1,24 +1,24 @@
 export class ClientAuthConfig {
-    constructor(primaryField) {
-        this.primaryField = primaryField;
-        this.registerStatus = 'public';
-        this.loginStatus = 'enabled';
-        this.privateRegisterAccessRoles = [];
-        this.verifiedByDefault = false;
+    constructor(primaryFields) {
+        if (!primaryFields || primaryFields.length === 0) {
+            throw new Error("At least one primary field must be specified");
+        }
+        this.primaryFields = primaryFields;
+        this.registerConfig = {
+            status: "public",
+            verified: false,
+        };
+        this.loginConfig = {
+            status: "enabled",
+        };
         this.builtInUser = undefined;
     }
-    setRegisterConfig(status, verified, privateAccessRoles) {
-        this.registerStatus = status;
-        this.verifiedByDefault = !!verified;
-        if (status === 'private' && privateAccessRoles) {
-            this.privateRegisterAccessRoles = Array.isArray(privateAccessRoles)
-                ? privateAccessRoles
-                : [privateAccessRoles];
-        }
+    setRegisterConfig(registerConfig) {
+        this.registerConfig = registerConfig;
         return this;
     }
-    setLoginConfig(status) {
-        this.loginStatus = status;
+    setLoginConfig(loginConfig) {
+        this.loginConfig = loginConfig;
         return this;
     }
     setBuiltInUser(user) {

@@ -1,4 +1,4 @@
-import { INotificationClientSdk, SendEmailBody } from '../types';
+import { INotificationClientSdk, SendEmailBody } from "../types";
 export declare class MockNotificationClientSdk implements INotificationClientSdk {
     constructor();
     available(): Promise<boolean>;

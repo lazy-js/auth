@@ -1,13 +1,14 @@
-import { KcApi } from '../kcApi/index';
-import { BaseController } from '@lazy-js/server';
-import { UserController } from '../User';
-import { realmBuilderLogger } from '../../config/loggers';
+import { KcApi } from "../kcApi/index";
+import { BaseController } from "@lazy-js/server";
+import { UserController } from "../User";
+import { realmBuilderLogger } from "../../config/loggers";
 export class RealmBuilder extends BaseController {
     static async create(realm, kcApiConfig, notificationClientSdk) {
         const kcApi = await KcApi.create({
             realmName: realm.name,
             url: kcApiConfig.url,
             password: kcApiConfig.password,
+            reAuthenticateIntervalMs: kcApiConfig.reAuthenticateIntervalMs,
         });
         return new RealmBuilder(realm, kcApi, notificationClientSdk);
     }
@@ -19,7 +20,7 @@ export class RealmBuilder extends BaseController {
     }
     async build() {
         const initedRealm = await this._initRealm();
-        realmBuilderLogger.info('Realm inited: ', initedRealm === null || initedRealm === void 0 ? void 0 : initedRealm.id);
+        realmBuilderLogger.info("Realm inited: ", initedRealm === null || initedRealm === void 0 ? void 0 : initedRealm.id);
         for (const app of this.realm.apps) {
             const initedApp = await this._initApp({
                 app: app,
@@ -39,9 +40,9 @@ export class RealmBuilder extends BaseController {
                 }
                 const userController = new UserController(client, this.kcApi, this.notificationClientSdk);
                 if (client.clientAuthConfiguration.builtInUser) {
-                    const doesUserExists = await userController.userService._getUser(client.clientAuthConfiguration.builtInUser.toDto());
+                    const doesUserExists = await userController.userService._getUser(client.clientAuthConfiguration.builtInUser.toJson());
                     if (!doesUserExists) {
-                        const userDto = client.clientAuthConfiguration.builtInUser.toDto();
+                        const userDto = client.clientAuthConfiguration.builtInUser.toJson();
                         await userController.userService.registerDefaultUser({
                             body: userDto,
                             group: userDto.group,
@@ -78,7 +79,7 @@ export class RealmBuilder extends BaseController {
         rootGroup = await this.kcApi.groups.getGroupById(rootGroup.id);
         await this._removeUsernameValidator();
         if (!rootGroup || !rootGroup.id)
-            throw new Error('Error in create realm method when creating or reading root group');
+            throw new Error("Error in create realm method when creating or reading root group");
         return {
             id: rootGroup.id,
             realmAttributes: rootGroup.attributes,
@@ -97,7 +98,7 @@ export class RealmBuilder extends BaseController {
             });
         appInDatabase = await this.kcApi.groups.getGroupById(appInDatabase.id);
         if (!appInDatabase || !appInDatabase.id)
-            throw new Error('Error in group, no id exists');
+            throw new Error("Error in group, no id exists");
         return {
             id: appInDatabase.id,
             appAttributes: appInDatabase.attributes,
@@ -108,7 +109,7 @@ export class RealmBuilder extends BaseController {
         const subGroupsOfAppGroup = await this.kcApi.groups.getSubGroupsByParentId(appId);
         let clientInDatabase;
         clientInDatabase = subGroupsOfAppGroup.find((group) => group.name === client.name);
-        realmBuilderLogger.debug('clientInDatabase cheked: ', clientInDatabase);
+        realmBuilderLogger.debug("clientInDatabase cheked: ", clientInDatabase);
         if (!clientInDatabase)
             clientInDatabase = await this.kcApi.groups.createGroup({
                 groupName: client.name,
@@ -119,12 +120,12 @@ export class RealmBuilder extends BaseController {
         if (!publicClientExistInDatabase)
             publicClientExistInDatabase = await this.kcApi.publicClients.create({
                 clientId: client.clientId,
-                name: client.appName + '-' + client.name,
+                name: client.appName + "-" + client.name,
                 description: client.clientDescription,
             });
-        realmBuilderLogger.debug('publicClientExistInDatabase created: ', publicClientExistInDatabase);
+        realmBuilderLogger.debug("publicClientExistInDatabase created: ", publicClientExistInDatabase);
         for (let role of client.rolesTree) {
-            realmBuilderLogger.debug('role init:', role.name);
+            realmBuilderLogger.debug("role init:", role.name);
             await this._initRole(role, publicClientExistInDatabase.id);
         }
         return {
@@ -161,11 +162,11 @@ export class RealmBuilder extends BaseController {
                 parentGroupId: clientGroupId,
                 attributes: {
                     ...group.groupAttributes,
-                    isDefault: [group.isDefault ? 'yes' : 'no'],
+                    isDefault: [group.isDefault ? "yes" : "no"],
                 },
             });
         if (!groupInDatabase || !groupInDatabase.id) {
-            throw new Error('groupInDatabase creation error');
+            throw new Error("groupInDatabase creation error");
         }
         for (const role of group.roles) {
             const roleInPublicClientDatabase = await this.kcApi.publicClients.getRoleByName({
@@ -173,7 +174,7 @@ export class RealmBuilder extends BaseController {
                 clientUuid: clientUuid,
             });
             if (!roleInPublicClientDatabase || !roleInPublicClientDatabase.id) {
-                throw new Error('the role ' + role.name + ' should be added to database firsts');
+                throw new Error("the role " + role.name + " should be added to database firsts");
             }
             await this.kcApi.groups.mapClientRoleToGroup({
                 groupId: groupInDatabase.id,
@@ -190,7 +191,7 @@ export class RealmBuilder extends BaseController {
         const config = await this.kcApi.users.getUserProfileConfig();
         if (!config.attributes)
             throw new Error();
-        const usernameIndex = config.attributes.findIndex((attr) => attr.name === 'username');
+        const usernameIndex = config.attributes.findIndex((attr) => attr.name === "username");
         config.attributes[usernameIndex].validations = {};
         await this.kcApi.users.updateUserProileConfig(config);
     }
@@ -199,8 +200,8 @@ export class RealmBuilder extends BaseController {
             name: attributeName,
             displayName: attributeName,
             permissions: {
-                view: ['admin', 'user'],
-                edit: ['admin', 'user'],
+                view: ["admin", "user"],
+                edit: ["admin", "user"],
             },
             multivalued: false,
         };

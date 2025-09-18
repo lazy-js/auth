@@ -1,0 +1,1 @@
+{"version":3,"file":"checkServer.js","sourceRoot":"","sources":["../../../src/utils/checkServer.ts"],"names":[],"mappings":";;AAAA,gDAOC;AAPM,KAAK,UAAU,kBAAkB,CAAC,GAAW;IAC5C,IAAI,CAAC;QACG,MAAM,GAAG,GAAG,MAAM,KAAK,CAAC,GAAG,CAAC,CAAC;QAC7B,OAAO,IAAI,CAAC;IACpB,CAAC;IAAC,OAAO,GAAG,EAAE,CAAC;QACP,OAAO,KAAK,CAAC;IACrB,CAAC;AACT,CAAC"}

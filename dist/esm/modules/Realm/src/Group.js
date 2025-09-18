@@ -1,12 +1,12 @@
 export class Group {
-    constructor(name, isDefualt) {
+    constructor(name, isDefault) {
         this.name = name;
-        this.isDefault = isDefualt;
+        this.isDefault = isDefault;
         this.roles = [];
         this.rolesFlaten = [];
         this.groupAttributes = {};
-        this.clientName = '';
-        this.clientPath = '';
+        this.clientName = "";
+        this.clientPath = "";
     }
     setClientName(name) {
         this.clientName = name;
@@ -31,7 +31,7 @@ export class Group {
         roles.map((role) => this.addRole(role));
         return this;
     }
-    toDto() {
+    toJson() {
         return {
             name: this.name,
             isDefault: this.isDefault,

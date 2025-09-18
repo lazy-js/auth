@@ -1,15 +1,32 @@
-import { IRole } from './IRole';
-import type { PrimaryField, RegisterStatus, LoginStatus } from './shared';
-import { IUser } from './IUser';
+import { IRole } from "./IRole";
+import type { PrimaryField, RegisterStatus, LoginStatus } from "./shared";
+import { IUser } from "./IUser";
+interface RegisterConfigBase {
+    status: RegisterStatus;
+}
+interface PrivateRegisterConfig extends RegisterConfigBase {
+    status: "private";
+    privateAccessRoles: IRole[];
+}
+interface PublicRegisterConfig extends RegisterConfigBase {
+    status: "public";
+    verified: boolean;
+}
+interface DisabledRegisterConfig extends RegisterConfigBase {
+    status: "disabled";
+}
+export type RegisterConfig = PrivateRegisterConfig | PublicRegisterConfig | DisabledRegisterConfig;
+export interface LoginConfig {
+    status: LoginStatus;
+}
 export interface IClientAuthConfig {
-    primaryField: PrimaryField[];
+    primaryFields: PrimaryField[];
     builtInUser?: IUser;
-    registerStatus: RegisterStatus;
-    verifiedByDefault: boolean;
-    privateRegisterAccessRoles: IRole[];
-    setRegisterConfig(status: RegisterStatus, verified: boolean, privateAccessRoles: IRole | IRole[]): IClientAuthConfig;
-    loginStatus: LoginStatus;
-    setLoginConfig(status: LoginStatus): IClientAuthConfig;
+    registerConfig: RegisterConfig;
+    loginConfig: LoginConfig;
+    setRegisterConfig(registerConfig: RegisterConfig): IClientAuthConfig;
+    setLoginConfig(loginConfig: LoginConfig): IClientAuthConfig;
     setBuiltInUser(user: IUser): IClientAuthConfig;
 }
+export {};
 //# sourceMappingURL=IClientAuthConfig.d.ts.map

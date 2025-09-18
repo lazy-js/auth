@@ -1,43 +1,35 @@
-import type UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation';
-import type { UserProfileConfig } from '@keycloak/keycloak-admin-client/lib/defs/userProfileMetadata';
-import type { TokenResponse } from '@keycloak/keycloak-admin-client/lib/utils/auth';
-import type { JWTVerifyResult, ResolvedKey } from 'jose';
-import type { GroupRepresentation } from './shared';
-interface ResetPasswordPayload {
+import type UserRepresentation from "@keycloak/keycloak-admin-client/lib/defs/userRepresentation";
+import type { UserProfileConfig } from "@keycloak/keycloak-admin-client/lib/defs/userProfileMetadata";
+import type { TokenResponse } from "@keycloak/keycloak-admin-client/lib/utils/auth";
+import type { JWTVerifyResult, ResolvedKey } from "jose";
+import type { GroupRepresentation } from "./shared";
+export interface CreateUserPayload {
+    username: string;
+    password?: string;
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    verified?: boolean;
+}
+export interface ResetPasswordPayload {
     userId: string;
     password: string;
 }
-interface AddUserToGroupPayload {
+export interface AddUserToGroupPayload {
     userId: string;
     groupId: string;
 }
-interface LoginWithUsernamePayload {
+export interface CreateUserReturn {
+    id: string;
+}
+export interface LoginWithUsernamePayload {
     username: string;
     password: string;
     clientId: string;
 }
-interface RefreshAccessTokenPayload {
+export interface RefreshAccessTokenPayload {
     refreshToken: string;
     clientId: string;
-}
-export interface IUserApi {
-    createUser(user: UserRepresentation): Promise<{
-        id: string;
-    }>;
-    removeDefaultRealmRolesFromUser(userId: string): Promise<boolean>;
-    setUserPassword(payload: ResetPasswordPayload): Promise<boolean>;
-    deleteUser(userId: string): Promise<boolean>;
-    getUserById(userId: string): Promise<UserRepresentation | undefined>;
-    getUsersByEmail(email: string): Promise<UserRepresentation[]>;
-    getUserByUsername(username: string): Promise<UserRepresentation | undefined>;
-    addUserToGroup(paylaod: AddUserToGroupPayload): Promise<string>;
-    setUserVerified(userId: string): Promise<boolean>;
-    getUserProfileConfig(): Promise<UserProfileConfig>;
-    getUserGroups(userId: string): Promise<GroupRepresentation[]>;
-    updateUserProileConfig(userProfileConfig: UserProfileConfig): Promise<UserProfileConfig>;
-    loginWithUsername(payload: LoginWithUsernamePayload): Promise<TokenResponse>;
-    validateAccessToken<T extends string>(accessToken: string): Promise<JWTVerifyResult<AccessTokenPayload<T>> & ResolvedKey>;
-    refreshAccessToken(payload: RefreshAccessTokenPayload): Promise<TokenResponse>;
 }
 type Roles = {
     roles?: string[];
@@ -46,7 +38,7 @@ type ResouceAccess<T extends string> = Record<T, Roles>;
 export interface AccessTokenPayload<T extends string> {
     acr?: string;
     address?: string;
-    'allowed-origins'?: string[];
+    "allowed-origins"?: string[];
     at_hash?: string;
     auth_time?: number;
     azp?: string;
@@ -81,12 +73,30 @@ export interface AccessTokenPayload<T extends string> {
     scope?: string;
     session_state?: string;
     sub?: string;
-    'trusted-certs'?: string[];
+    "trusted-certs"?: string[];
     typ?: string;
     updated_at?: number;
     website?: string;
     zoneinfo?: string;
     resource_access: ResouceAccess<T>;
+}
+export type ValidateAccessTokenReturn<T extends string> = JWTVerifyResult<AccessTokenPayload<T>> & ResolvedKey;
+export interface IUserApi {
+    createUser(user: CreateUserPayload): Promise<CreateUserReturn>;
+    removeDefaultRealmRolesFromUser(userId: string): Promise<void>;
+    setUserPassword(payload: ResetPasswordPayload): Promise<void>;
+    deleteUser(userId: string): Promise<void>;
+    getUserById(userId: string): Promise<UserRepresentation | undefined>;
+    getUsersByEmail(email: string): Promise<UserRepresentation[]>;
+    getUserByUsername(username: string): Promise<UserRepresentation | undefined>;
+    addUserToGroup(paylaod: AddUserToGroupPayload): Promise<string>;
+    setUserVerified(userId: string): Promise<void>;
+    getUserProfileConfig(): Promise<UserProfileConfig>;
+    getUserGroups(userId: string): Promise<GroupRepresentation[]>;
+    updateUserProileConfig(userProfileConfig: UserProfileConfig): Promise<UserProfileConfig>;
+    loginWithUsername(payload: LoginWithUsernamePayload): Promise<TokenResponse>;
+    validateAccessToken<T extends string>(accessToken: string): Promise<ValidateAccessTokenReturn<T>>;
+    refreshAccessToken(payload: RefreshAccessTokenPayload): Promise<TokenResponse>;
 }
 export {};
 //# sourceMappingURL=IUserApi.d.ts.map

@@ -1,9 +1,10 @@
-import { Router } from '@lazy-js/server';
-import { IRealm, IApp, IClient, IGroup, IRole } from '../../Realm';
-import { IKcApi } from '../../kcApi';
+import { Router } from "@lazy-js/server";
+import { IRealm, IApp, IClient, IGroup, IRole } from "../../Realm";
+import { IKcApi } from "../../kcApi";
 export interface kcApiConfig {
     url: string;
     password: string;
+    reAuthenticateIntervalMs: number;
 }
 export interface InitRealmResponse {
     id: string;
@@ -38,8 +39,8 @@ export interface ProfileAttribute {
     name: string;
     displayName: string;
     permissions: {
-        view: ('admin' | 'user')[];
-        edit: ('admin' | 'user')[];
+        view: ("admin" | "user")[];
+        edit: ("admin" | "user")[];
     };
     multivalued: boolean;
 }

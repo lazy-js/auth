@@ -1,5 +1,11 @@
-import { IRole } from './IRole';
-import type { Attribute, AttributeValue } from './shared';
+import { IRole } from "./IRole";
+import type { Attribute, AttributeValue } from "./shared";
+export interface GroupJson {
+    name: string;
+    isDefault: boolean;
+    clientPath: string;
+    clientName: string;
+}
 export interface IGroup {
     name: string;
     isDefault: boolean;
@@ -13,10 +19,6 @@ export interface IGroup {
     addRoles(roles: IRole[]): IGroup;
     groupAttributes: Attribute;
     addAttribute(key: string, value: AttributeValue): IGroup;
-    toDto(): {
-        name: string;
-        isDefault: boolean;
-        clientPath: string;
-    };
+    toJson(): GroupJson;
 }
 //# sourceMappingURL=IGroup.d.ts.map

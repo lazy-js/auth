@@ -1,33 +1,38 @@
-import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation';
-import type { Attributes } from './shared';
-
-export interface IGroupApi {
-  createGroup(payload: {
+import type GroupRepresentation from "@keycloak/keycloak-admin-client/lib/defs/groupRepresentation";
+import type { Attributes } from "./shared";
+export interface CreateGroupPayload {
     groupName: string;
     parentGroupId?: string;
     attributes?: Attributes;
-  }): Promise<{ id: string }>;
-  createChildGroup(paylaod: {
-    parentGroupId: string;
-    groupName: string;
-    attributes?: Attributes;
-  }): Promise<{ id: string }>;
-  getSubGroupsByParentId(parentId: string): Promise<GroupRepresentation[]>;
-  getGroupByPath(path: string): Promise<GroupRepresentation | undefined>;
-  getGroupsByParentPath(parentPath: string): Promise<GroupRepresentation[]>;
-  getGroupById(groupId: string): Promise<GroupRepresentation | undefined>;
-  groupExists(groupId: string): Promise<boolean>;
-  getTopLevelGroupByName(
-    groupName: string,
-  ): Promise<GroupRepresentation | undefined>;
+}
+export interface CreateGroupReturn {
+    id: string;
+}
 
-  mapClientRoleToGroup(paylaod: {
+export interface MapClientRoleToGroupPayload {
     groupId: string;
     clientUuid: string;
     roleId: string;
-  }): Promise<boolean>;
-  addAttributesToGroup(payload: {
+}
+
+export interface AddAttributesToGroupPayload {
     groupId: string;
     attributes: Attributes;
-  }): Promise<boolean>;
+}
+
+export interface IGroupApi {
+    createGroup(payload: CreateGroupPayload): Promise<CreateGroupReturn>;
+
+    createChildGroup(paylaod: Required<CreateGroupPayload>): Promise<CreateGroupReturn>;
+
+    getSubGroupsByParentId(parentId: string): Promise<GroupRepresentation[]>;
+    getGroupByPath(path: string): Promise<GroupRepresentation | undefined>;
+    getGroupsByParentPath(parentPath: string): Promise<GroupRepresentation[]>;
+    getGroupById(groupId: string): Promise<GroupRepresentation | undefined>;
+    groupExists(groupId: string): Promise<boolean>;
+    getTopLevelGroupByName(groupName: string): Promise<GroupRepresentation | undefined>;
+
+    mapClientRoleToGroup(paylaod: MapClientRoleToGroupPayload): Promise<void>;
+
+    addAttributesToGroup(payload: AddAttributesToGroupPayload): Promise<void>;
 }

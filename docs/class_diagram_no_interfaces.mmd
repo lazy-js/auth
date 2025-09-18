@@ -1,0 +1,337 @@
+---
+config:
+  layout: elk
+  theme: neo
+---
+classDiagram
+direction LR
+    class LazyAuth {
+	    -keycloakConfig: KeycloakConfig
+	    -serviceConfig: ServiceConfig
+	    -realm: Realm
+	    -notificationSdk: NotificationClientSdk
+	    -stateLogger: Logger
+	    +start() : Promise~void~
+	    -_isKeycloakServiceAvailable() : Promise~boolean~
+	    -buildRealm() : Promise~RealmBuilder~
+	    -connectDatabase() : Promise~Database~
+	    -prepareApp() : Promise~App~
+	    -logSummary() : void
+    }
+    class RealmBuilder {
+	    +realm: Realm
+	    +kcApi: KcApi
+	    +notificationClientSdk: NotificationClientSdk
+	    +static create(realm, kcApiConfig, notificationClientSdk) : Promise~RealmBuilder~
+	    -constructor(realm, kcApi, notificationClientSdk)
+	    +build() : Promise~void~
+	    +_initRealm() : Promise~InitRealmResponse~
+	    +_initApp(payload) : Promise~InitAppResponse~
+	    +_initClient(payload) : Promise~InitClientResponse~
+	    +_initGroup(payload) : Promise~InitGroupResponse~
+	    +_initRole(role, clientUuid, parentRoleId?) : Promise~void~
+	    +_removeUsernameValidator() : Promise~void~
+	    +_createAttribute(name) : ProfileAttribute
+	    +_initUserSchema(attributes) : Promise~void~
+    }
+    class Realm {
+	    +name: string
+	    +apps: App[]
+	    +realmAttributes: Attribute
+	    +seperatedUserCollections: boolean
+	    +addApp(app) : Realm
+	    +setIsSeperatedUserCollections(v) : Realm
+	    +addGlobalAttribute(key, value) : Realm
+    }
+    class App {
+	    +name: string
+	    +clients: Client[]
+	    +realmName: string
+	    +realmPath: string
+	    +appAttributes: Attribute
+	    +setRealmPath(path) : App
+	    +setRealmName(name) : App
+	    +addClient(client) : App
+	    +addClients(clients) : App
+	    +addGlobalAttribute(key, value) : App
+    }
+    class Client {
+	    +name: string
+	    +clientId: string
+	    +appPath: string
+	    +appName: string
+	    +clientDescription: string
+	    +rolesTree: Role[]
+	    +groups: Group[]
+	    +globalRoles: Role[]
+	    +clientAuthConfiguration: ClientAuthConfig
+	    +clientAttributes: Attribute
+	    +addGroup(group) : Client
+	    +setAppName(name) : Client
+	    +setAppPath(path) : Client
+	    +setClientDescription(desc) : Client
+	    +addGlobalAttribute(key, value) : Client
+	    +registerRole(role) : Client
+	    +registerRoles(roles) : Client
+	    +applyGlobalRole(role) : Client
+    }
+    class Group {
+	    +name: string
+	    +clientPath: string
+	    +clientName: string
+	    +groupAttributes: Attribute
+	    +roles: Role[]
+	    +rolesFlaten: string[]
+	    +isDefault: boolean
+	    +setClientName(name) : Group
+	    +setClientPath(path) : Group
+	    +addAttribute(key, value) : Group
+	    +addRole(role) : Group
+	    +addRoles(roles) : Group
+	    +toDto() : object
+    }
+    class Role {
+	    +name: string
+	    +description: string
+	    +roles: Role[]
+	    +rolesFlaten: string[]
+	    +hasChildren() : boolean
+	    +addChildRole(role) : Role
+	    +setDescription(desc) : Role
+	    +addChildRoles(roles) : Role
+    }
+    class ClientAuthConfig {
+	    +registerSchema: any
+	    +loginSchema: any
+	    +primaryField: PrimaryField[]
+	    +registerStatus: RegisterStatus
+	    +loginStatus: LoginStatus
+	    +privateRegisterAccessRoles: Role[]
+	    +builtInUser: User
+	    +verifiedByDefault: boolean
+	    +setRegisterConfig(status, verified?, roles?, schema?) : ClientAuthConfig
+	    +setLoginConfig(status, schema?) : ClientAuthConfig
+	    +setBuiltInUser(user) : ClientAuthConfig
+    }
+    class User {
+	    +method: string
+	    +username: string
+	    +password: string
+	    +firstName: string
+	    +lastName: string
+	    +group: Group
+	    +toDto() : object
+    }
+    class KcApi {
+	    +publicClients: PublicClientApi
+	    +groups: GroupApi
+	    +users: UserApi
+	    +realms: RealmApi
+	    -kcAdmin: KcAdmin
+	    +static create(config) : Promise~KcApi~
+	    -constructor(kcAdmin)
+    }
+    class KcAdmin {
+	    +password: string
+	    +kcOptions: KcOptions
+	    +workingRealmName: string
+	    +static create(config) : Promise~KcAdmin~
+	    -constructor(options, realmName)
+	    +adminRefreshSession() : Promise~void~
+    }
+    class RealmApi {
+	    -kcAdmin: KcAdmin
+	    +constructor(kcAdmin)
+	    +createRealm() : Promise~object~
+	    +realmExists() : Promise~boolean~
+	    +deleteRealm() : Promise~boolean~
+    }
+    class GroupApi {
+	    -kcAdmin: KcAdmin
+	    +constructor(kcAdmin)
+	    +createGroup(payload) : Promise~object~
+	    +createChildGroup(payload) : Promise~object~
+	    +getSubGroupsByParentId(id) : Promise~GroupRepresentation[]~
+	    +getGroupByPath(path) : Promise~GroupRepresentation~
+	    +getGroupsByParentPath(path) : Promise~GroupRepresentation[]~
+	    +getGroupById(id) : Promise~GroupRepresentation~
+	    +groupExists(id) : Promise~boolean~
+	    +getTopLevelGroupByName(name) : Promise~GroupRepresentation~
+	    +mapClientRoleToGroup(payload) : Promise~boolean~
+	    +addAttributesToGroup(payload) : Promise~boolean~
+    }
+    class PublicClientApi {
+	    -kcAdmin: KcAdmin
+	    +constructor(kcAdmin)
+	    +create(payload) : Promise~object~
+	    +getOneByUuid(uuid) : Promise~ClientRepresentation~
+	    +getOneByClientId(id) : Promise~ClientRepresentation~
+	    +addRole(payload) : Promise~RoleRepresentation~
+	    +addChildRole(payload) : Promise~RoleRepresentation~
+	    +getRoleById(payload) : Promise~RoleRepresentation~
+	    +getRolesByClientUuid(payload) : Promise~RoleRepresentation[]~
+	    +getRoleByName(payload) : Promise~RoleRepresentation~
+	    +getRolesByParentId(payload) : Promise~RoleRepresentation[]~
+    }
+    class UserApi {
+	    -kcAdmin: KcAdmin
+	    +constructor(kcAdmin)
+	    +getUserProfileConfig() : Promise~object~
+	    +updateUserProileConfig(config) : Promise~object~
+	    +getUser(payload) : Promise~UserRepresentation~
+	    +createUser(payload) : Promise~object~
+	    +updateUser(id, payload) : Promise~object~
+	    +deleteUser(id) : Promise~boolean~
+	    +validateAccessToken(token) : Promise~object~
+	    +refreshAccessToken(payload) : Promise~TokenResponse~
+    }
+    class UserController {
+	    +userService: UserService
+	    +client: Client
+	    +kcApi: KcApi
+	    +notificationClientSdk: NotificationClientSdk
+	    +constructor(client, kcApi, notificationClientSdk)
+	    +register(req, res, next) : Promise~void~
+	    +login(req, res, next) : Promise~void~
+	    +validateAccessToken(req, res, next) : Promise~void~
+	    +validateRole(req, res, next) : Promise~void~
+	    +refreshToken(req, res, next) : Promise~void~
+	    +updatePassword(req, res, next) : Promise~void~
+	    +verify(req, res, next) : Promise~void~
+    }
+    class UserService {
+	    -client: Client
+	    -kcApi: KcApi
+	    -notificationClientSdk: NotificationClientSdk
+	    -userRepository: UserRepository
+	    +constructor(client, kcApi, notificationClientSdk)
+	    +register(payload) : Promise~object~
+	    +login(payload) : Promise~object~
+	    +validateAccessToken(token) : Promise~object~
+	    +validateRole(token, role) : Promise~object~
+	    +refreshToken(token) : Promise~object~
+	    +updatePassword(token, password) : Promise~void~
+	    +verify(payload) : Promise~boolean~
+    }
+    class KeycloakConfig {
+	    +keycloakServiceUrl: string
+	    +keycloakAdminPassword: string
+    }
+    class ServiceConfig {
+	    +allowedOrigins: string[]
+	    +port: number
+	    +routerPrefix: string
+	    +mongoDbUrl: string
+	    +disableRequestLogging?: boolean
+	    +disableSecurityHeaders?: boolean
+	    +enableRoutesLogging?: boolean
+	    +serviceName?: string
+	    +logRealmSummary?: boolean
+	    +disableServiceLogging?: boolean
+    }
+    class NotificationClientSdk {
+	    +available() : Promise~boolean~
+	    +sendEmail(body) : Promise~void~
+    }
+    class InitRealmResponse {
+	    +id: string
+	    +realmAttributes: any
+    }
+    class InitAppResponse {
+	    +id: string
+	    +appAttributes: any
+    }
+    class InitClientResponse {
+	    +clientUuid: string
+	    +clientGroupId: string
+    }
+    class InitGroupResponse {
+	    +id: string
+	    +groupAttributes: any
+    }
+    class ProfileAttribute {
+	    +name: string
+	    +displayName: string
+	    +permissions: object
+	    +multivalued: boolean
+    }
+    class KeycloakAdminClient {
+	    +baseUrl: string
+	    +realmName: string
+	    +auth(config) : Promise
+    }
+    class Database {
+	    +connect() : Promise~void~
+	    +disconnect() : Promise~void~
+	    +on(event, callback) : void
+    }
+    class BaseController {
+	    +mountPostRoute(path, handler, definition) : void
+	    +mountController(controller, path) : void
+	    +getRouter() : Router
+    }
+    class Logger {
+	    +info(message, data?) : void
+	    +error(message, data?) : void
+	    +warn(message, data?) : void
+	    +debug(message, data?) : void
+	    +child(name, config) : Logger
+    }
+    class UserRepository {
+	    +insertOne(user) : Promise~object~
+	    +findOne(query) : Promise~object~
+	    +updateOne(id, data) : Promise~object~
+	    +deleteOne(id) : Promise~boolean~
+    }
+	<<external>> KeycloakAdminClient
+	<<external>> Database
+	<<external>> BaseController
+	<<external>> Logger
+	<<external>> UserRepository
+    LazyAuth --> RealmBuilder : creates
+    LazyAuth --> KeycloakConfig : uses
+    LazyAuth --> ServiceConfig : uses
+    LazyAuth --> NotificationClientSdk : uses
+    RealmBuilder --> Realm : manages
+    RealmBuilder --> KcApi : uses
+    RealmBuilder --> UserController : creates
+    RealmBuilder --> InitRealmResponse : returns
+    RealmBuilder --> InitAppResponse : returns
+    RealmBuilder --> InitClientResponse : returns
+    RealmBuilder --> InitGroupResponse : returns
+    RealmBuilder --> ProfileAttribute : creates
+    Realm --> App : contains
+    App --> Client : contains
+    Client --> Group : contains
+    Client --> Role : rolesTree/globalRoles
+    Client --> ClientAuthConfig : uses
+    Client --> User : builtInUser
+    Group --> Role : contains
+    Role --> Role : child roles
+    ClientAuthConfig --> Role : uses
+    ClientAuthConfig --> User : uses
+    KcApi --> KcAdmin : uses
+    KcApi --> RealmApi : creates
+    KcApi --> GroupApi : creates
+    KcApi --> PublicClientApi : creates
+    KcApi --> UserApi : creates
+    KcAdmin --> KeycloakAdminClient : extends
+    RealmApi --> KcAdmin : uses
+    GroupApi --> KcAdmin : uses
+    PublicClientApi --> KcAdmin : uses
+    UserApi --> KcAdmin : uses
+    UserController --> UserService : uses
+    UserController --> Client : uses
+    UserController --> KcApi : uses
+    UserController --> NotificationClientSdk : uses
+    UserService --> Client : uses
+    UserService --> KcApi : uses
+    UserService --> NotificationClientSdk : uses
+    UserService --> UserRepository : uses
+    LazyAuth --> Database : uses
+    RealmBuilder --> BaseController : extends
+    UserController --> BaseController : extends
+    LazyAuth --> Logger : uses
+    RealmBuilder --> Logger : uses
+    UserController --> Logger : uses
+    UserService --> Logger : uses

@@ -109,17 +109,18 @@ class RealmManipulator {
     getRealmSummary() {
         const realmName = this.getRealmName();
         console.log(`Realm: ${realmName}`);
-        console.log('--------------------------------');
-        console.log('Apps: ');
+        console.log("--------------------------------");
+        console.log("Apps: ");
         const apps = this.getApps();
         apps.forEach((app) => {
             const clientsSummary = app.clients.map((client) => {
                 const name = client.name;
-                const verified = client.clientAuthConfiguration.verifiedByDefault;
-                const registerStatus = client.clientAuthConfiguration.registerStatus;
-                const loginStatus = client.clientAuthConfiguration.loginStatus;
+                const verified = client.clientAuthConfiguration.registerConfig.status === "public" &&
+                    client.clientAuthConfiguration.registerConfig.verified;
+                const registerStatus = client.clientAuthConfiguration.registerConfig.status;
+                const loginStatus = client.clientAuthConfiguration.loginConfig.status;
                 const clientUrl = `http://localhost:${this.port}${this.routerPrefix}${client.appPath}/${client.name}`;
-                const primaryFields = client.clientAuthConfiguration.primaryField.join(', ');
+                const primaryFields = client.clientAuthConfiguration.primaryFields.join(", ");
                 return {
                     appName: app.name,
                     name,
@@ -132,7 +133,7 @@ class RealmManipulator {
                 };
             });
             console.table(clientsSummary);
-            console.log('--------------------------------');
+            console.log("--------------------------------");
         });
     }
 }

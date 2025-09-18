@@ -1,45 +1,54 @@
-import type ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation';
-import type RoleRepresentation from '@keycloak/keycloak-admin-client/lib/defs/roleRepresentation';
+import type ClientRepresentation from "@keycloak/keycloak-admin-client/lib/defs/clientRepresentation";
+import type RoleRepresentation from "@keycloak/keycloak-admin-client/lib/defs/roleRepresentation";
 
-export interface IPublicClientApi {
-  create(payload: {
+export interface CreateClientPayload {
     clientId: string;
     description?: string;
     name: string;
-  }): Promise<{ id?: string }>;
+}
+export interface CreateClientReturn {
+    id: string;
+}
 
-  getOneByUuid(clientUuid: string): Promise<ClientRepresentation | undefined>;
-
-  getOneByClientId(clientId: string): Promise<ClientRepresentation | undefined>;
-
-  addRole(payload: {
+export interface AddRolePayload {
     roleName: string;
     clientUuid: string;
     parentRoleId?: string;
-  }): Promise<RoleRepresentation>;
+}
 
-  addChildRole(payload: {
-    roleName: string;
-    clientUuid: string;
-    parentRoleId: string;
-  }): Promise<RoleRepresentation>;
+export type AddRoleReturn = RoleRepresentation;
 
-  getRoleById(payload: {
+export interface GetRoleByIdPayload {
     roleId: string;
     clientUuid: string;
-  }): Promise<RoleRepresentation | undefined>;
+}
+export type GetRoleByIdReturn = RoleRepresentation | undefined;
 
-  getRolesByClientUuid(payload: {
+export interface GetRolesByClientUuidPayload {
     clientUuid: string;
-  }): Promise<RoleRepresentation[]>;
+}
+export type GetRolesByClientUuidReturn = RoleRepresentation[];
 
-  getRoleByName(payload: {
+export interface GetRoleByNamePayload {
     roleName: string;
     clientUuid: string;
-  }): Promise<RoleRepresentation | undefined>;
+}
+export type GetRoleByNameReturn = RoleRepresentation | undefined;
 
-  getRolesByParentId(payload: {
+export interface GetRolesByParentIdPayload {
     clientUuid: string;
     parentRoleId: string;
-  }): Promise<RoleRepresentation[]>;
+}
+export type GetRolesByParentIdReturn = RoleRepresentation[];
+
+export interface IPublicClientApi {
+    create(payload: CreateClientPayload): Promise<CreateClientReturn>;
+    getOneByUuid(clientUuid: string): Promise<ClientRepresentation | undefined>;
+    getOneByClientId(clientId: string): Promise<ClientRepresentation | undefined>;
+    addRole(payload: AddRolePayload): Promise<AddRoleReturn>;
+    addChildRole(payload: AddRolePayload): Promise<AddRoleReturn>;
+    getRoleById(payload: GetRoleByIdPayload): Promise<GetRoleByIdReturn>;
+    getRolesByClientUuid(clientUuid: string): Promise<GetRolesByClientUuidReturn>;
+    getRoleByName(payload: GetRoleByNamePayload): Promise<GetRoleByNameReturn>;
+    getRolesByParentId(payload: GetRolesByParentIdPayload): Promise<GetRolesByParentIdReturn>;
 }

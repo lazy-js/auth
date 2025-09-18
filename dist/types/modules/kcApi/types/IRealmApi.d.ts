@@ -1,8 +1,9 @@
 export interface IRealmApi {
-    createRealm(): Promise<{
-        realmName: string;
-    }>;
+    createRealm(): Promise<CreateRealmReturn>;
     realmExists(): Promise<boolean>;
-    deleteRealm(): Promise<boolean>;
+    deleteRealm(): Promise<void>;
+}
+export interface CreateRealmReturn {
+    realmName: string;
 }
 //# sourceMappingURL=IRealmApi.d.ts.map

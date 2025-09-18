@@ -4,15 +4,15 @@ exports.App = void 0;
 class App {
     constructor(name) {
         this.name = name;
-        this.realmName = '';
-        this.realmPath = '';
+        this.realmName = "";
+        this.realmPath = "";
         this.appAttributes = {};
         this.clients = [];
     }
     setRealmPath(realmPath) {
         this.realmPath = realmPath;
         this.clients.forEach((client) => {
-            client.setAppPath(this.realmPath + '/' + this.name);
+            client.setAppPath(this.realmPath + "/" + this.name);
         });
         return this;
     }
@@ -22,9 +22,9 @@ class App {
     }
     addClient(client) {
         client.setAppName(this.name);
-        client.setAppPath(this.realmPath + '/' + this.name);
+        client.setAppPath(this.realmPath + "/" + this.name);
         if (!client.groups.some((group) => group.isDefault)) {
-            throw new Error('Each client should contain only one default group');
+            throw new Error("Each Client must contain a default group");
         }
         this.clients.push(client);
         return this;
