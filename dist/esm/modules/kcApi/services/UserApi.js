@@ -8,7 +8,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 import { KcAdmin } from './KcAdminApi';
-import { getToken } from '@keycloak/keycloak-admin-client/lib/utils/auth';
+import { getToken, } from '@keycloak/keycloak-admin-client/lib/utils/auth';
 import { jwtVerify, createRemoteJWKSet } from 'jose';
 import { ErrorTransformer } from '../../../error/src/ErrorTransformer';
 import { AutoTransform } from '../../../error/src/decorators';
@@ -40,7 +40,9 @@ let UserApi = class UserApi {
     async createUser(user) {
         const newKcUser = {
             username: user.username,
-            credentials: user.password ? [{ type: 'password', value: user.password, temporary: false }] : [],
+            credentials: user.password
+                ? [{ type: 'password', value: user.password, temporary: false }]
+                : [],
             email: user.email,
             firstName: user.firstName,
             lastName: user.lastName,
@@ -240,7 +242,8 @@ let UserApi = class UserApi {
      * @returns Promise<TokenResponse> - The token as TokenResponse
      */
     async refreshAccessToken(payload) {
-        if (payload.refreshToken && payload.refreshToken.startsWith('Bearer ')) {
+        if (payload.refreshToken &&
+            payload.refreshToken.startsWith('Bearer ')) {
             payload.refreshToken = payload.refreshToken.replace('Bearer ', '');
         }
         const newToken = await getToken({
@@ -257,7 +260,8 @@ let UserApi = class UserApi {
 };
 UserApi = __decorate([
     AutoTransform(),
-    __metadata("design:paramtypes", [KcAdmin, ErrorTransformer])
+    __metadata("design:paramtypes", [KcAdmin,
+        ErrorTransformer])
 ], UserApi);
 export { UserApi };
 /**

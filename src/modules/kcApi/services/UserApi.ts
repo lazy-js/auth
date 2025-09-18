@@ -1,8 +1,19 @@
-import { AccessTokenPayload, IUserApi, CreateUserReturn, LoginWithUsernamePayload, RefreshAccessTokenPayload, ValidateAccessTokenReturn, CreateUserPayload } from '../types';
+import {
+    AccessTokenPayload,
+    IUserApi,
+    CreateUserReturn,
+    LoginWithUsernamePayload,
+    RefreshAccessTokenPayload,
+    ValidateAccessTokenReturn,
+    CreateUserPayload,
+} from '../types';
 import { KcAdmin } from './KcAdminApi';
 import UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation';
 import { UserProfileConfig } from '@keycloak/keycloak-admin-client/lib/defs/userProfileMetadata';
-import { getToken, TokenResponse } from '@keycloak/keycloak-admin-client/lib/utils/auth';
+import {
+    getToken,
+    TokenResponse,
+} from '@keycloak/keycloak-admin-client/lib/utils/auth';
 import { jwtVerify, createRemoteJWKSet } from 'jose';
 import { GroupRepresentation } from '../types/shared';
 import { ErrorTransformer } from '../../../error/src/ErrorTransformer';
@@ -18,7 +29,10 @@ import { AutoTransform } from '../../../error/src/decorators';
 
 @AutoTransform()
 export class UserApi implements IUserApi {
-    constructor(public kcAdmin: KcAdmin, public errorTransformer: ErrorTransformer) {
+    constructor(
+        public kcAdmin: KcAdmin,
+        public errorTransformer: ErrorTransformer,
+    ) {
         this.kcAdmin = kcAdmin;
         this.errorTransformer = errorTransformer;
     }
@@ -37,12 +51,15 @@ export class UserApi implements IUserApi {
     async createUser(user: CreateUserPayload): Promise<CreateUserReturn> {
         const newKcUser: UserRepresentation = {
             username: user.username,
-            credentials: user.password ? [{ type: 'password', value: user.password, temporary: false }] : [],
+            credentials: user.password
+                ? [{ type: 'password', value: user.password, temporary: false }]
+                : [],
             email: user.email,
             firstName: user.firstName,
             lastName: user.lastName,
             enabled: true,
-            emailVerified: typeof user.verified === 'boolean' ? user.verified : true,
+            emailVerified:
+                typeof user.verified === 'boolean' ? user.verified : true,
             realmRoles: [],
         };
         const userResponse = await this.kcAdmin.users.create({
@@ -84,7 +101,10 @@ export class UserApi implements IUserApi {
      * @params required payload.password - The password to set for the user
      * @returns Promise<void> - void
      */
-    async setUserPassword(payload: { userId: string; password: string }): Promise<void> {
+    async setUserPassword(payload: {
+        userId: string;
+        password: string;
+    }): Promise<void> {
         await this.kcAdmin.users.resetPassword({
             id: payload.userId,
 
@@ -136,7 +156,9 @@ export class UserApi implements IUserApi {
      * @param required username - The username of the user to get
      * @returns Promise<UserRepresentation | undefined> - The user as UserRepresentation or undefined
      */
-    async getUserByUsername(username: string): Promise<UserRepresentation | undefined> {
+    async getUserByUsername(
+        username: string,
+    ): Promise<UserRepresentation | undefined> {
         return (
             await this.kcAdmin.users.find({
                 username: username,
@@ -153,7 +175,10 @@ export class UserApi implements IUserApi {
      * @params required paylaod.groupId - The id of the group to add the user to
      * @returns Promise<string> - The id of the user as string
      */
-    async addUserToGroup(paylaod: { userId: string; groupId: string }): Promise<string> {
+    async addUserToGroup(paylaod: {
+        userId: string;
+        groupId: string;
+    }): Promise<string> {
         return await this.kcAdmin.users.addToGroup({
             id: paylaod.userId,
             groupId: paylaod.groupId,
@@ -178,7 +203,10 @@ export class UserApi implements IUserApi {
      * @returns Promise<void> - void
      */
     async setUserVerified(userId: string): Promise<void> {
-        await this.kcAdmin.users.update({ id: userId, realm: this.kcAdmin.workingRealmName }, { emailVerified: true });
+        await this.kcAdmin.users.update(
+            { id: userId, realm: this.kcAdmin.workingRealmName },
+            { emailVerified: true },
+        );
     }
 
     /**
@@ -196,7 +224,9 @@ export class UserApi implements IUserApi {
      * @param required userProfileConfig - The user profile config to update
      * @returns Promise<UserProfileConfig> - The user profile config as UserProfileConfig
      */
-    async updateUserProileConfig(userProfileConfig: UserProfileConfig): Promise<UserProfileConfig> {
+    async updateUserProileConfig(
+        userProfileConfig: UserProfileConfig,
+    ): Promise<UserProfileConfig> {
         return await this.kcAdmin.users.updateProfile({
             ...userProfileConfig,
             realm: this.kcAdmin.workingRealmName,
@@ -211,7 +241,9 @@ export class UserApi implements IUserApi {
      * @params required payload.clientId - The client id to login with
      * @returns Promise<TokenResponse> - The token as TokenResponse
      */
-    async loginWithUsername(payload: LoginWithUsernamePayload): Promise<TokenResponse> {
+    async loginWithUsername(
+        payload: LoginWithUsernamePayload,
+    ): Promise<TokenResponse> {
         const { username, password, clientId } = payload;
         const token: TokenResponse = await getToken({
             realmName: this.kcAdmin.workingRealmName,
@@ -233,7 +265,9 @@ export class UserApi implements IUserApi {
      * @param required accessToken - The access token to validate
      * @returns Promise<JWTVerifyResult<AccessTokenPayload<T>> & ResolvedKey> - The access token as JWTVerifyResult<AccessTokenPayload<T>> & ResolvedKey
      */
-    async validateAccessToken<T extends string>(accessToken: string): Promise<ValidateAccessTokenReturn<T>> {
+    async validateAccessToken<T extends string>(
+        accessToken: string,
+    ): Promise<ValidateAccessTokenReturn<T>> {
         const validatingEndpoint = `/realms/${this.kcAdmin.workingRealmName}/protocol/openid-connect/certs`;
         const fullUrl = new URL(validatingEndpoint, this.kcAdmin.baseUrl);
         const JWKS = createRemoteJWKSet(fullUrl);
@@ -242,9 +276,13 @@ export class UserApi implements IUserApi {
         // AccessTokenPayload<T> is the type of the payload that keycloak returns
         // jwtVerfiy returns a promise that resolves to a JWTVerifyResult<AccessTokenPayload<T>> & ResolvedKey
 
-        const verifyResult = await jwtVerify<AccessTokenPayload<T>>(accessToken, JWKS, {
-            issuer: `${this.kcAdmin.baseUrl}/realms/${this.kcAdmin.workingRealmName}`,
-        });
+        const verifyResult = await jwtVerify<AccessTokenPayload<T>>(
+            accessToken,
+            JWKS,
+            {
+                issuer: `${this.kcAdmin.baseUrl}/realms/${this.kcAdmin.workingRealmName}`,
+            },
+        );
         return verifyResult;
     }
 
@@ -255,8 +293,13 @@ export class UserApi implements IUserApi {
      * @params required payload.clientId - The client id to refresh the access token for
      * @returns Promise<TokenResponse> - The token as TokenResponse
      */
-    async refreshAccessToken(payload: RefreshAccessTokenPayload): Promise<TokenResponse> {
-        if (payload.refreshToken && payload.refreshToken.startsWith('Bearer ')) {
+    async refreshAccessToken(
+        payload: RefreshAccessTokenPayload,
+    ): Promise<TokenResponse> {
+        if (
+            payload.refreshToken &&
+            payload.refreshToken.startsWith('Bearer ')
+        ) {
             payload.refreshToken = payload.refreshToken.replace('Bearer ', '');
         }
 

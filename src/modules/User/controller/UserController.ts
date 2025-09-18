@@ -1,4 +1,11 @@
-import { NextFunction, Request, Response, BaseController, Token, Body } from '@lazy-js/server';
+import {
+    NextFunction,
+    Request,
+    Response,
+    BaseController,
+    Token,
+    Body,
+} from '@lazy-js/server';
 import { successResponse } from '@lazy-js/utils';
 
 // services
@@ -26,18 +33,32 @@ class UserController extends BaseController {
     public client: IClient;
     public kcApi: IKcApi;
     public notificationClientSdk: INotificationClientSdk;
-    constructor(client: IClient, kcApi: IKcApi, notificationClientSdk: INotificationClientSdk) {
+    constructor(
+        client: IClient,
+        kcApi: IKcApi,
+        notificationClientSdk: INotificationClientSdk,
+    ) {
         super({ pathname: `/${client.name}` });
         this.client = client;
         this.kcApi = kcApi;
         this.notificationClientSdk = notificationClientSdk;
-        this.userService = new UserService(client, kcApi, notificationClientSdk);
+        this.userService = new UserService(
+            client,
+            kcApi,
+            notificationClientSdk,
+        );
 
         this.mountPostRoute(registerPath, this.register.bind(this));
         this.mountPostRoute(loginPath, this.login.bind(this));
-        this.mountPostRoute(validateAccessTokenPath, this.validateAccessToken.bind(this));
+        this.mountPostRoute(
+            validateAccessTokenPath,
+            this.validateAccessToken.bind(this),
+        );
         this.mountPostRoute(validateRolePath, this.validateRole.bind(this));
-        this.mountPostRoute(refreshAccessTokenPath, this.refreshToken.bind(this));
+        this.mountPostRoute(
+            refreshAccessTokenPath,
+            this.refreshToken.bind(this),
+        );
         this.mountPutRoute(updatePasswordPath, this.updatePassword.bind(this));
         this.mountPutRoute(verifyPath, this.verify.bind(this));
     }
@@ -71,7 +92,9 @@ class UserController extends BaseController {
     async validateAccessToken(req: Request, res: Response, next: NextFunction) {
         try {
             const accessToken = Token() as string;
-            const payload = await this.userService.validateAccessToken(accessToken);
+            const payload = await this.userService.validateAccessToken(
+                accessToken,
+            );
             res.json(successResponse(payload));
         } catch (error: any) {
             next(error);
@@ -82,7 +105,10 @@ class UserController extends BaseController {
         try {
             const accessToken = Token() as string;
             const { role } = Body('role') as { role: string | string[] };
-            const payload = await this.userService.validateRole(accessToken, role);
+            const payload = await this.userService.validateRole(
+                accessToken,
+                role,
+            );
             res.json(successResponse(payload));
         } catch (error: any) {
             next(error);
@@ -91,10 +117,15 @@ class UserController extends BaseController {
 
     async refreshToken(req: Request, res: Response, next: NextFunction) {
         try {
-            const refreshToken = Body('refreshToken')?.refreshToken || (Token() as string);
+            const refreshToken =
+                Body('refreshToken')?.refreshToken || (Token() as string);
 
-            const tokenResponse = await this.userService.refreshToken(refreshToken);
-            userControllerLogger.info(`Token refreshed successfully: ${tokenResponse.refreshToken}`);
+            const tokenResponse = await this.userService.refreshToken(
+                refreshToken,
+            );
+            userControllerLogger.info(
+                `Token refreshed successfully: ${tokenResponse.refreshToken}`,
+            );
             res.json(successResponse(tokenResponse));
         } catch (error: any) {
             next(error);

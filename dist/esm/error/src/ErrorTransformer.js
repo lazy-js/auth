@@ -100,7 +100,9 @@ export class ErrorTransformer {
             const newContext = {
                 ...error.context,
                 ...patchedContext,
-                originalError: originalError instanceof Error ? originalError : new Error(originalError),
+                originalError: originalError instanceof Error
+                    ? originalError
+                    : new Error(originalError),
             };
             error.updateContext(newContext);
             if (output.replaceConstructor) {

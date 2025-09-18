@@ -4,9 +4,10 @@ export function AsyncTransform(context) {
         const originalMethod = descriptor.value;
         descriptor.value = async function (...args) {
             if (!this) {
-                throw new Error("This is not an instance of a class");
+                throw new Error('This is not an instance of a class');
             }
-            const errorTransformer = this.errorTransformer || this.constructor.prototype.errorTransformer;
+            const errorTransformer = this.errorTransformer ||
+                this.constructor.prototype.errorTransformer;
             if (!errorTransformer) {
                 throw new Error(`ErrorTransformer not found on ${this.constructor.name}. Ensure the class has an errorTransformer property.`);
             }
@@ -25,9 +26,10 @@ export function SyncTransform(context) {
         const originalMethod = descriptor.value;
         descriptor.value = function (...args) {
             if (!this) {
-                throw new Error("This is not an instance of a class");
+                throw new Error('This is not an instance of a class');
             }
-            const errorTransformer = this.errorTransformer || this.constructor.prototype.errorTransformer;
+            const errorTransformer = this.errorTransformer ||
+                this.constructor.prototype.errorTransformer;
             if (!errorTransformer) {
                 throw new Error(`ErrorTransformer not found on ${this.constructor.name}. Ensure the class has an errorTransformer property.`);
             }
@@ -49,17 +51,18 @@ export function AutoTransform(options) {
                 this.applyAutoTransform(options);
             }
             applyAutoTransform(opts) {
-                const exclude = (opts === null || opts === void 0 ? void 0 : opts.exclude) || ["constructor"];
+                const exclude = (opts === null || opts === void 0 ? void 0 : opts.exclude) || ['constructor'];
                 const asyncOnly = (opts === null || opts === void 0 ? void 0 : opts.asyncOnly) || false;
                 const methods = Object.getOwnPropertyNames(constructor.prototype).filter((name) => !exclude.includes(name) &&
-                    typeof this[name] === "function" &&
-                    name !== "applyAutoTransform");
+                    typeof this[name] === 'function' &&
+                    name !== 'applyAutoTransform');
                 methods.forEach((methodName) => {
                     const originalMethod = this[methodName];
-                    const isAsync = originalMethod.constructor.name === "AsyncFunction";
+                    const isAsync = originalMethod.constructor.name === 'AsyncFunction';
                     if (asyncOnly && !isAsync)
                         return;
-                    const errorTransformer = this.errorTransformer || this.constructor.prototype.errorTransformer;
+                    const errorTransformer = this.errorTransformer ||
+                        this.constructor.prototype.errorTransformer;
                     if (!errorTransformer) {
                         console.warn(`ErrorTransformer not found for method ${methodName} in ${this.constructor.name}`);
                         return;

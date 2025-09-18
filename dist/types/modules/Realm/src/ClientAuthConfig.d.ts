@@ -1,4 +1,4 @@
-import { IClientAuthConfig, PrimaryField, IUser, RegisterConfig, LoginConfig } from "../types";
+import { IClientAuthConfig, PrimaryField, IUser, RegisterConfig, LoginConfig } from '../types';
 export declare class ClientAuthConfig implements IClientAuthConfig {
     readonly primaryFields: PrimaryField[];
     registerConfig: RegisterConfig;

@@ -1,4 +1,4 @@
-import { IRealm, IApp, IClient } from "../Realm";
+import { IRealm, IApp, IClient } from '../Realm';
 interface IRealmManipulatorConfig {
     realm: IRealm;
     port: string;

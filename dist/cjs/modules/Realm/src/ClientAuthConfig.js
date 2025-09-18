@@ -4,15 +4,15 @@ exports.ClientAuthConfig = void 0;
 class ClientAuthConfig {
     constructor(primaryFields) {
         if (!primaryFields || primaryFields.length === 0) {
-            throw new Error("At least one primary field must be specified");
+            throw new Error('At least one primary field must be specified');
         }
         this.primaryFields = primaryFields;
         this.registerConfig = {
-            status: "public",
+            status: 'public',
             verified: false,
         };
         this.loginConfig = {
-            status: "enabled",
+            status: 'enabled',
         };
         this.builtInUser = undefined;
     }

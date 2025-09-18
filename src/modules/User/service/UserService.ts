@@ -1,6 +1,14 @@
 import { UserRepository } from '../repository/UserRepo';
 import { UserValidator } from '../validator/UserValidator';
-import { CreateUserParams, IUserRepository, IUserService, IUserValidator, UserCreationDto, PrivateUserService, VerifyDto } from './UserService.types';
+import {
+    CreateUserParams,
+    IUserRepository,
+    IUserService,
+    IUserValidator,
+    UserCreationDto,
+    PrivateUserService,
+    VerifyDto,
+} from './UserService.types';
 import { IKcApi, TokenResponse, AccessTokenPayload } from '../../kcApi';
 import { IClient } from '../../Realm';
 import errors from '../../../config/errors';
@@ -38,7 +46,11 @@ export class UserService implements IUserService, PrivateUserService {
     public client: IClient;
     public notificationClientSdk: INotificationClientSdk;
 
-    constructor(client: IClient, kcApi: IKcApi, notificationClientSdk: INotificationClientSdk) {
+    constructor(
+        client: IClient,
+        kcApi: IKcApi,
+        notificationClientSdk: INotificationClientSdk,
+    ) {
         this.userRepository = new UserRepository();
         this.userValidator = new UserValidator();
         this.client = client;
@@ -46,7 +58,9 @@ export class UserService implements IUserService, PrivateUserService {
         this.notificationClientSdk = notificationClientSdk;
     }
 
-    async register(createUserParams: CreateUserParams): Promise<RegisterReturn> {
+    async register(
+        createUserParams: CreateUserParams,
+    ): Promise<RegisterReturn> {
         const { status } = this.client.clientAuthConfiguration.registerConfig;
 
         if (status === 'public') {
@@ -63,7 +77,10 @@ export class UserService implements IUserService, PrivateUserService {
         const { body } = loginParams;
         const { primaryFields } = this.client.clientAuthConfiguration;
 
-        const loginDto = await this.userValidator.validateLoginDto(body, primaryFields);
+        const loginDto = await this.userValidator.validateLoginDto(
+            body,
+            primaryFields,
+        );
 
         const userInDb = await this._getUser(loginDto);
         if (!userInDb) this.throwInvalidCredentialsError(loginDto.method);
@@ -72,8 +89,11 @@ export class UserService implements IUserService, PrivateUserService {
             let verified = loginDto.method === 'username';
 
             if (loginDto.method === 'email') {
-                const linkedEmail = userInDb.linkedEmails.find((linkedEmail) => linkedEmail.email === loginDto.email);
-                if (!linkedEmail) this.throwInvalidCredentialsError(loginDto.method);
+                const linkedEmail = userInDb.linkedEmails.find(
+                    (linkedEmail) => linkedEmail.email === loginDto.email,
+                );
+                if (!linkedEmail)
+                    this.throwInvalidCredentialsError(loginDto.method);
                 if (!linkedEmail.verified) {
                     verified = false;
                 } else {
@@ -81,8 +101,11 @@ export class UserService implements IUserService, PrivateUserService {
                 }
             }
             if (loginDto.method === 'phone') {
-                const linkedPhone = userInDb.linkedPhones.find((linkedPhone) => linkedPhone.phone === loginDto.phone);
-                if (!linkedPhone) this.throwInvalidCredentialsError(loginDto.method);
+                const linkedPhone = userInDb.linkedPhones.find(
+                    (linkedPhone) => linkedPhone.phone === loginDto.phone,
+                );
+                if (!linkedPhone)
+                    this.throwInvalidCredentialsError(loginDto.method);
                 if (!linkedPhone.verified) {
                     verified = false;
                 } else {
@@ -101,13 +124,17 @@ export class UserService implements IUserService, PrivateUserService {
                 _id: userInDb._id,
                 username: userInDb.username,
                 method: loginDto.method,
-                [loginDto.method]: loginDto[loginDto.method as keyof typeof loginDto],
+                [loginDto.method]:
+                    loginDto[loginDto.method as keyof typeof loginDto],
                 verified: verified,
                 createdAt: userInDb.createdAt,
             };
             return { token: tokenResponse, user: user };
         } catch (error: unknown) {
-            if (error instanceof Error && error.message.includes('invalid_grant')) {
+            if (
+                error instanceof Error &&
+                error.message.includes('invalid_grant')
+            ) {
                 this.throwInvalidCredentialsError(loginDto.method);
             }
             throw error;
@@ -126,12 +153,16 @@ export class UserService implements IUserService, PrivateUserService {
 
     async verify(verifyDto: VerifyDto): Promise<void> {
         // validate the dto
-        const validatedVerifyDto = await this.userValidator.validateVerifyDto(verifyDto);
+        const validatedVerifyDto = await this.userValidator.validateVerifyDto(
+            verifyDto,
+        );
 
         // verify the email
         if (validatedVerifyDto.method === 'email') {
             // get the user from the database
-            const userInDb = await this.userRepository.getUserByEmail(validatedVerifyDto.email);
+            const userInDb = await this.userRepository.getUserByEmail(
+                validatedVerifyDto.email,
+            );
 
             // check if the user exists
             if (!userInDb) {
@@ -139,7 +170,9 @@ export class UserService implements IUserService, PrivateUserService {
             }
 
             // check if the email is linked to the user
-            const linkedEmail = userInDb.linkedEmails.find((linkedEmail) => linkedEmail.email === validatedVerifyDto.email);
+            const linkedEmail = userInDb.linkedEmails.find(
+                (linkedEmail) => linkedEmail.email === validatedVerifyDto.email,
+            );
 
             if (!linkedEmail) {
                 throw new AppError(errors.USER_NOT_FOUND);
@@ -153,7 +186,10 @@ export class UserService implements IUserService, PrivateUserService {
             // check if the code is expired
             const _5Minutes = 5 * 60 * 1000;
 
-            if (userInDb.updatedAt && userInDb.updatedAt.getTime() + _5Minutes < Date.now()) {
+            if (
+                userInDb.updatedAt &&
+                userInDb.updatedAt.getTime() + _5Minutes < Date.now()
+            ) {
                 throw new AppError(errors.CODE_EXPIRED);
             }
 
@@ -165,14 +201,24 @@ export class UserService implements IUserService, PrivateUserService {
             // update the user
             await this.userRepository.verifyUserEmail(validatedVerifyDto.email);
         } else if (validatedVerifyDto.method === 'phone') {
-            const userInDb = await this.userRepository.getUserByPhone(validatedVerifyDto.phone);
+            const userInDb = await this.userRepository.getUserByPhone(
+                validatedVerifyDto.phone,
+            );
         }
     }
 
-    async updatePassword(accessToken: string, newPassword: string): Promise<void> {
-        const payload = await this.validateRole(accessToken, 'update-own-password');
+    async updatePassword(
+        accessToken: string,
+        newPassword: string,
+    ): Promise<void> {
+        const payload = await this.validateRole(
+            accessToken,
+            'update-own-password',
+        );
 
-        const validatedPassword = await this.userValidator.validatePassword(newPassword as string);
+        const validatedPassword = await this.userValidator.validatePassword(
+            newPassword as string,
+        );
 
         await this.kcApi.users.setUserPassword({
             userId: payload.sub as string,
@@ -180,14 +226,26 @@ export class UserService implements IUserService, PrivateUserService {
         });
     }
 
-    async validateAccessToken<T extends string>(accessToken?: string): Promise<AccessTokenPayload<T> & { _id: string }> {
-        if (!accessToken || accessToken === '' || accessToken === 'undefined' || !accessToken.startsWith('Bearer ') || accessToken.split(' ')[1] === '') {
+    async validateAccessToken<T extends string>(
+        accessToken?: string,
+    ): Promise<AccessTokenPayload<T> & { _id: string }> {
+        if (
+            !accessToken ||
+            accessToken === '' ||
+            accessToken === 'undefined' ||
+            !accessToken.startsWith('Bearer ') ||
+            accessToken.split(' ')[1] === ''
+        ) {
             throw new AppError(errors.INVALID_ACCESS_TOKEN);
         }
-        const { payload } = await this.kcApi.users.validateAccessToken(accessToken.split(' ')[1]);
+        const { payload } = await this.kcApi.users.validateAccessToken(
+            accessToken.split(' ')[1],
+        );
         if (!payload.sub) throw new Error('User Id (sub) is undefined');
         // sub in payload is the id of user in keyloak
-        const userInLocalDb = (await this.userRepository.getUserByKeycloakId(payload.sub)) as unknown as {
+        const userInLocalDb = (await this.userRepository.getUserByKeycloakId(
+            payload.sub,
+        )) as unknown as {
             _id: string;
         };
         if (!userInLocalDb) {
@@ -201,7 +259,11 @@ export class UserService implements IUserService, PrivateUserService {
     }
 
     async refreshToken(refreshToken: string): Promise<TokenResponse> {
-        if (!refreshToken || refreshToken === '' || refreshToken === 'undefined') {
+        if (
+            !refreshToken ||
+            refreshToken === '' ||
+            refreshToken === 'undefined'
+        ) {
             throw new AppError(errors.INVALID_REFRESH_TOKEN);
         }
         const tokenResponse = await this.kcApi.users.refreshAccessToken({
@@ -215,12 +277,22 @@ export class UserService implements IUserService, PrivateUserService {
         const payload = await this.validateAccessToken(accessToken);
         // azp is the client name which token issued with
 
-        if (!payload || !payload.resource_access || !payload.azp || !payload.resource_access[payload.azp] || payload.azp !== this.client.clientId || !payload.resource_access[payload.azp].roles || !Array.isArray(payload.resource_access[payload.azp].roles)) {
+        if (
+            !payload ||
+            !payload.resource_access ||
+            !payload.azp ||
+            !payload.resource_access[payload.azp] ||
+            payload.azp !== this.client.clientId ||
+            !payload.resource_access[payload.azp].roles ||
+            !Array.isArray(payload.resource_access[payload.azp].roles)
+        ) {
             throw new AppError(errors.INVALID_ACCESS_TOKEN);
         }
         const roles = payload.resource_access[payload.azp].roles;
         if (!roles) throw new AppError(errors.UNAUTHORIZED);
-        const canAccess = Array.isArray(role) ? role.some((r) => roles.includes(r)) : roles.includes(role);
+        const canAccess = Array.isArray(role)
+            ? role.some((r) => roles.includes(r))
+            : roles.includes(role);
         userServiceLogger.info(`User has role ${role}: ${canAccess}`);
         if (!canAccess) {
             throw new AppError(errors.UNAUTHORIZED);
@@ -231,16 +303,28 @@ export class UserService implements IUserService, PrivateUserService {
     async _getUser(user: UserCreationDto) {
         let userInDb;
         if (user.method === 'email') {
-            userInDb = await this.userRepository.getUserByEmail(user.email as string);
+            userInDb = await this.userRepository.getUserByEmail(
+                user.email as string,
+            );
         } else if (user.method === 'phone') {
-            userInDb = await this.userRepository.getUserByPhone(user.phone as string);
+            userInDb = await this.userRepository.getUserByPhone(
+                user.phone as string,
+            );
         } else if (user.method === 'username') {
-            userInDb = await this.userRepository.getUserByUsername(user.username as string);
+            userInDb = await this.userRepository.getUserByUsername(
+                user.username as string,
+            );
         }
         if (userInDb) {
-            const userInKc = await this.kcApi.users.getUserById(userInDb.keycloakUserId);
+            const userInKc = await this.kcApi.users.getUserById(
+                userInDb.keycloakUserId,
+            );
             if (!userInKc) {
-                userServiceLogger.error(`User ${user.method} ${user.email || user.phone || user.username} not found in Keycloak`);
+                userServiceLogger.error(
+                    `User ${user.method} ${
+                        user.email || user.phone || user.username
+                    } not found in Keycloak`,
+                );
             }
             return userInDb;
         }
@@ -249,7 +333,9 @@ export class UserService implements IUserService, PrivateUserService {
     }
 
     async _getClientDefaultGroupId() {
-        const defaultGroup = this.client.groups.find((group) => group.isDefault);
+        const defaultGroup = this.client.groups.find(
+            (group) => group.isDefault,
+        );
 
         if (!defaultGroup) throw new Error(errors.MULTIPLE_DEFAULT_GROUPS.code);
         const deafaltGroupPath = `${this.client.appPath}/${this.client.name}/${defaultGroup.name}`;
@@ -266,7 +352,12 @@ export class UserService implements IUserService, PrivateUserService {
         let keycloakUserId: string | undefined;
         try {
             const { username, firstName, lastName, password } = userDto;
-            const verified = (this.client.clientAuthConfiguration.registerConfig.status === 'public' && this.client.clientAuthConfiguration.registerConfig.verified) || userDto.method === 'username';
+            const verified =
+                (this.client.clientAuthConfiguration.registerConfig.status ===
+                    'public' &&
+                    this.client.clientAuthConfiguration.registerConfig
+                        .verified) ||
+                userDto.method === 'username';
             const { id } = await this.kcApi.users.createUser({
                 username: username as string,
                 firstName: firstName,
@@ -281,10 +372,13 @@ export class UserService implements IUserService, PrivateUserService {
                 password: password,
             });
             // remove default realm roles
-            await this.kcApi.users.removeDefaultRealmRolesFromUser(keycloakUserId);
+            await this.kcApi.users.removeDefaultRealmRolesFromUser(
+                keycloakUserId,
+            );
 
             // add user to default group
-            const defaultGroupId = groupId || (await this._getClientDefaultGroupId());
+            const defaultGroupId =
+                groupId || (await this._getClientDefaultGroupId());
 
             // add user to default group
             await this.kcApi.users.addUserToGroup({
@@ -309,7 +403,10 @@ export class UserService implements IUserService, PrivateUserService {
         const { body, group } = createUserParams;
         const { primaryFields } = this.client.clientAuthConfiguration;
 
-        const userDto = await this.userValidator.validateUserCreationDto(body, primaryFields);
+        const userDto = await this.userValidator.validateUserCreationDto(
+            body,
+            primaryFields,
+        );
 
         // generate username
         const username = this._generateUsername(userDto);
@@ -343,9 +440,15 @@ export class UserService implements IUserService, PrivateUserService {
     async _publicRegister(createUserParams: CreateUserParams) {
         const { body } = createUserParams;
         const { primaryFields } = this.client.clientAuthConfiguration;
-        const verifiedByDefault = this.client.clientAuthConfiguration.registerConfig.status === 'public' && this.client.clientAuthConfiguration.registerConfig.verified;
+        const verifiedByDefault =
+            this.client.clientAuthConfiguration.registerConfig.status ===
+                'public' &&
+            this.client.clientAuthConfiguration.registerConfig.verified;
 
-        const userDto = await this.userValidator.validateUserCreationDto(body, primaryFields);
+        const userDto = await this.userValidator.validateUserCreationDto(
+            body,
+            primaryFields,
+        );
         const userInDb = await this._getUser(userDto);
 
         if (userInDb) {
@@ -353,7 +456,8 @@ export class UserService implements IUserService, PrivateUserService {
         } else {
             // generate username
             const username = this._generateUsername(userDto);
-            const _verifiedByDefault = verifiedByDefault || userDto.method === 'username';
+            const _verifiedByDefault =
+                verifiedByDefault || userDto.method === 'username';
 
             // create user in keycloak db
             const keycloakUserId = await this._registerUserInKeycloak({
@@ -386,7 +490,8 @@ export class UserService implements IUserService, PrivateUserService {
                 _id: userInDb._id,
                 username: username,
                 method: userDto.method,
-                [userDto.method]: userDto[userDto.method as keyof typeof userDto],
+                [userDto.method]:
+                    userDto[userDto.method as keyof typeof userDto],
                 verified: _verifiedByDefault,
                 createdAt: userInDb.createdAt,
             };
@@ -394,10 +499,18 @@ export class UserService implements IUserService, PrivateUserService {
     }
 
     async _privateRegister(createUserParams: CreateUserParams) {
-        if (this.client.clientAuthConfiguration.registerConfig.status !== 'private') throw new Error('Invalid register config, this function should be used only for private register');
+        if (
+            this.client.clientAuthConfiguration.registerConfig.status !==
+            'private'
+        )
+            throw new Error(
+                'Invalid register config, this function should be used only for private register',
+            );
         const { accessToken } = createUserParams;
         if (!accessToken) throw new Error(errors.UNAUTHORIZED.code);
-        const privateRegisterAccessRoles = this.client.clientAuthConfiguration.registerConfig.privateAccessRoles;
+        const privateRegisterAccessRoles =
+            this.client.clientAuthConfiguration.registerConfig
+                .privateAccessRoles;
 
         await this.validateRole(
             accessToken,
@@ -412,7 +525,9 @@ export class UserService implements IUserService, PrivateUserService {
         if (userDto.method === 'username') {
             username = userDto.username as string;
         } else if (userDto.method === 'email') {
-            username = ((userDto.email as string).split('@')[0] + '_' + (userDto.email as string).split('@')[1]) as string;
+            username = ((userDto.email as string).split('@')[0] +
+                '_' +
+                (userDto.email as string).split('@')[1]) as string;
         } else if (userDto.method === 'phone') {
             username = (userDto.phone as string).split(' ')[0] as string;
         }

@@ -1,4 +1,4 @@
-import { IRole, IGroup, Attribute, AttributeValue, GroupJson } from "../types";
+import { IRole, IGroup, Attribute, AttributeValue, GroupJson } from '../types';
 
 export class Group implements IGroup {
     public name: string;
@@ -16,8 +16,8 @@ export class Group implements IGroup {
         this.roles = [];
         this.rolesFlaten = [];
         this.groupAttributes = {};
-        this.clientName = "";
-        this.clientPath = "";
+        this.clientName = '';
+        this.clientPath = '';
     }
 
     setClientName(name: string): IGroup {

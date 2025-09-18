@@ -1,5 +1,5 @@
-import type GroupRepresentation from "@keycloak/keycloak-admin-client/lib/defs/groupRepresentation";
-import type { Attributes } from "./shared";
+import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation';
+import type { Attributes } from './shared';
 export interface CreateGroupPayload {
     groupName: string;
     parentGroupId?: string;
@@ -23,14 +23,18 @@ export interface AddAttributesToGroupPayload {
 export interface IGroupApi {
     createGroup(payload: CreateGroupPayload): Promise<CreateGroupReturn>;
 
-    createChildGroup(paylaod: Required<CreateGroupPayload>): Promise<CreateGroupReturn>;
+    createChildGroup(
+        paylaod: Required<CreateGroupPayload>,
+    ): Promise<CreateGroupReturn>;
 
     getSubGroupsByParentId(parentId: string): Promise<GroupRepresentation[]>;
     getGroupByPath(path: string): Promise<GroupRepresentation | undefined>;
     getGroupsByParentPath(parentPath: string): Promise<GroupRepresentation[]>;
     getGroupById(groupId: string): Promise<GroupRepresentation | undefined>;
     groupExists(groupId: string): Promise<boolean>;
-    getTopLevelGroupByName(groupName: string): Promise<GroupRepresentation | undefined>;
+    getTopLevelGroupByName(
+        groupName: string,
+    ): Promise<GroupRepresentation | undefined>;
 
     mapClientRoleToGroup(paylaod: MapClientRoleToGroupPayload): Promise<void>;
 

@@ -7,10 +7,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import errors from "../../../config/errors";
-import { KcAdmin } from "./KcAdminApi";
-import { AutoTransform } from "../../../error/src/decorators";
-import { ErrorTransformer } from "../../../error/src/ErrorTransformer";
+import errors from '../../../config/errors';
+import { KcAdmin } from './KcAdminApi';
+import { AutoTransform } from '../../../error/src/decorators';
+import { ErrorTransformer } from '../../../error/src/ErrorTransformer';
 /**
  * @description PublicClientApi class implements the IPublicClientApi interface and is used to interact with the Keycloak Public Client API
  * @implements IPublicClientApi
@@ -131,7 +131,7 @@ let PublicClientApi = class PublicClientApi {
         });
         const childRole = await this.getRoleByName(payload);
         if (!childRole || !childRole.id) {
-            throw new Error("addChildRole Error");
+            throw new Error('addChildRole Error');
         }
         await this.kcAdmin.roles.createComposite({
             roleId: payload.parentRoleId,
@@ -210,7 +210,8 @@ let PublicClientApi = class PublicClientApi {
 };
 PublicClientApi = __decorate([
     AutoTransform(),
-    __metadata("design:paramtypes", [KcAdmin, ErrorTransformer])
+    __metadata("design:paramtypes", [KcAdmin,
+        ErrorTransformer])
 ], PublicClientApi);
 export { PublicClientApi };
 //# sourceMappingURL=PublicClientApi.js.map

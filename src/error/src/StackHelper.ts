@@ -37,31 +37,67 @@ class StackHelper {
     }
 
     static getCallStack(_stack: string | Error): CallStack[] {
-        let stack = _stack instanceof Error ? _stack.stack || '' : _stack || new Error().stack || '';
+        let stack =
+            _stack instanceof Error
+                ? _stack.stack || ''
+                : _stack || new Error().stack || '';
         let lines = stack.split('\n');
         // remove the first line which is the error message
         lines.shift();
         // remove the line which is the getCallStack function
-        lines = lines.filter((line) => !line.includes('at getCallStack') && !line.includes('createStack'));
+        lines = lines.filter(
+            (line) =>
+                !line.includes('at getCallStack') &&
+                !line.includes('createStack'),
+        );
         // map the lines to the CallStack interface
         const callStack: CallStack[] = lines.map((line) => {
-            let [functionName, fullFileRef] = line.replace('at ', '').trim().split('(');
+            let [functionName, fullFileRef] = line
+                .replace('at ', '')
+                .trim()
+                .split('(');
             if (!fullFileRef) {
                 fullFileRef = functionName;
                 functionName = 'anonymous';
             }
-            const { filePath, lineNumber, columnNumber } = StackHelper._parseFullFileRef(fullFileRef);
-            return { functionName, filePath, lineNumber, columnNumber, fullFileRef };
+            const { filePath, lineNumber, columnNumber } =
+                StackHelper._parseFullFileRef(fullFileRef);
+            return {
+                functionName,
+                filePath,
+                lineNumber,
+                columnNumber,
+                fullFileRef,
+            };
         });
         return callStack;
     }
 
-    static _parseFullFileRef(fullFileRef: string): { filePath: string; lineNumber: string; columnNumber: string } {
-        const [driveLetter, filePath, lineNumber, columnNumber] = fullFileRef.replace(')', '').trim().split(':');
-        return { filePath: driveLetter + ':' + filePath, lineNumber, columnNumber };
+    static _parseFullFileRef(fullFileRef: string): {
+        filePath: string;
+        lineNumber: string;
+        columnNumber: string;
+    } {
+        const [driveLetter, filePath, lineNumber, columnNumber] = fullFileRef
+            .replace(')', '')
+            .trim()
+            .split(':');
+        return {
+            filePath: driveLetter + ':' + filePath,
+            lineNumber,
+            columnNumber,
+        };
     }
-    static getAndFilterCallStack(_stack: string | Error, keywords: string[]): CallStack[] {
-        return StackHelper.getCallStack(_stack).filter((callSite) => !keywords.some((keyword) => callSite.fullFileRef.includes(keyword)));
+    static getAndFilterCallStack(
+        _stack: string | Error,
+        keywords: string[],
+    ): CallStack[] {
+        return StackHelper.getCallStack(_stack).filter(
+            (callSite) =>
+                !keywords.some((keyword) =>
+                    callSite.fullFileRef.includes(keyword),
+                ),
+        );
     }
 
     static _formatFunctionName(functionName: string): string {
@@ -78,13 +114,26 @@ class StackHelper {
         const frameColor = colors.warning;
         const lineColor = colors.warning;
         const functionColor = colors.warning;
-        const frameIndicator = isCurrentFrame ? '|--> inside' : `|--> parent ${index}`;
+        const frameIndicator = isCurrentFrame
+            ? '|--> inside'
+            : `|--> parent ${index}`;
 
-        const functionName = StackHelper._formatFunctionName(callSite.functionName);
-        return `       ${frameColor}${frameIndicator} ${callSite.fullFileRef}${colors.reset} #${functionName}${colors.reset} \n` + `       |` + `    ${lineColor} Line:${colors.reset} ${colors.dim}${callSite.lineNumber}${colors.reset}` + `${functionColor} Function:${colors.reset} ${colors.dim}${functionName}()${colors.reset}` + '\n';
+        const functionName = StackHelper._formatFunctionName(
+            callSite.functionName,
+        );
+        return (
+            `       ${frameColor}${frameIndicator} ${callSite.fullFileRef}${colors.reset} #${functionName}${colors.reset} \n` +
+            `       |` +
+            `    ${lineColor} Line:${colors.reset} ${colors.dim}${callSite.lineNumber}${colors.reset}` +
+            `${functionColor} Function:${colors.reset} ${colors.dim}${functionName}()${colors.reset}` +
+            '\n'
+        );
     }
 
-    static concatErrorStacks(_source: string | Error, _target: string | Error): string {
+    static concatErrorStacks(
+        _source: string | Error,
+        _target: string | Error,
+    ): string {
         const source = StackHelper.getCallStack(_source);
         const target = StackHelper.getCallStack(_target);
         return source.concat(target).join('\n');
@@ -101,7 +150,9 @@ class StackHelper {
         StackHelper.logCallStack(callStack);
     }
     static logErrorName(errorName: string, errorMessage: string): void {
-        console.log(`${colors.error}${errorName}${colors.reset}: ${errorMessage}`);
+        console.log(
+            `${colors.error}${errorName}${colors.reset}: ${errorMessage}`,
+        );
     }
 
     static logFunctionsStack(callStack: CallStack[]): void {
@@ -109,12 +160,22 @@ class StackHelper {
         console.log(names.reverse().join(' --> '));
     }
 
-    static singleLineSeparator(text: string = '', color: string = colors.warning): void {
-        console.log(color + `-----------------${text}-----------------` + colors.reset);
+    static singleLineSeparator(
+        text: string = '',
+        color: string = colors.warning,
+    ): void {
+        console.log(
+            color + `-----------------${text}-----------------` + colors.reset,
+        );
     }
 
-    static doubleLineSeparator(text: string = '', color: string = colors.warning): void {
-        console.log(color + `================${text}================` + colors.reset);
+    static doubleLineSeparator(
+        text: string = '',
+        color: string = colors.warning,
+    ): void {
+        console.log(
+            color + `================${text}================` + colors.reset,
+        );
     }
 
     static warningConsole(message: string): void {

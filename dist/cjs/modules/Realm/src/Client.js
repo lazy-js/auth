@@ -9,11 +9,11 @@ exports.Client = void 0;
 class Client {
     constructor(name, clientAuthConfiguration) {
         this.name = name;
-        this.clientId = "";
+        this.clientId = '';
         this.clientAuthConfiguration = clientAuthConfiguration;
-        this.appPath = ""; // will be set by parent
-        this.appName = ""; // will be set by parent
-        this.clientDescription = "";
+        this.appPath = ''; // will be set by parent
+        this.appName = ''; // will be set by parent
+        this.clientDescription = '';
         this.groups = [];
         this.rolesTree = [];
         this.globalRoles = [];
@@ -23,22 +23,22 @@ class Client {
         if (group.isDefault) {
             const defaultGroup = this.groups.find((g) => g.isDefault);
             if (defaultGroup)
-                throw new Error("Each client should contain only one default group");
+                throw new Error('Each client should contain only one default group');
         }
         group.setClientName(this.name);
-        group.setClientPath(this.appPath + "/" + this.appName);
+        group.setClientPath(this.appPath + '/' + this.appName);
         this.groups.push(group);
         return this;
     }
     setAppName(name) {
         this.appName = name;
-        this.clientId = this.appName + "-" + this.name;
+        this.clientId = this.appName + '-' + this.name;
         return this;
     }
     setAppPath(parentPath) {
         this.appPath = parentPath;
         this.groups.forEach((group) => {
-            group.setClientPath(this.appPath + "/" + this.name);
+            group.setClientPath(this.appPath + '/' + this.name);
         });
         return this;
     }

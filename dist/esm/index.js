@@ -15,19 +15,19 @@ export class LazyAuth {
         this.serviceConfig = serviceConfig;
         this.realm = realm;
         this.notificationSdk = notificationSdk;
-        const disable = this.serviceConfig.disableServiceLogging;
+        const enableServiceLogging = this.serviceConfig.enableServiceLogging || false;
         this.stateLogger = new Logger({
             module: 'Lazy Auth - ',
-            disableDebug: disable,
-            disableError: disable,
-            disableInfo: disable,
-            disableWarn: disable,
+            disableDebug: enableServiceLogging,
+            disableError: enableServiceLogging,
+            disableInfo: enableServiceLogging,
+            disableWarn: enableServiceLogging,
         });
         this.app = new App({
             port: this.serviceConfig.port,
             prefix: this.serviceConfig.routerPrefix,
             allowedOrigins: this.serviceConfig.allowedOrigins,
-            disableRequestLogging: this.serviceConfig.disableRequestLogging,
+            disableRequestLogging: !this.serviceConfig.enableRequestLogging,
             disableSecurityHeaders: this.serviceConfig.disableSecurityHeaders,
             enableRoutesLogging: this.serviceConfig.enableRoutesLogging,
             serviceName: this.serviceConfig.serviceName,
@@ -41,7 +41,8 @@ export class LazyAuth {
             const realmBuilderModule = await RealmBuilder.create(this.realm, {
                 url: this.keycloakConfig.keycloakServiceUrl,
                 password: this.keycloakConfig.keycloakAdminPassword,
-                reAuthenticateIntervalMs: this.keycloakConfig.keycloakAdminReAuthenticateIntervalMs || 30000,
+                reAuthenticateIntervalMs: this.keycloakConfig
+                    .keycloakAdminReAuthenticateIntervalMs || 30000,
             }, this.notificationSdk);
             await realmBuilderModule.build();
             return realmBuilderModule;
@@ -93,7 +94,7 @@ export class LazyAuth {
             }
             await this.connectDatabase();
             const realmBuilderModule = await this.buildRealm();
-            if (this.serviceConfig.logRealmSummary) {
+            if (this.serviceConfig.enableRealmSummary) {
                 this.logSummary();
             }
             await this.prepareApp();

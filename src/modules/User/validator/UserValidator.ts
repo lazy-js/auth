@@ -77,9 +77,15 @@ export class UserValidator implements IUserValidator {
      * const validated = await validator.validateUserCreationDto(userDto, ['email', 'phone']);
      * ```
      */
-    async validateUserCreationDto(userDto: UserCreationDto, primaryFields: PrimaryField[]) {
+    async validateUserCreationDto(
+        userDto: UserCreationDto,
+        primaryFields: PrimaryField[],
+    ) {
         userValidatorLogger.info('received userDto', userDto);
-        userValidatorLogger.info('primaryFields for this client', primaryFields);
+        userValidatorLogger.info(
+            'primaryFields for this client',
+            primaryFields,
+        );
         // Validate that method is provided
         if (!userDto.method) {
             userValidatorLogger.error('method is required');
@@ -93,7 +99,11 @@ export class UserValidator implements IUserValidator {
         }
 
         // Use discriminated union to validate based on method type
-        const createUserDtoSchema = z.discriminatedUnion('method', [registerWithUsernameSchema, registerWithEmailSchema, registerWithPhoneSchema]);
+        const createUserDtoSchema = z.discriminatedUnion('method', [
+            registerWithUsernameSchema,
+            registerWithEmailSchema,
+            registerWithPhoneSchema,
+        ]);
 
         return await createUserDtoSchema.parseAsync(userDto);
     }
@@ -137,7 +147,11 @@ export class UserValidator implements IUserValidator {
         }
 
         // Use discriminated union to validate based on method type
-        const loginDtoSchema = z.discriminatedUnion('method', [loginWithEmailSchema, loginWithPhoneSchema, loginWithUsernameSchema]);
+        const loginDtoSchema = z.discriminatedUnion('method', [
+            loginWithEmailSchema,
+            loginWithPhoneSchema,
+            loginWithUsernameSchema,
+        ]);
 
         return await loginDtoSchema.parseAsync(loginDto);
     }
@@ -191,7 +205,10 @@ export class UserValidator implements IUserValidator {
      * ```
      */
     async validateVerifyDto(verifyDto: VerifyDto) {
-        const verifyDtoSchema = z.discriminatedUnion('method', [verifyEmailSchema, verifyPhoneSchema]);
+        const verifyDtoSchema = z.discriminatedUnion('method', [
+            verifyEmailSchema,
+            verifyPhoneSchema,
+        ]);
 
         return await verifyDtoSchema.parseAsync(verifyDto);
     }
@@ -239,7 +256,9 @@ export class UserValidator implements IUserValidator {
  * - Minimum 8 characters
  * - Uses centralized error messages from config
  */
-const passwordSchema = z.string({ message: errors.PASSWORD_REQUIRED.code }).min(8, errors.PASSWORD_INVALID.code);
+const passwordSchema = z
+    .string({ message: errors.PASSWORD_REQUIRED.code })
+    .min(8, errors.PASSWORD_INVALID.code);
 
 /**
  * Email validation schema
@@ -248,7 +267,9 @@ const passwordSchema = z.string({ message: errors.PASSWORD_REQUIRED.code }).min(
  * - Must be a valid email format
  * - Uses centralized error messages from config
  */
-const emailSchema = z.string({ message: errors.EMAIL_REQUIRED.code }).email(errors.EMAIL_INVALID.code);
+const emailSchema = z
+    .string({ message: errors.EMAIL_REQUIRED.code })
+    .email(errors.EMAIL_INVALID.code);
 
 /**
  * Username validation schema
@@ -258,7 +279,9 @@ const emailSchema = z.string({ message: errors.EMAIL_REQUIRED.code }).email(erro
  * - Minimum 3 characters
  * - Uses centralized error messages from config
  */
-const usernameSchema = z.string({ message: errors.USERNAME_REQUIRED.code }).min(3, errors.USERNAME_INVALID.code);
+const usernameSchema = z
+    .string({ message: errors.USERNAME_REQUIRED.code })
+    .min(3, errors.USERNAME_INVALID.code);
 
 /**
  * Phone validation schema
@@ -268,7 +291,9 @@ const usernameSchema = z.string({ message: errors.USERNAME_REQUIRED.code }).min(
  * - Minimum 10 characters
  * - Uses centralized error messages from config
  */
-const phoneSchema = z.string({ message: errors.PHONE_REQUIRED.code }).min(10, errors.PHONE_INVALID.code);
+const phoneSchema = z
+    .string({ message: errors.PHONE_REQUIRED.code })
+    .min(10, errors.PHONE_INVALID.code);
 
 /**
  * Verification code validation schema
@@ -278,7 +303,10 @@ const phoneSchema = z.string({ message: errors.PHONE_REQUIRED.code }).min(10, er
  * - Exactly 6 characters (numeric code)
  * - Uses centralized error messages from config
  */
-const codeSchema = z.string({ message: errors.INVALID_CODE.code }).min(6, errors.INVALID_CODE.code).max(6, errors.INVALID_CODE.code);
+const codeSchema = z
+    .string({ message: errors.INVALID_CODE.code })
+    .min(6, errors.INVALID_CODE.code)
+    .max(6, errors.INVALID_CODE.code);
 
 // ============================================================================
 // LOGIN SCHEMAS

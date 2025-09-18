@@ -1,4 +1,4 @@
-import { IClient, IRole, IGroup, IClientAuthConfig, Attribute, AttributeValue } from "../types";
+import { IClient, IRole, IGroup, IClientAuthConfig, Attribute, AttributeValue } from '../types';
 /**
  * @description this is thr client Constructor for creating clients that are parts of apps
  * let us suppose we have an app that has a mobile app and a dashboard app

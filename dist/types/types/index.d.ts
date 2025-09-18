@@ -1,5 +1,5 @@
 export interface SendEmailBody {
-    method: "email";
+    method: 'email';
     receiver: string;
     subject: string;
     content: string;
@@ -17,12 +17,12 @@ export interface ServiceConfig {
     allowedOrigins: string[];
     port: number;
     routerPrefix: string;
-    disableRequestLogging?: boolean;
-    disableSecurityHeaders?: boolean;
-    enableRoutesLogging?: boolean;
     serviceName?: string;
     mongoDbUrl: string;
-    logRealmSummary?: boolean;
-    disableServiceLogging?: boolean;
+    disableSecurityHeaders?: boolean;
+    enableRealmSummary?: boolean;
+    enableServiceLogging?: boolean;
+    enableRequestLogging?: boolean;
+    enableRoutesLogging?: boolean;
 }
 //# sourceMappingURL=index.d.ts.map

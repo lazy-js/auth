@@ -7,19 +7,19 @@ import type { UserProfileConfig } from '@keycloak/keycloak-admin-client/lib/defs
 import type { TokenResponse } from '@keycloak/keycloak-admin-client/lib/utils/auth';
 
 export interface KeycloakCreateObject {
-  url: string;
-  password: string;
-  realmName: string;
-  reAuthenticateIntervalMs?: number;
+    url: string;
+    password: string;
+    realmName: string;
+    reAuthenticateIntervalMs?: number;
 }
 
 export type Attributes = { [key: string]: string[] };
 
 export type {
-  ClientRepresentation,
-  GroupRepresentation,
-  RoleRepresentation,
-  UserRepresentation,
-  UserProfileConfig,
-  TokenResponse,
+    ClientRepresentation,
+    GroupRepresentation,
+    RoleRepresentation,
+    UserRepresentation,
+    UserProfileConfig,
+    TokenResponse,
 };

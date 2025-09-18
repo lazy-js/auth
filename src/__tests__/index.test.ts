@@ -20,8 +20,9 @@ const serverConfig: ServiceConfig = {
     routerPrefix: '/api/v1',
     mongoDbUrl: '',
     enableRoutesLogging: true,
-    logRealmSummary: true,
-    disableServiceLogging: false,
+    enableRealmSummary: true,
+    enableServiceLogging: true,
+    enableRequestLogging: true,
 };
 
 describe('Lazy Auth Testing Suite', () => {
@@ -36,7 +37,12 @@ describe('Lazy Auth Testing Suite', () => {
 
             const notificationSdk = new MockNotificationClientSdk();
 
-            lazyAuthService = new LazyAuth(keycloakConfig, serverConfig, testRealm, notificationSdk);
+            lazyAuthService = new LazyAuth(
+                keycloakConfig,
+                serverConfig,
+                testRealm,
+                notificationSdk,
+            );
 
             kcApi = await KcApi.create({
                 url: keycloakConfig.keycloakServiceUrl,
@@ -134,7 +140,11 @@ describe('Lazy Auth Testing Suite', () => {
         };
 
         it('should register a user', async () => {
-            const verifiedByDefault = testPublicClient.clientAuthConfiguration.registerConfig.status === 'public' && testPublicClient.clientAuthConfiguration.registerConfig.verified;
+            const verifiedByDefault =
+                testPublicClient.clientAuthConfiguration.registerConfig
+                    .status === 'public' &&
+                testPublicClient.clientAuthConfiguration.registerConfig
+                    .verified;
             await request(lazyAuthService.app.expressApp)
                 .post(`${routerPrefix}${clientPath}${registerPath}`)
                 .set('Content-Type', 'application/json')
@@ -225,9 +235,11 @@ describe('Lazy Auth Testing Suite', () => {
                 });
         });
         it('should verify the user', async () => {
-            const user = await mongoose.connection.db?.collection('users').findOne({
-                email: newUser.email,
-            });
+            const user = await mongoose.connection.db
+                ?.collection('users')
+                .findOne({
+                    email: newUser.email,
+                });
             const code = user?.linkedEmails[0].confirmCode;
             await request(lazyAuthService.app.expressApp)
                 .put(`${routerPrefix}${clientPath}${verifyPath}`)

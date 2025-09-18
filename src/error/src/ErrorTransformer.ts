@@ -1,6 +1,10 @@
 import { ErrorConstructorMap } from './constants';
 import { ErrorInstance, getErrorConstructor } from './Error';
-import { ErrorMap as ErrorMapBase, ErrorMapOut as ErrorMapOutBase, ErrorMapInput as ErrorMapInputBase } from './types/transformer';
+import {
+    ErrorMap as ErrorMapBase,
+    ErrorMapOut as ErrorMapOutBase,
+    ErrorMapInput as ErrorMapInputBase,
+} from './types/transformer';
 import { ErrorContextBase } from './types/errors';
 import { Constructor } from 'zod/v4/core/util.cjs';
 
@@ -14,14 +18,19 @@ interface ErrorTransformerOptions {
 }
 
 const ERROR_TRANSFORMER_ERROR_PREFIX = 'ERROR TRANSFORMER:';
-const ERROR_TRANSFORMER_ERROR_POSTFIX = '\n END ERROR TRANSFORMER: \n--------------------------- \n';
+const ERROR_TRANSFORMER_ERROR_POSTFIX =
+    '\n END ERROR TRANSFORMER: \n--------------------------- \n';
 
 export class ErrorTransformer {
     private errorMap: ErrorMap[];
     private defaultError: string | ErrorInstance;
     private messagePropertyName: string;
     private log: LogLevels;
-    constructor(errorMap: ErrorMap[], defaultError: string | ErrorInstance, public options?: ErrorTransformerOptions) {
+    constructor(
+        errorMap: ErrorMap[],
+        defaultError: string | ErrorInstance,
+        public options?: ErrorTransformerOptions,
+    ) {
         this.errorMap = errorMap;
         this.defaultError = defaultError;
         this.messagePropertyName = options?.messagePropertyName || 'message';
@@ -60,7 +69,10 @@ export class ErrorTransformer {
         }
         throw this.defaultError;
     }
-    withAsyncTransform<TArgs extends readonly unknown[], TReturn>(wrappedMethod: (...args: TArgs) => Promise<TReturn>, patchedContext: ErrorContextBase): (...args: TArgs) => Promise<TReturn> {
+    withAsyncTransform<TArgs extends readonly unknown[], TReturn>(
+        wrappedMethod: (...args: TArgs) => Promise<TReturn>,
+        patchedContext: ErrorContextBase,
+    ): (...args: TArgs) => Promise<TReturn> {
         if (!wrappedMethod) {
             throw new Error('Wrapped method is required');
         }
@@ -74,7 +86,10 @@ export class ErrorTransformer {
         };
     }
 
-    withSyncTransform<TArgs extends readonly unknown[], TReturn>(wrappedMethod: (...args: TArgs) => TReturn, patchedContext: ErrorContextBase): (...args: TArgs) => TReturn {
+    withSyncTransform<TArgs extends readonly unknown[], TReturn>(
+        wrappedMethod: (...args: TArgs) => TReturn,
+        patchedContext: ErrorContextBase,
+    ): (...args: TArgs) => TReturn {
         if (!wrappedMethod) {
             throw new Error('Wrapped method is required');
         }
@@ -120,7 +135,11 @@ export class ErrorTransformer {
         }
     }
 
-    private handleOutput(output: ErrorMapOut, patchedContext: ErrorContextBase, originalError: any): never {
+    private handleOutput(
+        output: ErrorMapOut,
+        patchedContext: ErrorContextBase,
+        originalError: any,
+    ): never {
         if (output === 'pass') {
             throw originalError;
         } else if (output.type === 'ErrorInstance') {
@@ -128,11 +147,16 @@ export class ErrorTransformer {
             const newContext = {
                 ...error.context,
                 ...patchedContext,
-                originalError: originalError instanceof Error ? originalError : new Error(originalError),
+                originalError:
+                    originalError instanceof Error
+                        ? originalError
+                        : new Error(originalError),
             };
             error.updateContext(newContext);
             if (output.replaceConstructor) {
-                const Constructor = getErrorConstructor(output.replaceConstructor);
+                const Constructor = getErrorConstructor(
+                    output.replaceConstructor,
+                );
                 error = new Constructor({
                     ...error,
                     context: {

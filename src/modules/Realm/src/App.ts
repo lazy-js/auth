@@ -1,4 +1,4 @@
-import { IClient, IApp, Attribute, AttributeValue } from "../types";
+import { IClient, IApp, Attribute, AttributeValue } from '../types';
 
 export class App implements IApp {
     public name: string;
@@ -8,8 +8,8 @@ export class App implements IApp {
     public appAttributes: Attribute;
     constructor(name: string) {
         this.name = name;
-        this.realmName = "";
-        this.realmPath = "";
+        this.realmName = '';
+        this.realmPath = '';
         this.appAttributes = {};
         this.clients = [];
     }
@@ -17,7 +17,7 @@ export class App implements IApp {
     setRealmPath(realmPath: string): IApp {
         this.realmPath = realmPath;
         this.clients.forEach((client) => {
-            client.setAppPath(this.realmPath + "/" + this.name);
+            client.setAppPath(this.realmPath + '/' + this.name);
         });
         return this;
     }
@@ -29,10 +29,10 @@ export class App implements IApp {
 
     addClient(client: IClient): IApp {
         client.setAppName(this.name);
-        client.setAppPath(this.realmPath + "/" + this.name);
+        client.setAppPath(this.realmPath + '/' + this.name);
 
         if (!client.groups.some((group) => group.isDefault)) {
-            throw new Error("Each Client must contain a default group");
+            throw new Error('Each Client must contain a default group');
         }
 
         this.clients.push(client);

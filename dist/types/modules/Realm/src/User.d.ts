@@ -1,4 +1,4 @@
-import { CreateUserDto, IUser, UserJson } from "../types";
+import { CreateUserDto, IUser, UserJson } from '../types';
 declare class User implements IUser {
     private readonly user;
     constructor(user: CreateUserDto);

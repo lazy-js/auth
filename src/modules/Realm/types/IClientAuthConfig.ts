@@ -1,26 +1,29 @@
-import { IRole } from "./IRole";
-import type { PrimaryField, RegisterStatus, LoginStatus } from "./shared";
-import { IUser } from "./IUser";
+import { IRole } from './IRole';
+import type { PrimaryField, RegisterStatus, LoginStatus } from './shared';
+import { IUser } from './IUser';
 
 interface RegisterConfigBase {
     status: RegisterStatus;
 }
 
 interface PrivateRegisterConfig extends RegisterConfigBase {
-    status: "private";
+    status: 'private';
     privateAccessRoles: IRole[];
 }
 
 interface PublicRegisterConfig extends RegisterConfigBase {
-    status: "public";
+    status: 'public';
     verified: boolean;
 }
 
 interface DisabledRegisterConfig extends RegisterConfigBase {
-    status: "disabled";
+    status: 'disabled';
 }
 
-export type RegisterConfig = PrivateRegisterConfig | PublicRegisterConfig | DisabledRegisterConfig;
+export type RegisterConfig =
+    | PrivateRegisterConfig
+    | PublicRegisterConfig
+    | DisabledRegisterConfig;
 
 export interface LoginConfig {
     status: LoginStatus;

@@ -2,84 +2,84 @@ import mongoose from 'mongoose';
 import { IUserSchema, IUserModel } from './UserModel.types';
 
 const phoneSchema = new mongoose.Schema(
-  {
-    phone: { type: String },
-    confirmCode: { type: String },
-    verified: { type: Boolean },
-  },
-  { _id: false },
+    {
+        phone: { type: String },
+        confirmCode: { type: String },
+        verified: { type: Boolean },
+    },
+    { _id: false },
 );
 
 const emailSchema = new mongoose.Schema(
-  {
-    email: { type: String },
-    confirmCode: { type: String },
-    verified: { type: Boolean },
-  },
-  { _id: false },
+    {
+        email: { type: String },
+        confirmCode: { type: String },
+        verified: { type: Boolean },
+    },
+    { _id: false },
 );
 const appSchema = new mongoose.Schema(
-  {
-    name: { type: String },
-    clients: { type: [String] },
-  },
-  { _id: false },
+    {
+        name: { type: String },
+        clients: { type: [String] },
+    },
+    { _id: false },
 );
 export function createUserModel() {
-  const userSchema = new mongoose.Schema<IUserSchema>(
-    {
-      keycloakUserId: {
-        type: String,
-        required: true,
-        unique: true,
-        index: true,
-      },
+    const userSchema = new mongoose.Schema<IUserSchema>(
+        {
+            keycloakUserId: {
+                type: String,
+                required: true,
+                unique: true,
+                index: true,
+            },
 
-      username: {
-        type: String,
-        unique: true,
-        index: true,
-        lowercase: true,
-        trim: true,
-      },
+            username: {
+                type: String,
+                unique: true,
+                index: true,
+                lowercase: true,
+                trim: true,
+            },
 
-      email: {
-        type: String,
-        index: true,
-        sparse: true,
-        lowercase: true,
-        trim: true,
-      },
+            email: {
+                type: String,
+                index: true,
+                sparse: true,
+                lowercase: true,
+                trim: true,
+            },
 
-      phone: {
-        type: String,
-        index: true,
-        sparse: true,
-        trim: true,
-      },
+            phone: {
+                type: String,
+                index: true,
+                sparse: true,
+                trim: true,
+            },
 
-      linkedPhones: [phoneSchema],
-      linkedEmails: [emailSchema],
+            linkedPhones: [phoneSchema],
+            linkedEmails: [emailSchema],
 
-      firstName: { type: String },
-      lastName: { type: String },
-      middleName: { type: String },
-      locale: { type: String },
+            firstName: { type: String },
+            lastName: { type: String },
+            middleName: { type: String },
+            locale: { type: String },
 
-      apps: [appSchema],
-    },
-    {
-      timestamps: true,
-    },
-  );
-
-  if (!mongoose.models.User) {
-    const UserModel = mongoose.model<IUserSchema, IUserModel>(
-      'User',
-      userSchema,
+            apps: [appSchema],
+        },
+        {
+            timestamps: true,
+        },
     );
-    mongoose.models.User = UserModel;
-  }
 
-  return { UserModel: mongoose.models.User, userSchema };
+    if (!mongoose.models.User) {
+        const UserModel = mongoose.model<IUserSchema, IUserModel>(
+            'User',
+            userSchema,
+        );
+        mongoose.models.User = UserModel;
+    }
+
+    return { UserModel: mongoose.models.User, userSchema };
 }

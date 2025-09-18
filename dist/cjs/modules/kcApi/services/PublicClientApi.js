@@ -137,7 +137,7 @@ let PublicClientApi = class PublicClientApi {
         });
         const childRole = await this.getRoleByName(payload);
         if (!childRole || !childRole.id) {
-            throw new Error("addChildRole Error");
+            throw new Error('addChildRole Error');
         }
         await this.kcAdmin.roles.createComposite({
             roleId: payload.parentRoleId,
@@ -217,6 +217,7 @@ let PublicClientApi = class PublicClientApi {
 exports.PublicClientApi = PublicClientApi;
 exports.PublicClientApi = PublicClientApi = __decorate([
     (0, decorators_1.AutoTransform)(),
-    __metadata("design:paramtypes", [KcAdminApi_1.KcAdmin, ErrorTransformer_1.ErrorTransformer])
+    __metadata("design:paramtypes", [KcAdminApi_1.KcAdmin,
+        ErrorTransformer_1.ErrorTransformer])
 ], PublicClientApi);
 //# sourceMappingURL=PublicClientApi.js.map

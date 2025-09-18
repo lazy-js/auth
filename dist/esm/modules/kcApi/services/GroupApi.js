@@ -7,10 +7,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import errors from "../../../config/errors";
-import { KcAdmin } from "./KcAdminApi";
-import { AutoTransform } from "../../../error/src/decorators";
-import { ErrorTransformer } from "../../../error/src/ErrorTransformer";
+import errors from '../../../config/errors';
+import { KcAdmin } from './KcAdminApi';
+import { AutoTransform } from '../../../error/src/decorators';
+import { ErrorTransformer } from '../../../error/src/ErrorTransformer';
 /**
  * @description GroupApi class
  * @implements IGroupApi
@@ -185,7 +185,8 @@ let GroupApi = class GroupApi {
 };
 GroupApi = __decorate([
     AutoTransform(),
-    __metadata("design:paramtypes", [KcAdmin, ErrorTransformer])
+    __metadata("design:paramtypes", [KcAdmin,
+        ErrorTransformer])
 ], GroupApi);
 export { GroupApi };
 //# sourceMappingURL=GroupApi.js.map

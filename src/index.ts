@@ -19,22 +19,28 @@ export * from './types';
 export class LazyAuth {
     private stateLogger: Logger;
     public app: App;
-    constructor(private readonly keycloakConfig: KeycloakConfig, private readonly serviceConfig: ServiceConfig, private realm: IRealm, private notificationSdk: INotificationClientSdk) {
-        const disable = this.serviceConfig.disableServiceLogging;
+    constructor(
+        private readonly keycloakConfig: KeycloakConfig,
+        private readonly serviceConfig: ServiceConfig,
+        private realm: IRealm,
+        private notificationSdk: INotificationClientSdk,
+    ) {
+        const enableServiceLogging =
+            this.serviceConfig.enableServiceLogging || false;
 
         this.stateLogger = new Logger({
             module: 'Lazy Auth - ',
-            disableDebug: disable,
-            disableError: disable,
-            disableInfo: disable,
-            disableWarn: disable,
+            disableDebug: enableServiceLogging,
+            disableError: enableServiceLogging,
+            disableInfo: enableServiceLogging,
+            disableWarn: enableServiceLogging,
         });
 
         this.app = new App({
             port: this.serviceConfig.port,
             prefix: this.serviceConfig.routerPrefix,
             allowedOrigins: this.serviceConfig.allowedOrigins,
-            disableRequestLogging: this.serviceConfig.disableRequestLogging,
+            disableRequestLogging: !this.serviceConfig.enableRequestLogging,
             disableSecurityHeaders: this.serviceConfig.disableSecurityHeaders,
             enableRoutesLogging: this.serviceConfig.enableRoutesLogging,
             serviceName: this.serviceConfig.serviceName,
@@ -52,14 +58,19 @@ export class LazyAuth {
                 {
                     url: this.keycloakConfig.keycloakServiceUrl,
                     password: this.keycloakConfig.keycloakAdminPassword,
-                    reAuthenticateIntervalMs: this.keycloakConfig.keycloakAdminReAuthenticateIntervalMs || 30000,
+                    reAuthenticateIntervalMs:
+                        this.keycloakConfig
+                            .keycloakAdminReAuthenticateIntervalMs || 30000,
                 },
                 this.notificationSdk,
             );
             await realmBuilderModule.build();
             return realmBuilderModule;
         } catch (error) {
-            this.stateLogger.error('Error building realm: \n', JSON.stringify(error, null, 4));
+            this.stateLogger.error(
+                'Error building realm: \n',
+                JSON.stringify(error, null, 4),
+            );
             process.exit(1);
         }
     }
@@ -74,7 +85,10 @@ export class LazyAuth {
             this.stateLogger.info('Monogo database disconnected successfully');
         });
         database.on('error', (err: any) => {
-            this.stateLogger.error('Monogo database error \n', JSON.stringify(err, null, 4));
+            this.stateLogger.error(
+                'Monogo database error \n',
+                JSON.stringify(err, null, 4),
+            );
         });
         await database.connect();
         return database;
@@ -82,7 +96,10 @@ export class LazyAuth {
 
     private async prepareApp() {
         this.app.on('error', (err: any) => {
-            this.stateLogger.error('App Service Request Error \n', JSON.stringify(err, null, 4));
+            this.stateLogger.error(
+                'App Service Request Error \n',
+                JSON.stringify(err, null, 4),
+            );
         });
 
         this.app.on('started', () => {
@@ -103,17 +120,21 @@ export class LazyAuth {
     async start() {
         try {
             if (!(await this._isKeycloakServiceAvailable())) {
-                this.stateLogger.error(`Keycloak on url ${this.keycloakConfig.keycloakServiceUrl} is DOWN`);
+                this.stateLogger.error(
+                    `Keycloak on url ${this.keycloakConfig.keycloakServiceUrl} is DOWN`,
+                );
                 return;
             } else {
-                this.stateLogger.info(`Keycloak on url ${this.keycloakConfig.keycloakServiceUrl} is UP`);
+                this.stateLogger.info(
+                    `Keycloak on url ${this.keycloakConfig.keycloakServiceUrl} is UP`,
+                );
             }
 
             await this.connectDatabase();
 
             const realmBuilderModule = await this.buildRealm();
 
-            if (this.serviceConfig.logRealmSummary) {
+            if (this.serviceConfig.enableRealmSummary) {
                 this.logSummary();
             }
 
@@ -122,8 +143,15 @@ export class LazyAuth {
             this.app.mountModule(realmBuilderModule);
             this.app.start();
         } catch (err) {
-            const error = await handleMainException(err as any, this.start.bind(this), 2);
-            this.stateLogger.error('Error Starting App: \n', JSON.stringify(error, null, 4));
+            const error = await handleMainException(
+                err as any,
+                this.start.bind(this),
+                2,
+            );
+            this.stateLogger.error(
+                'Error Starting App: \n',
+                JSON.stringify(error, null, 4),
+            );
         }
     }
 }

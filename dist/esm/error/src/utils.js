@@ -1,11 +1,11 @@
 export function removeWorkingDirectoryFromStack(stack) {
-    return stack.replace(process.cwd(), "");
+    return stack.replace(process.cwd(), '');
 }
 export function cleanStack(stack, ...linesToExclude) {
     return stack
-        .split("\n")
+        .split('\n')
         .filter((line) => !linesToExclude.some((lineToExclude) => line.includes(lineToExclude)))
-        .join("\n");
+        .join('\n');
 }
 export function generateStack({ clean, removeWorkingDirectoryPrefix, errorName, }) {
     let stack = undefined;
@@ -16,8 +16,10 @@ export function generateStack({ clean, removeWorkingDirectoryPrefix, errorName, 
         stack = stack === null || stack === void 0 ? void 0 : stack.replace(/^Error: \n /, `${errorName}: \n `);
     }
     if (removeWorkingDirectoryPrefix) {
-        stack = removeWorkingDirectoryFromStack(stack !== null && stack !== void 0 ? stack : "");
+        stack = removeWorkingDirectoryFromStack(stack !== null && stack !== void 0 ? stack : '');
     }
-    return clean && clean.length > 0 ? cleanStack(stack !== null && stack !== void 0 ? stack : "", ...clean) : stack;
+    return clean && clean.length > 0
+        ? cleanStack(stack !== null && stack !== void 0 ? stack : '', ...clean)
+        : stack;
 }
 //# sourceMappingURL=utils.js.map

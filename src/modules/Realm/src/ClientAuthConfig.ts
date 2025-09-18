@@ -1,4 +1,10 @@
-import { IClientAuthConfig, PrimaryField, IUser, RegisterConfig, LoginConfig } from "../types";
+import {
+    IClientAuthConfig,
+    PrimaryField,
+    IUser,
+    RegisterConfig,
+    LoginConfig,
+} from '../types';
 
 export class ClientAuthConfig implements IClientAuthConfig {
     public readonly primaryFields: PrimaryField[];
@@ -8,15 +14,15 @@ export class ClientAuthConfig implements IClientAuthConfig {
 
     constructor(primaryFields: PrimaryField[]) {
         if (!primaryFields || primaryFields.length === 0) {
-            throw new Error("At least one primary field must be specified");
+            throw new Error('At least one primary field must be specified');
         }
         this.primaryFields = primaryFields;
         this.registerConfig = {
-            status: "public",
+            status: 'public',
             verified: false,
         };
         this.loginConfig = {
-            status: "enabled",
+            status: 'enabled',
         };
         this.builtInUser = undefined;
     }

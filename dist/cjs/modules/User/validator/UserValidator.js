@@ -90,7 +90,11 @@ class UserValidator {
             throw new utils_1.AppError(errors_1.default.NOT_SUPPORTED_REGISTER_METHOD);
         }
         // Use discriminated union to validate based on method type
-        const createUserDtoSchema = zod_1.default.discriminatedUnion('method', [registerWithUsernameSchema, registerWithEmailSchema, registerWithPhoneSchema]);
+        const createUserDtoSchema = zod_1.default.discriminatedUnion('method', [
+            registerWithUsernameSchema,
+            registerWithEmailSchema,
+            registerWithPhoneSchema,
+        ]);
         return await createUserDtoSchema.parseAsync(userDto);
     }
     /**
@@ -130,7 +134,11 @@ class UserValidator {
             throw new utils_1.AppError(errors_1.default.INVALID_LOGIN_METHOD);
         }
         // Use discriminated union to validate based on method type
-        const loginDtoSchema = zod_1.default.discriminatedUnion('method', [loginWithEmailSchema, loginWithPhoneSchema, loginWithUsernameSchema]);
+        const loginDtoSchema = zod_1.default.discriminatedUnion('method', [
+            loginWithEmailSchema,
+            loginWithPhoneSchema,
+            loginWithUsernameSchema,
+        ]);
         return await loginDtoSchema.parseAsync(loginDto);
     }
     /**
@@ -181,7 +189,10 @@ class UserValidator {
      * ```
      */
     async validateVerifyDto(verifyDto) {
-        const verifyDtoSchema = zod_1.default.discriminatedUnion('method', [verifyEmailSchema, verifyPhoneSchema]);
+        const verifyDtoSchema = zod_1.default.discriminatedUnion('method', [
+            verifyEmailSchema,
+            verifyPhoneSchema,
+        ]);
         return await verifyDtoSchema.parseAsync(verifyDto);
     }
     /**
@@ -224,7 +235,9 @@ exports.UserValidator = UserValidator;
  * - Minimum 8 characters
  * - Uses centralized error messages from config
  */
-const passwordSchema = zod_1.default.string({ message: errors_1.default.PASSWORD_REQUIRED.code }).min(8, errors_1.default.PASSWORD_INVALID.code);
+const passwordSchema = zod_1.default
+    .string({ message: errors_1.default.PASSWORD_REQUIRED.code })
+    .min(8, errors_1.default.PASSWORD_INVALID.code);
 /**
  * Email validation schema
  *
@@ -232,7 +245,9 @@ const passwordSchema = zod_1.default.string({ message: errors_1.default.PASSWORD
  * - Must be a valid email format
  * - Uses centralized error messages from config
  */
-const emailSchema = zod_1.default.string({ message: errors_1.default.EMAIL_REQUIRED.code }).email(errors_1.default.EMAIL_INVALID.code);
+const emailSchema = zod_1.default
+    .string({ message: errors_1.default.EMAIL_REQUIRED.code })
+    .email(errors_1.default.EMAIL_INVALID.code);
 /**
  * Username validation schema
  *
@@ -241,7 +256,9 @@ const emailSchema = zod_1.default.string({ message: errors_1.default.EMAIL_REQUI
  * - Minimum 3 characters
  * - Uses centralized error messages from config
  */
-const usernameSchema = zod_1.default.string({ message: errors_1.default.USERNAME_REQUIRED.code }).min(3, errors_1.default.USERNAME_INVALID.code);
+const usernameSchema = zod_1.default
+    .string({ message: errors_1.default.USERNAME_REQUIRED.code })
+    .min(3, errors_1.default.USERNAME_INVALID.code);
 /**
  * Phone validation schema
  *
@@ -250,7 +267,9 @@ const usernameSchema = zod_1.default.string({ message: errors_1.default.USERNAME
  * - Minimum 10 characters
  * - Uses centralized error messages from config
  */
-const phoneSchema = zod_1.default.string({ message: errors_1.default.PHONE_REQUIRED.code }).min(10, errors_1.default.PHONE_INVALID.code);
+const phoneSchema = zod_1.default
+    .string({ message: errors_1.default.PHONE_REQUIRED.code })
+    .min(10, errors_1.default.PHONE_INVALID.code);
 /**
  * Verification code validation schema
  *
@@ -259,7 +278,10 @@ const phoneSchema = zod_1.default.string({ message: errors_1.default.PHONE_REQUI
  * - Exactly 6 characters (numeric code)
  * - Uses centralized error messages from config
  */
-const codeSchema = zod_1.default.string({ message: errors_1.default.INVALID_CODE.code }).min(6, errors_1.default.INVALID_CODE.code).max(6, errors_1.default.INVALID_CODE.code);
+const codeSchema = zod_1.default
+    .string({ message: errors_1.default.INVALID_CODE.code })
+    .min(6, errors_1.default.INVALID_CODE.code)
+    .max(6, errors_1.default.INVALID_CODE.code);
 // ============================================================================
 // LOGIN SCHEMAS
 // ============================================================================

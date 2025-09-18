@@ -1,9 +1,9 @@
-import { KcAdmin } from "./KcAdminApi";
-import { RealmApi } from "./RealmApi";
-import { UserApi } from "./UserApi";
-import { GroupApi } from "./GroupApi";
-import { PublicClientApi } from "./PublicClientApi";
-import { errorTransformer } from "./errorMap";
+import { KcAdmin } from './KcAdminApi';
+import { RealmApi } from './RealmApi';
+import { UserApi } from './UserApi';
+import { GroupApi } from './GroupApi';
+import { PublicClientApi } from './PublicClientApi';
+import { errorTransformer } from './errorMap';
 /**
  * @description KcApi class implements the IKcApi interface and is used to create a KcApi instance
  * @description KcApi is the main class that is used to interact with the Keycloak Admin API

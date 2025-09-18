@@ -109,18 +109,19 @@ class RealmManipulator {
     getRealmSummary() {
         const realmName = this.getRealmName();
         console.log(`Realm: ${realmName}`);
-        console.log("--------------------------------");
-        console.log("Apps: ");
+        console.log('--------------------------------');
+        console.log('Apps: ');
         const apps = this.getApps();
         apps.forEach((app) => {
             const clientsSummary = app.clients.map((client) => {
                 const name = client.name;
-                const verified = client.clientAuthConfiguration.registerConfig.status === "public" &&
+                const verified = client.clientAuthConfiguration.registerConfig.status ===
+                    'public' &&
                     client.clientAuthConfiguration.registerConfig.verified;
                 const registerStatus = client.clientAuthConfiguration.registerConfig.status;
                 const loginStatus = client.clientAuthConfiguration.loginConfig.status;
                 const clientUrl = `${this.routerPrefix}${client.appPath}/${client.name}`;
-                const primaryFields = client.clientAuthConfiguration.primaryFields.join(", ");
+                const primaryFields = client.clientAuthConfiguration.primaryFields.join(', ');
                 return {
                     appName: app.name,
                     name,
@@ -133,17 +134,17 @@ class RealmManipulator {
                 };
             });
             clientsSummary.forEach((client) => {
-                console.log("---------------" + client.name + " ------------");
-                console.log("name: ", client.name);
-                console.log("methods", client.primaryFields);
-                console.log("verified by default: ", client.verified ? "yes" : "no");
-                console.log("login status: ", client.loginStatus);
-                console.log("login url: ", client.loginUrl);
-                console.log("register status: ", client.registerStatus);
-                console.log("login url: ", client.registerUrl);
-                console.log("---------------end of client ------------");
+                console.log('---------------' + client.name + ' ------------');
+                console.log('name: ', client.name);
+                console.log('methods', client.primaryFields);
+                console.log('verified by default: ', client.verified ? 'yes' : 'no');
+                console.log('login status: ', client.loginStatus);
+                console.log('login url: ', client.loginUrl);
+                console.log('register status: ', client.registerStatus);
+                console.log('login url: ', client.registerUrl);
+                console.log('---------------end of client ------------');
             });
-            console.log("--------------------------------");
+            console.log('--------------------------------');
         });
     }
 }

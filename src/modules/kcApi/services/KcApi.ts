@@ -1,12 +1,19 @@
-import { IKcApi, IPublicClientApi, KeycloakCreateObject, IGroupApi, IRealmApi, IUserApi } from "../types";
+import {
+    IKcApi,
+    IPublicClientApi,
+    KeycloakCreateObject,
+    IGroupApi,
+    IRealmApi,
+    IUserApi,
+} from '../types';
 
-import { KcAdmin } from "./KcAdminApi";
-import { RealmApi } from "./RealmApi";
-import { UserApi } from "./UserApi";
-import { GroupApi } from "./GroupApi";
-import { PublicClientApi } from "./PublicClientApi";
-import { errorTransformer } from "./errorMap";
-import { ErrorTransformer } from "../../../error/src/ErrorTransformer";
+import { KcAdmin } from './KcAdminApi';
+import { RealmApi } from './RealmApi';
+import { UserApi } from './UserApi';
+import { GroupApi } from './GroupApi';
+import { PublicClientApi } from './PublicClientApi';
+import { errorTransformer } from './errorMap';
+import { ErrorTransformer } from '../../../error/src/ErrorTransformer';
 
 /**
  * @description KcApi class implements the IKcApi interface and is used to create a KcApi instance
@@ -37,35 +44,38 @@ import { ErrorTransformer } from "../../../error/src/ErrorTransformer";
  */
 
 export class KcApi implements IKcApi {
-        public publicClients: IPublicClientApi;
-        public groups: IGroupApi;
-        public users: IUserApi;
-        public realms: IRealmApi;
+    public publicClients: IPublicClientApi;
+    public groups: IGroupApi;
+    public users: IUserApi;
+    public realms: IRealmApi;
 
-        /**
-         * @description Create a KcApi instance
-         * @param required keycloakCreateObject - The configuration for creating a KcApi instance
-         * @params required keycloakCreateObject.url - The url for the KcApi instance
-         * @params required keycloakCreateObject.password - The password for the KcApi instance
-         * @params required keycloakCreateObject.realmName - The realm name for the KcApi instance
-         * @params optional keycloakCreateObject.reAuthenticateIntervalMs - The interval for re-authenticating the KcApi instance
-         * @returns Promise<KcApi> - The KcApi instance
-         */
-        static async create(keycloakCreateObject: KeycloakCreateObject) {
-                const kcAdmin = await KcAdmin.create(keycloakCreateObject);
-                return new KcApi(kcAdmin, errorTransformer);
-        }
+    /**
+     * @description Create a KcApi instance
+     * @param required keycloakCreateObject - The configuration for creating a KcApi instance
+     * @params required keycloakCreateObject.url - The url for the KcApi instance
+     * @params required keycloakCreateObject.password - The password for the KcApi instance
+     * @params required keycloakCreateObject.realmName - The realm name for the KcApi instance
+     * @params optional keycloakCreateObject.reAuthenticateIntervalMs - The interval for re-authenticating the KcApi instance
+     * @returns Promise<KcApi> - The KcApi instance
+     */
+    static async create(keycloakCreateObject: KeycloakCreateObject) {
+        const kcAdmin = await KcAdmin.create(keycloakCreateObject);
+        return new KcApi(kcAdmin, errorTransformer);
+    }
 
-        /**
-         * @description Create a KcApi instance
-         * @param required kcAdmin - The KcAdmin instance
-         * @private
-         */
-        private constructor(public kcAdmin: KcAdmin, public errorTransformer: ErrorTransformer) {
-                this.kcAdmin = kcAdmin;
-                this.realms = new RealmApi(kcAdmin, errorTransformer);
-                this.groups = new GroupApi(kcAdmin, errorTransformer);
-                this.users = new UserApi(kcAdmin, errorTransformer);
-                this.publicClients = new PublicClientApi(kcAdmin, errorTransformer);
-        }
+    /**
+     * @description Create a KcApi instance
+     * @param required kcAdmin - The KcAdmin instance
+     * @private
+     */
+    private constructor(
+        public kcAdmin: KcAdmin,
+        public errorTransformer: ErrorTransformer,
+    ) {
+        this.kcAdmin = kcAdmin;
+        this.realms = new RealmApi(kcAdmin, errorTransformer);
+        this.groups = new GroupApi(kcAdmin, errorTransformer);
+        this.users = new UserApi(kcAdmin, errorTransformer);
+        this.publicClients = new PublicClientApi(kcAdmin, errorTransformer);
+    }
 }

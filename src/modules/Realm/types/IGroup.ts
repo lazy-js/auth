@@ -1,5 +1,5 @@
-import { IRole } from "./IRole";
-import type { Attribute, AttributeValue } from "./shared";
+import { IRole } from './IRole';
+import type { Attribute, AttributeValue } from './shared';
 export interface GroupJson {
     name: string;
     isDefault: boolean;

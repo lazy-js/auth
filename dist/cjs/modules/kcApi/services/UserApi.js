@@ -43,7 +43,9 @@ let UserApi = class UserApi {
     async createUser(user) {
         const newKcUser = {
             username: user.username,
-            credentials: user.password ? [{ type: 'password', value: user.password, temporary: false }] : [],
+            credentials: user.password
+                ? [{ type: 'password', value: user.password, temporary: false }]
+                : [],
             email: user.email,
             firstName: user.firstName,
             lastName: user.lastName,
@@ -243,7 +245,8 @@ let UserApi = class UserApi {
      * @returns Promise<TokenResponse> - The token as TokenResponse
      */
     async refreshAccessToken(payload) {
-        if (payload.refreshToken && payload.refreshToken.startsWith('Bearer ')) {
+        if (payload.refreshToken &&
+            payload.refreshToken.startsWith('Bearer ')) {
             payload.refreshToken = payload.refreshToken.replace('Bearer ', '');
         }
         const newToken = await (0, auth_1.getToken)({
@@ -261,7 +264,8 @@ let UserApi = class UserApi {
 exports.UserApi = UserApi;
 exports.UserApi = UserApi = __decorate([
     (0, decorators_1.AutoTransform)(),
-    __metadata("design:paramtypes", [KcAdminApi_1.KcAdmin, ErrorTransformer_1.ErrorTransformer])
+    __metadata("design:paramtypes", [KcAdminApi_1.KcAdmin,
+        ErrorTransformer_1.ErrorTransformer])
 ], UserApi);
 /**
  * @description User template

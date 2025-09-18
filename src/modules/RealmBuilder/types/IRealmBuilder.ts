@@ -63,10 +63,16 @@ export interface IRealmBuilder {
     build(): Promise<void>;
     _initRealm(): Promise<InitRealmResponse>;
     _initApp(initAppPayload: InitAppPayload): Promise<InitAppResponse>;
-    _initClient(initClientPayload: InitClientPayload): Promise<InitClientResponse>;
+    _initClient(
+        initClientPayload: InitClientPayload,
+    ): Promise<InitClientResponse>;
     _initGroup(initGroupPayload: InitGroupPayload): Promise<InitGroupResponse>;
 
-    _initRole(role: IRole, publicClientUuid: string, parentRoleId?: string): Promise<void>;
+    _initRole(
+        role: IRole,
+        publicClientUuid: string,
+        parentRoleId?: string,
+    ): Promise<void>;
 
     _removeUsernameValidator(): Promise<void>;
     // _createAttribute(attributeName: string): ProfileAttribute;

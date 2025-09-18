@@ -1,4 +1,4 @@
-import { BaseController, Token, Body } from '@lazy-js/server';
+import { BaseController, Token, Body, } from '@lazy-js/server';
 import { successResponse } from '@lazy-js/utils';
 // services
 import { UserService } from '../service/UserService';

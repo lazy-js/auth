@@ -68,7 +68,8 @@ RealmApi = __decorate([
     AutoTransform({
         exclude: ['realmExists'],
     }),
-    __metadata("design:paramtypes", [KcAdmin, ErrorTransformer])
+    __metadata("design:paramtypes", [KcAdmin,
+        ErrorTransformer])
 ], RealmApi);
 export { RealmApi };
 /**
@@ -79,13 +80,21 @@ export { RealmApi };
 const realmRequiredActionsProvidedIds = {
     update_user_locale: { priority: 10, enabled: false, defaultAction: false },
     CONFIGURE_TOTP: { priority: 20, enabled: false, defaultAction: false },
-    TERMS_AND_CONDITIONS: { priority: 30, enabled: false, defaultAction: false },
+    TERMS_AND_CONDITIONS: {
+        priority: 30,
+        enabled: false,
+        defaultAction: false,
+    },
     UPDATE_PASSWORD: { priority: 40, enabled: false, defaultAction: false },
     UPDATE_PROFILE: { priority: 50, enabled: false, defaultAction: false },
     VERIFY_EMAIL: { priority: 60, enabled: false, defaultAction: false },
     delete_account: { priority: 70, enabled: false, defaultAction: false },
     'webauthn-register': { priority: 80, enabled: false, defaultAction: false },
-    'webauthn-register-passwordless': { priority: 90, enabled: false, defaultAction: false },
+    'webauthn-register-passwordless': {
+        priority: 90,
+        enabled: false,
+        defaultAction: false,
+    },
     VERIFY_PROFILE: { priority: 100, enabled: false, defaultAction: false },
     delete_credential: { priority: 1000, enabled: false, defaultAction: false },
 };

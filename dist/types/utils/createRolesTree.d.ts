@@ -1,4 +1,4 @@
-import { IRole } from "../modules/Realm";
+import { IRole } from '../modules/Realm';
 export interface RoleItem {
     name: string;
     childRoles?: RoleItem[];

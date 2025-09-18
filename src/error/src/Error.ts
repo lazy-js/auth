@@ -1,5 +1,23 @@
-import { IError, ValidationErrorOptions, AuthenticationErrorOptions, AuthorizationErrorOptions, DatabaseErrorOptions, ConflictErrorOptions, NetworkErrorOptions, NotFoundErrorOptions, ExternalServiceErrorOptions, InternalErrorOptions, ErrorContextBase, BadConfigErrorOptions } from './types/errors';
-import { ErrorCategory, ErrorConstructorMap, NetworkErrorCodes, DatabaseErrorCodes } from './constants';
+import {
+    IError,
+    ValidationErrorOptions,
+    AuthenticationErrorOptions,
+    AuthorizationErrorOptions,
+    DatabaseErrorOptions,
+    ConflictErrorOptions,
+    NetworkErrorOptions,
+    NotFoundErrorOptions,
+    ExternalServiceErrorOptions,
+    InternalErrorOptions,
+    ErrorContextBase,
+    BadConfigErrorOptions,
+} from './types/errors';
+import {
+    ErrorCategory,
+    ErrorConstructorMap,
+    NetworkErrorCodes,
+    DatabaseErrorCodes,
+} from './constants';
 import { StackHelper } from './StackHelper';
 
 export class CustomError extends Error implements IError {
@@ -32,7 +50,10 @@ export class CustomError extends Error implements IError {
 
     log(logContext: boolean = true): void {
         const keywordsFilter = ['node_modules', 'node:internal'];
-        const callStack = StackHelper.getAndFilterCallStack(this.stack || '', keywordsFilter);
+        const callStack = StackHelper.getAndFilterCallStack(
+            this.stack || '',
+            keywordsFilter,
+        );
         StackHelper.doubleLineSeparator('Error');
         StackHelper.logErrorName(this.name, this.code);
         StackHelper.logCallStack(callStack);
@@ -66,7 +87,8 @@ export class CustomError extends Error implements IError {
 
 export class ValidationError extends CustomError implements IError {
     static readonly _statusCode: number = 400;
-    static readonly _name: ErrorConstructorMap = ErrorConstructorMap.ValidationError;
+    static readonly _name: ErrorConstructorMap =
+        ErrorConstructorMap.ValidationError;
 
     constructor(error: ValidationErrorOptions) {
         const defaultOptions: Partial<IError> = {
@@ -82,7 +104,8 @@ export class ValidationError extends CustomError implements IError {
 // authentication error
 export class AuthenticationError extends CustomError implements IError {
     static readonly _statusCode: number = 401;
-    static readonly _name: ErrorConstructorMap = ErrorConstructorMap.AuthenticationError;
+    static readonly _name: ErrorConstructorMap =
+        ErrorConstructorMap.AuthenticationError;
     constructor(error: AuthenticationErrorOptions) {
         const defaultOptions: Partial<IError> = {
             category: ErrorCategory.AUTHENTICATION,
@@ -90,13 +113,17 @@ export class AuthenticationError extends CustomError implements IError {
             isOperational: true,
             timestamp: new Date(),
         };
-        super({ ...defaultOptions, ...error } as IError, AuthenticationError._name);
+        super(
+            { ...defaultOptions, ...error } as IError,
+            AuthenticationError._name,
+        );
     }
 }
 
 export class AuthorizationError extends CustomError implements IError {
     static readonly _statusCode: number = 403;
-    static readonly _name: ErrorConstructorMap = ErrorConstructorMap.AuthorizationError;
+    static readonly _name: ErrorConstructorMap =
+        ErrorConstructorMap.AuthorizationError;
     constructor(error: AuthorizationErrorOptions) {
         const defaultOptions: Partial<IError> = {
             category: ErrorCategory.AUTHORIZATION,
@@ -104,13 +131,17 @@ export class AuthorizationError extends CustomError implements IError {
             isOperational: true,
             timestamp: new Date(),
         };
-        super({ ...defaultOptions, ...error } as IError, AuthorizationError._name);
+        super(
+            { ...defaultOptions, ...error } as IError,
+            AuthorizationError._name,
+        );
     }
 }
 
 export class NotFoundError extends CustomError implements IError {
     static readonly _statusCode: number = 404;
-    static readonly _name: ErrorConstructorMap = ErrorConstructorMap.NotFoundError;
+    static readonly _name: ErrorConstructorMap =
+        ErrorConstructorMap.NotFoundError;
     constructor(error: NotFoundErrorOptions) {
         const defaultOptions: Partial<IError> = {
             category: ErrorCategory.NOT_FOUND,
@@ -124,7 +155,8 @@ export class NotFoundError extends CustomError implements IError {
 
 export class ConflictError extends CustomError implements IError {
     static readonly _statusCode: number = 409;
-    static readonly _name: ErrorConstructorMap = ErrorConstructorMap.ConflictError;
+    static readonly _name: ErrorConstructorMap =
+        ErrorConstructorMap.ConflictError;
     constructor(error: ConflictErrorOptions) {
         const defaultOptions: Partial<IError> = {
             category: ErrorCategory.CONFLICT,
@@ -138,7 +170,8 @@ export class ConflictError extends CustomError implements IError {
 
 export class ExternalServiceError extends CustomError implements IError {
     static readonly _statusCode: number = 502;
-    static readonly _name: ErrorConstructorMap = ErrorConstructorMap.ExternalServiceError;
+    static readonly _name: ErrorConstructorMap =
+        ErrorConstructorMap.ExternalServiceError;
     public readonly externalService: string;
     constructor(error: ExternalServiceErrorOptions) {
         const defaultOptions: Partial<IError> = {
@@ -147,7 +180,10 @@ export class ExternalServiceError extends CustomError implements IError {
             isOperational: true,
             timestamp: new Date(),
         };
-        super({ ...defaultOptions, ...error } as IError, ExternalServiceError._name);
+        super(
+            { ...defaultOptions, ...error } as IError,
+            ExternalServiceError._name,
+        );
         this.externalService = error.externalService;
     }
 }
@@ -155,7 +191,8 @@ export class ExternalServiceError extends CustomError implements IError {
 export class DatabaseError extends CustomError implements IError {
     static readonly _statusCode: number = 500;
     static readonly CODES = DatabaseErrorCodes;
-    static readonly _name: ErrorConstructorMap = ErrorConstructorMap.DatabaseError;
+    static readonly _name: ErrorConstructorMap =
+        ErrorConstructorMap.DatabaseError;
     constructor(error: DatabaseErrorOptions) {
         const defaultOptions: Partial<IError> = {
             category: ErrorCategory.DATABASE,
@@ -169,7 +206,8 @@ export class DatabaseError extends CustomError implements IError {
 
 export class InternalError extends CustomError implements IError {
     static readonly _statusCode: number = 500;
-    static readonly _name: ErrorConstructorMap = ErrorConstructorMap.InternalError;
+    static readonly _name: ErrorConstructorMap =
+        ErrorConstructorMap.InternalError;
     constructor(error: InternalErrorOptions) {
         const defaultOptions: Partial<IError> = {
             category: ErrorCategory.INTERNAL,
@@ -184,7 +222,8 @@ export class InternalError extends CustomError implements IError {
 export class NetworkError extends CustomError implements IError {
     static readonly _statusCode: number = 500;
     static readonly CODES = NetworkErrorCodes;
-    static readonly _name: ErrorConstructorMap = ErrorConstructorMap.NetworkError;
+    static readonly _name: ErrorConstructorMap =
+        ErrorConstructorMap.NetworkError;
     constructor(error: NetworkErrorOptions) {
         const defaultOptions: Partial<IError> = {
             category: ErrorCategory.NETWORK,
@@ -199,7 +238,8 @@ export class NetworkError extends CustomError implements IError {
 export class BadConfigError extends CustomError implements IError {
     static readonly _statusCode: number = 500;
     static readonly CODES = NetworkErrorCodes;
-    static readonly _name: ErrorConstructorMap = ErrorConstructorMap.BadConfigError;
+    static readonly _name: ErrorConstructorMap =
+        ErrorConstructorMap.BadConfigError;
     constructor(error: BadConfigErrorOptions) {
         const defaultOptions: Partial<IError> = {
             category: ErrorCategory.BAD_CONFIG,
@@ -235,4 +275,13 @@ export function getErrorConstructor(constructor: ErrorConstructorMap) {
     }
 }
 
-export type ErrorInstance = ValidationError | ConflictError | ExternalServiceError | DatabaseError | InternalError | NotFoundError | AuthenticationError | AuthorizationError | NetworkError;
+export type ErrorInstance =
+    | ValidationError
+    | ConflictError
+    | ExternalServiceError
+    | DatabaseError
+    | InternalError
+    | NotFoundError
+    | AuthenticationError
+    | AuthorizationError
+    | NetworkError;

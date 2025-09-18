@@ -3,7 +3,7 @@ class User {
         this.user = user;
     }
     toJson() {
-        if ("username" in this.user) {
+        if ('username' in this.user) {
             return {
                 username: this.user.username,
                 password: this.user.password,
@@ -13,7 +13,7 @@ class User {
                 group: this.user.group.toJson(),
             };
         }
-        else if ("email" in this.user) {
+        else if ('email' in this.user) {
             return {
                 email: this.user.email,
                 password: this.user.password,
@@ -23,7 +23,7 @@ class User {
                 group: this.user.group.toJson(),
             };
         }
-        else if ("phone" in this.user) {
+        else if ('phone' in this.user) {
             return {
                 phone: this.user.phone,
                 password: this.user.password,
@@ -33,7 +33,7 @@ class User {
                 group: this.user.group.toJson(),
             };
         }
-        throw new Error("Invalid user");
+        throw new Error('Invalid user');
     }
 }
 export { User };

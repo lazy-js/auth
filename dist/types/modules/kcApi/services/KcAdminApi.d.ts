@@ -1,5 +1,5 @@
-import KeycloakAdminClient from "@keycloak/keycloak-admin-client";
-import { KeycloakCreateObject } from "../types/shared";
+import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
+import { KeycloakCreateObject } from '../types/shared';
 /**
  * @description KcAdmin class extends the KeycloakAdminClient and is used to authenticate, add `workingRealmName` property and interact with the Keycloak Admin API
  * @extends KeycloakAdminClient

@@ -1,29 +1,37 @@
-import { IGroup, GroupJson } from "./IGroup";
+import { IGroup, GroupJson } from './IGroup';
 
 interface CreateUserBaseDto {
-    method: "email" | "phone" | "username";
+    method: 'email' | 'phone' | 'username';
     password: string;
     firstName?: string;
     lastName?: string;
 }
 interface CreateUserWithUsernameDto extends CreateUserBaseDto {
-    method: "username";
+    method: 'username';
     username: string;
 }
 interface CreateUserWithEmailDto extends CreateUserBaseDto {
-    method: "email";
+    method: 'email';
     email: string;
 }
 interface CreateUserWithPhoneDto extends CreateUserBaseDto {
-    method: "phone";
+    method: 'phone';
     phone: string;
 }
 
-export type CreateUserDto = (CreateUserWithEmailDto | CreateUserWithPhoneDto | CreateUserWithUsernameDto) & {
+export type CreateUserDto = (
+    | CreateUserWithEmailDto
+    | CreateUserWithPhoneDto
+    | CreateUserWithUsernameDto
+) & {
     group: IGroup;
 };
 
-export type UserJson = (CreateUserWithEmailDto | CreateUserWithPhoneDto | CreateUserWithUsernameDto) & {
+export type UserJson = (
+    | CreateUserWithEmailDto
+    | CreateUserWithPhoneDto
+    | CreateUserWithUsernameDto
+) & {
     group: GroupJson;
 };
 

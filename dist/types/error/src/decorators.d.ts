@@ -1,4 +1,4 @@
-import { ErrorContextBase } from "./types/errors";
+import { ErrorContextBase } from './types/errors';
 export declare function AsyncTransform(context?: Partial<ErrorContextBase>): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor;
 export declare function SyncTransform(context?: Partial<ErrorContextBase>): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor;
 export declare function AutoTransform(options?: {

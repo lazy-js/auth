@@ -1,7 +1,7 @@
-import ClientRepresentation from "@keycloak/keycloak-admin-client/lib/defs/clientRepresentation";
-import { IPublicClientApi, CreateClientPayload, CreateClientReturn, GetRoleByIdReturn, GetRolesByClientUuidReturn, GetRoleByNameReturn, GetRolesByParentIdReturn, GetRoleByNamePayload, GetRolesByParentIdPayload, AddRolePayload, AddRoleReturn, GetRoleByIdPayload } from "../types";
-import { KcAdmin } from "./KcAdminApi";
-import { ErrorTransformer } from "../../../error/src/ErrorTransformer";
+import ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation';
+import { IPublicClientApi, CreateClientPayload, CreateClientReturn, GetRoleByIdReturn, GetRolesByClientUuidReturn, GetRoleByNameReturn, GetRolesByParentIdReturn, GetRoleByNamePayload, GetRolesByParentIdPayload, AddRolePayload, AddRoleReturn, GetRoleByIdPayload } from '../types';
+import { KcAdmin } from './KcAdminApi';
+import { ErrorTransformer } from '../../../error/src/ErrorTransformer';
 /**
  * @description PublicClientApi class implements the IPublicClientApi interface and is used to interact with the Keycloak Public Client API
  * @implements IPublicClientApi

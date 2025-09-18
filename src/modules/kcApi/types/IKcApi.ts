@@ -4,8 +4,8 @@ import { IUserApi } from './IUserApi';
 import { IRealmApi } from './IRealmApi';
 
 export interface IKcApi {
-  realms: IRealmApi;
-  groups: IGroupApi;
-  users: IUserApi;
-  publicClients: IPublicClientApi;
+    realms: IRealmApi;
+    groups: IGroupApi;
+    users: IUserApi;
+    publicClients: IPublicClientApi;
 }

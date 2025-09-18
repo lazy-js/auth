@@ -1,41 +1,41 @@
-type ErrorMapCondition = "default" | "includes" | "startsWith" | "endsWith" | "equals" | "notEquals" | "contains" | "notContains" | "matches" | "notMatches" | "instanceOf";
+type ErrorMapCondition = 'default' | 'includes' | 'startsWith' | 'endsWith' | 'equals' | 'notEquals' | 'contains' | 'notContains' | 'matches' | 'notMatches' | 'instanceOf';
 type ErrorMapBase = {
     condition: ErrorMapCondition;
 };
 interface ErrorMapIncludes extends ErrorMapBase {
-    condition: "includes";
+    condition: 'includes';
     messageParts: string[];
 }
 interface ErrorMapMatches extends ErrorMapBase {
-    condition: "matches";
+    condition: 'matches';
     messageRegex: RegExp;
 }
 interface ErrorMapEquals extends ErrorMapBase {
-    condition: "equals";
+    condition: 'equals';
     message: string;
 }
 interface ErrorMapDefault extends ErrorMapBase {
-    condition: "default";
+    condition: 'default';
 }
 export type Constructor<T = {}> = new (...args: any[]) => T;
 interface ErrorMapInstanceOf extends ErrorMapBase {
-    condition: "instanceOf";
+    condition: 'instanceOf';
     error: Constructor;
 }
 interface ErrorMapOutBase {
-    type: "ErrorInstance" | "String";
+    type: 'ErrorInstance' | 'String';
 }
 export interface ErrorMapIfOutErrorInstance<T, C> extends ErrorMapOutBase {
-    type: "ErrorInstance";
+    type: 'ErrorInstance';
     error: T;
     replaceConstructor?: C;
 }
 interface ErrorMapIfOutString extends ErrorMapOutBase {
-    type: "String";
+    type: 'String';
     code: string;
 }
 export type ErrorMapInput = ErrorMapIncludes | ErrorMapMatches | ErrorMapEquals | ErrorMapDefault | ErrorMapInstanceOf;
-export type ErrorMapOut<T, C> = "pass" | ErrorMapIfOutErrorInstance<T, C> | ErrorMapIfOutString;
+export type ErrorMapOut<T, C> = 'pass' | ErrorMapIfOutErrorInstance<T, C> | ErrorMapIfOutString;
 /**
  * @description ErrorMap is a type that represents a mapping of an input to an output
  * @description T is enum of error constructors

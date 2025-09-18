@@ -11,7 +11,11 @@ export default defineConfig({
     test: {
         testTimeout: 0,
         // Also configure hook timeouts if needed
-        exclude: ['tests/RealmBuilder.test.ts', 'tests/KcApi.test.ts', 'tests/index.test.ts'],
+        exclude: [
+            'tests/RealmBuilder.test.ts',
+            'tests/KcApi.test.ts',
+            'tests/index.test.ts',
+        ],
         hookTimeout: 0,
     },
 });
@@ -36,7 +40,11 @@ describe('Realm Builder Testing Suite', () => {
         const mongoUri = mongoServer.getUri();
         db = new Database(mongoUri);
         await db.connect();
-        realmBuilder = await RealmBuilder.create(realm, kcApiOptions, notificationClientSdk);
+        realmBuilder = await RealmBuilder.create(
+            realm,
+            kcApiOptions,
+            notificationClientSdk,
+        );
 
         await realmBuilder.kcApi.realms.deleteRealm();
     });
@@ -79,10 +87,12 @@ describe('Realm Builder Testing Suite', () => {
     });
 
     it('should delete the realm', async () => {
-        const doesExistBeforeDelete = await realmBuilder.kcApi.realms.realmExists();
+        const doesExistBeforeDelete =
+            await realmBuilder.kcApi.realms.realmExists();
         expect(doesExistBeforeDelete).toBe(true);
         await realmBuilder.kcApi.realms.deleteRealm();
-        const doesExistAfterDelete = await realmBuilder.kcApi.realms.realmExists();
+        const doesExistAfterDelete =
+            await realmBuilder.kcApi.realms.realmExists();
         expect(doesExistAfterDelete).toBe(false);
     });
 

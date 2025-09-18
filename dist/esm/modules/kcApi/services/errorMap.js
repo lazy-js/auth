@@ -1,5 +1,5 @@
-import { AuthenticationError, AuthorizationError, ConflictError, InternalError, NotFoundError } from '../../../error/src/Error';
-import { ErrorTransformer } from '../../../error/src/ErrorTransformer';
+import { AuthenticationError, AuthorizationError, ConflictError, InternalError, NotFoundError, } from '../../../error/src/Error';
+import { ErrorTransformer, } from '../../../error/src/ErrorTransformer';
 import { errors as joseErrors } from 'jose';
 export const errorMap = [
     {

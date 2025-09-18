@@ -1,4 +1,4 @@
-import { ErrorCategory, ErrorConstructorMap, NetworkErrorCodes, DatabaseErrorCodes } from './constants';
+import { ErrorCategory, ErrorConstructorMap, NetworkErrorCodes, DatabaseErrorCodes, } from './constants';
 import { StackHelper } from './StackHelper';
 export class CustomError extends Error {
     constructor(error, name) {

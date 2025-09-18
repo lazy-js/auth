@@ -1,5 +1,5 @@
-import type GroupRepresentation from "@keycloak/keycloak-admin-client/lib/defs/groupRepresentation";
-import type { Attributes } from "./shared";
+import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation';
+import type { Attributes } from './shared';
 export interface CreateGroupPayload {
     groupName: string;
     parentGroupId?: string;

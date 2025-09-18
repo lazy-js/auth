@@ -8,8 +8,8 @@ class Group {
         this.roles = [];
         this.rolesFlaten = [];
         this.groupAttributes = {};
-        this.clientName = "";
-        this.clientPath = "";
+        this.clientName = '';
+        this.clientPath = '';
     }
     setClientName(name) {
         this.clientName = name;

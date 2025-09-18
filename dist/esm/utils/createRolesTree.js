@@ -1,4 +1,4 @@
-import { Role } from "../modules/Realm";
+import { Role } from '../modules/Realm';
 export function createRolesTree(roles) {
     const _roles = [];
     roles.forEach((role) => {

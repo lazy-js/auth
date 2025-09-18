@@ -14,7 +14,10 @@ import { AutoTransform } from '../../../error/src/decorators';
     exclude: ['realmExists'],
 })
 export class RealmApi implements IRealmApi {
-    constructor(public kcAdmin: KcAdmin, public errorTransformer: ErrorTransformer) {
+    constructor(
+        public kcAdmin: KcAdmin,
+        public errorTransformer: ErrorTransformer,
+    ) {
         this.kcAdmin = kcAdmin;
         this.errorTransformer = errorTransformer;
     }
@@ -68,17 +71,29 @@ export class RealmApi implements IRealmApi {
  * @property {Object} realmRequiredActionsProvidedIds - The realm required actions provided ids
  */
 const realmRequiredActionsProvidedIds: {
-    [key: string]: { priority: number; enabled: boolean; defaultAction: boolean };
+    [key: string]: {
+        priority: number;
+        enabled: boolean;
+        defaultAction: boolean;
+    };
 } = {
     update_user_locale: { priority: 10, enabled: false, defaultAction: false },
     CONFIGURE_TOTP: { priority: 20, enabled: false, defaultAction: false },
-    TERMS_AND_CONDITIONS: { priority: 30, enabled: false, defaultAction: false },
+    TERMS_AND_CONDITIONS: {
+        priority: 30,
+        enabled: false,
+        defaultAction: false,
+    },
     UPDATE_PASSWORD: { priority: 40, enabled: false, defaultAction: false },
     UPDATE_PROFILE: { priority: 50, enabled: false, defaultAction: false },
     VERIFY_EMAIL: { priority: 60, enabled: false, defaultAction: false },
     delete_account: { priority: 70, enabled: false, defaultAction: false },
     'webauthn-register': { priority: 80, enabled: false, defaultAction: false },
-    'webauthn-register-passwordless': { priority: 90, enabled: false, defaultAction: false },
+    'webauthn-register-passwordless': {
+        priority: 90,
+        enabled: false,
+        defaultAction: false,
+    },
     VERIFY_PROFILE: { priority: 100, enabled: false, defaultAction: false },
     delete_credential: { priority: 1000, enabled: false, defaultAction: false },
 };
@@ -88,14 +103,16 @@ const realmRequiredActionsProvidedIds: {
  * @type {Object}
  * @property {Object} realmRequiredActions - The realm required actions
  */
-const realmRequiredActions = Object.keys(realmRequiredActionsProvidedIds).map((id) => {
-    return {
-        alias: id,
-        name: id,
-        providerId: id,
-        enabled: realmRequiredActionsProvidedIds[id].enabled,
-        defaultAction: realmRequiredActionsProvidedIds[id].defaultAction,
-        priority: realmRequiredActionsProvidedIds[id].priority,
-        config: {},
-    };
-});
+const realmRequiredActions = Object.keys(realmRequiredActionsProvidedIds).map(
+    (id) => {
+        return {
+            alias: id,
+            name: id,
+            providerId: id,
+            enabled: realmRequiredActionsProvidedIds[id].enabled,
+            defaultAction: realmRequiredActionsProvidedIds[id].defaultAction,
+            priority: realmRequiredActionsProvidedIds[id].priority,
+            config: {},
+        };
+    },
+);

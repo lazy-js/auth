@@ -1,4 +1,4 @@
-import { IClient, IApp, Attribute, AttributeValue } from "../types";
+import { IClient, IApp, Attribute, AttributeValue } from '../types';
 export declare class App implements IApp {
     name: string;
     clients: IClient[];

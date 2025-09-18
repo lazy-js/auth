@@ -30,7 +30,7 @@ const userControllerLogger = userModuleLogger.child('User Controller', {
     disableDebug: disable,
     disableError: disable,
 });
-export { userModuleLogger, userServiceLogger, userControllerLogger, userValidatorLogger };
+export { userModuleLogger, userServiceLogger, userControllerLogger, userValidatorLogger, };
 const appLogger = Logger.create('App', {
     disableInfo: disable,
     disableWarn: disable,

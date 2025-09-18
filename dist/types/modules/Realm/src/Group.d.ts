@@ -1,4 +1,4 @@
-import { IRole, IGroup, Attribute, AttributeValue, GroupJson } from "../types";
+import { IRole, IGroup, Attribute, AttributeValue, GroupJson } from '../types';
 export declare class Group implements IGroup {
     name: string;
     clientPath: string;

@@ -87,7 +87,8 @@ class UserService {
             return { token: tokenResponse, user: user };
         }
         catch (error) {
-            if (error instanceof Error && error.message.includes('invalid_grant')) {
+            if (error instanceof Error &&
+                error.message.includes('invalid_grant')) {
                 this.throwInvalidCredentialsError(loginDto.method);
             }
             throw error;
@@ -126,7 +127,8 @@ class UserService {
             }
             // check if the code is expired
             const _5Minutes = 5 * 60 * 1000;
-            if (userInDb.updatedAt && userInDb.updatedAt.getTime() + _5Minutes < Date.now()) {
+            if (userInDb.updatedAt &&
+                userInDb.updatedAt.getTime() + _5Minutes < Date.now()) {
                 throw new utils_1.AppError(errors_1.default.CODE_EXPIRED);
             }
             // check if the code is correct
@@ -149,7 +151,11 @@ class UserService {
         });
     }
     async validateAccessToken(accessToken) {
-        if (!accessToken || accessToken === '' || accessToken === 'undefined' || !accessToken.startsWith('Bearer ') || accessToken.split(' ')[1] === '') {
+        if (!accessToken ||
+            accessToken === '' ||
+            accessToken === 'undefined' ||
+            !accessToken.startsWith('Bearer ') ||
+            accessToken.split(' ')[1] === '') {
             throw new utils_1.AppError(errors_1.default.INVALID_ACCESS_TOKEN);
         }
         const { payload } = await this.kcApi.users.validateAccessToken(accessToken.split(' ')[1]);
@@ -166,7 +172,9 @@ class UserService {
         return { ...payload, _id: userInLocalDb._id };
     }
     async refreshToken(refreshToken) {
-        if (!refreshToken || refreshToken === '' || refreshToken === 'undefined') {
+        if (!refreshToken ||
+            refreshToken === '' ||
+            refreshToken === 'undefined') {
             throw new utils_1.AppError(errors_1.default.INVALID_REFRESH_TOKEN);
         }
         const tokenResponse = await this.kcApi.users.refreshAccessToken({
@@ -178,13 +186,21 @@ class UserService {
     async validateRole(accessToken, role) {
         const payload = await this.validateAccessToken(accessToken);
         // azp is the client name which token issued with
-        if (!payload || !payload.resource_access || !payload.azp || !payload.resource_access[payload.azp] || payload.azp !== this.client.clientId || !payload.resource_access[payload.azp].roles || !Array.isArray(payload.resource_access[payload.azp].roles)) {
+        if (!payload ||
+            !payload.resource_access ||
+            !payload.azp ||
+            !payload.resource_access[payload.azp] ||
+            payload.azp !== this.client.clientId ||
+            !payload.resource_access[payload.azp].roles ||
+            !Array.isArray(payload.resource_access[payload.azp].roles)) {
             throw new utils_1.AppError(errors_1.default.INVALID_ACCESS_TOKEN);
         }
         const roles = payload.resource_access[payload.azp].roles;
         if (!roles)
             throw new utils_1.AppError(errors_1.default.UNAUTHORIZED);
-        const canAccess = Array.isArray(role) ? role.some((r) => roles.includes(r)) : roles.includes(role);
+        const canAccess = Array.isArray(role)
+            ? role.some((r) => roles.includes(r))
+            : roles.includes(role);
         loggers_1.userServiceLogger.info(`User has role ${role}: ${canAccess}`);
         if (!canAccess) {
             throw new utils_1.AppError(errors_1.default.UNAUTHORIZED);
@@ -228,7 +244,11 @@ class UserService {
         let keycloakUserId;
         try {
             const { username, firstName, lastName, password } = userDto;
-            const verified = (this.client.clientAuthConfiguration.registerConfig.status === 'public' && this.client.clientAuthConfiguration.registerConfig.verified) || userDto.method === 'username';
+            const verified = (this.client.clientAuthConfiguration.registerConfig.status ===
+                'public' &&
+                this.client.clientAuthConfiguration.registerConfig
+                    .verified) ||
+                userDto.method === 'username';
             const { id } = await this.kcApi.users.createUser({
                 username: username,
                 firstName: firstName,
@@ -289,7 +309,9 @@ class UserService {
     async _publicRegister(createUserParams) {
         const { body } = createUserParams;
         const { primaryFields } = this.client.clientAuthConfiguration;
-        const verifiedByDefault = this.client.clientAuthConfiguration.registerConfig.status === 'public' && this.client.clientAuthConfiguration.registerConfig.verified;
+        const verifiedByDefault = this.client.clientAuthConfiguration.registerConfig.status ===
+            'public' &&
+            this.client.clientAuthConfiguration.registerConfig.verified;
         const userDto = await this.userValidator.validateUserCreationDto(body, primaryFields);
         const userInDb = await this._getUser(userDto);
         if (userInDb) {
@@ -335,12 +357,14 @@ class UserService {
         }
     }
     async _privateRegister(createUserParams) {
-        if (this.client.clientAuthConfiguration.registerConfig.status !== 'private')
+        if (this.client.clientAuthConfiguration.registerConfig.status !==
+            'private')
             throw new Error('Invalid register config, this function should be used only for private register');
         const { accessToken } = createUserParams;
         if (!accessToken)
             throw new Error(errors_1.default.UNAUTHORIZED.code);
-        const privateRegisterAccessRoles = this.client.clientAuthConfiguration.registerConfig.privateAccessRoles;
+        const privateRegisterAccessRoles = this.client.clientAuthConfiguration.registerConfig
+            .privateAccessRoles;
         await this.validateRole(accessToken, privateRegisterAccessRoles.map((role) => role.name));
         return await this._publicRegister(createUserParams);
     }
@@ -350,7 +374,9 @@ class UserService {
             username = userDto.username;
         }
         else if (userDto.method === 'email') {
-            username = (userDto.email.split('@')[0] + '_' + userDto.email.split('@')[1]);
+            username = (userDto.email.split('@')[0] +
+                '_' +
+                userDto.email.split('@')[1]);
         }
         else if (userDto.method === 'phone') {
             username = userDto.phone.split(' ')[0];

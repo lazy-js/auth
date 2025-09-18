@@ -192,6 +192,7 @@ let GroupApi = class GroupApi {
 exports.GroupApi = GroupApi;
 exports.GroupApi = GroupApi = __decorate([
     (0, decorators_1.AutoTransform)(),
-    __metadata("design:paramtypes", [KcAdminApi_1.KcAdmin, ErrorTransformer_1.ErrorTransformer])
+    __metadata("design:paramtypes", [KcAdminApi_1.KcAdmin,
+        ErrorTransformer_1.ErrorTransformer])
 ], GroupApi);
 //# sourceMappingURL=GroupApi.js.map

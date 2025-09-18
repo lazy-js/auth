@@ -1,7 +1,18 @@
 import GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation';
 import { IRealm, IRole } from '../Realm/index';
 import { KcApi, IKcApi } from '../kcApi/index';
-import { IRealmBuilder, kcApiConfig, InitRealmResponse, InitAppPayload, InitAppResponse, InitClientPayload, InitClientResponse, InitGroupPayload, InitGroupResponse, ProfileAttribute } from './types';
+import {
+    IRealmBuilder,
+    kcApiConfig,
+    InitRealmResponse,
+    InitAppPayload,
+    InitAppResponse,
+    InitClientPayload,
+    InitClientResponse,
+    InitGroupPayload,
+    InitGroupResponse,
+    ProfileAttribute,
+} from './types';
 
 import { BaseController } from '@lazy-js/server';
 import { UserController } from '../User';
@@ -14,7 +25,11 @@ export class RealmBuilder extends BaseController implements IRealmBuilder {
     public kcApi: IKcApi;
     public notificationClientSdk: INotificationClientSdk;
 
-    static async create(realm: IRealm, kcApiConfig: kcApiConfig, notificationClientSdk: INotificationClientSdk) {
+    static async create(
+        realm: IRealm,
+        kcApiConfig: kcApiConfig,
+        notificationClientSdk: INotificationClientSdk,
+    ) {
         const kcApi = await KcApi.create({
             realmName: realm.name,
             url: kcApiConfig.url,
@@ -24,7 +39,11 @@ export class RealmBuilder extends BaseController implements IRealmBuilder {
         return new RealmBuilder(realm, kcApi, notificationClientSdk);
     }
 
-    private constructor(realm: IRealm, kcApi: IKcApi, notificationClientSdk: INotificationClientSdk) {
+    private constructor(
+        realm: IRealm,
+        kcApi: IKcApi,
+        notificationClientSdk: INotificationClientSdk,
+    ) {
         super({ pathname: `/${realm.name}` });
         this.realm = realm;
         this.kcApi = kcApi;
@@ -53,11 +72,19 @@ export class RealmBuilder extends BaseController implements IRealmBuilder {
                     });
                 }
 
-                const userController = new UserController(client, this.kcApi, this.notificationClientSdk);
+                const userController = new UserController(
+                    client,
+                    this.kcApi,
+                    this.notificationClientSdk,
+                );
                 if (client.clientAuthConfiguration.builtInUser) {
-                    const doesUserExists = await userController.userService._getUser(client.clientAuthConfiguration.builtInUser.toJson());
+                    const doesUserExists =
+                        await userController.userService._getUser(
+                            client.clientAuthConfiguration.builtInUser.toJson(),
+                        );
                     if (!doesUserExists) {
-                        const userDto = client.clientAuthConfiguration.builtInUser.toJson();
+                        const userDto =
+                            client.clientAuthConfiguration.builtInUser.toJson();
                         await userController.userService.registerDefaultUser({
                             body: userDto,
                             group: userDto.group,
@@ -87,7 +114,9 @@ export class RealmBuilder extends BaseController implements IRealmBuilder {
         if (!realmExists) {
             await this.kcApi.realms.createRealm();
         }
-        rootGroup = await this.kcApi.groups.getTopLevelGroupByName(this.realm.name);
+        rootGroup = await this.kcApi.groups.getTopLevelGroupByName(
+            this.realm.name,
+        );
 
         if (!rootGroup) {
             rootGroup = await this.kcApi.groups.createGroup({
@@ -96,7 +125,9 @@ export class RealmBuilder extends BaseController implements IRealmBuilder {
             });
         }
 
-        rootGroup = await this.kcApi.groups.getGroupById(rootGroup.id as string);
+        rootGroup = await this.kcApi.groups.getGroupById(
+            rootGroup.id as string,
+        );
         await this._removeUsernameValidator();
         if (!rootGroup || !rootGroup.id)
             throw new ExternalServiceError({
@@ -112,10 +143,13 @@ export class RealmBuilder extends BaseController implements IRealmBuilder {
 
     async _initApp(initAppPayload: InitAppPayload): Promise<InitAppResponse> {
         const { app, realmId } = initAppPayload;
-        const subGroupsOfRootGroup = await this.kcApi.groups.getSubGroupsByParentId(realmId);
+        const subGroupsOfRootGroup =
+            await this.kcApi.groups.getSubGroupsByParentId(realmId);
 
         let appInDatabase;
-        appInDatabase = subGroupsOfRootGroup.find((group) => group.name === app.name);
+        appInDatabase = subGroupsOfRootGroup.find(
+            (group) => group.name === app.name,
+        );
 
         if (!appInDatabase)
             appInDatabase = await this.kcApi.groups.createGroup({
@@ -124,7 +158,9 @@ export class RealmBuilder extends BaseController implements IRealmBuilder {
                 attributes: app.appAttributes,
             });
 
-        appInDatabase = await this.kcApi.groups.getGroupById(appInDatabase.id as string);
+        appInDatabase = await this.kcApi.groups.getGroupById(
+            appInDatabase.id as string,
+        );
 
         if (!appInDatabase || !appInDatabase.id)
             throw new ExternalServiceError({
@@ -139,12 +175,17 @@ export class RealmBuilder extends BaseController implements IRealmBuilder {
         };
     }
 
-    async _initClient(initClientPayload: InitClientPayload): Promise<InitClientResponse> {
+    async _initClient(
+        initClientPayload: InitClientPayload,
+    ): Promise<InitClientResponse> {
         const { appId, client } = initClientPayload;
-        const subGroupsOfAppGroup = await this.kcApi.groups.getSubGroupsByParentId(appId);
+        const subGroupsOfAppGroup =
+            await this.kcApi.groups.getSubGroupsByParentId(appId);
 
         let clientInDatabase: GroupRepresentation | undefined;
-        clientInDatabase = subGroupsOfAppGroup.find((group) => group.name === client.name);
+        clientInDatabase = subGroupsOfAppGroup.find(
+            (group) => group.name === client.name,
+        );
         realmBuilderLogger.debug('clientInDatabase cheked: ', clientInDatabase);
         if (!clientInDatabase)
             clientInDatabase = await this.kcApi.groups.createGroup({
@@ -153,18 +194,27 @@ export class RealmBuilder extends BaseController implements IRealmBuilder {
                 attributes: client.clientAttributes,
             });
 
-        let publicClientExistInDatabase = await this.kcApi.publicClients.getOneByClientId(client.clientId);
+        let publicClientExistInDatabase =
+            await this.kcApi.publicClients.getOneByClientId(client.clientId);
         if (!publicClientExistInDatabase)
-            publicClientExistInDatabase = await this.kcApi.publicClients.create({
-                clientId: client.clientId,
-                name: client.appName + '-' + client.name,
-                description: client.clientDescription,
-            });
-        realmBuilderLogger.debug('publicClientExistInDatabase created: ', publicClientExistInDatabase);
+            publicClientExistInDatabase = await this.kcApi.publicClients.create(
+                {
+                    clientId: client.clientId,
+                    name: client.appName + '-' + client.name,
+                    description: client.clientDescription,
+                },
+            );
+        realmBuilderLogger.debug(
+            'publicClientExistInDatabase created: ',
+            publicClientExistInDatabase,
+        );
 
         for (let role of client.rolesTree) {
             realmBuilderLogger.debug('role init:', role.name);
-            await this._initRole(role, publicClientExistInDatabase.id as string);
+            await this._initRole(
+                role,
+                publicClientExistInDatabase.id as string,
+            );
         }
 
         return {
@@ -173,12 +223,18 @@ export class RealmBuilder extends BaseController implements IRealmBuilder {
         };
     }
 
-    async _initRole(role: IRole, publicClientUuid: string, parentRoleId?: string): Promise<void> {
+    async _initRole(
+        role: IRole,
+        publicClientUuid: string,
+        parentRoleId?: string,
+    ): Promise<void> {
         let doesRoleExists = await this.kcApi.publicClients.getRoleByName({
             roleName: role.name,
             clientUuid: publicClientUuid,
         });
-        realmBuilderLogger.debug(`does role ${role.name} exists ? ${doesRoleExists}`);
+        realmBuilderLogger.debug(
+            `does role ${role.name} exists ? ${doesRoleExists}`,
+        );
         if (!doesRoleExists) {
             doesRoleExists = await this.kcApi.publicClients.addRole({
                 roleName: role.name,
@@ -189,16 +245,24 @@ export class RealmBuilder extends BaseController implements IRealmBuilder {
 
         if (role.roles.length) {
             for (let subRole of role.roles) {
-                await this._initRole(subRole, publicClientUuid, doesRoleExists.id);
+                await this._initRole(
+                    subRole,
+                    publicClientUuid,
+                    doesRoleExists.id,
+                );
             }
         }
     }
 
-    async _initGroup(initGroupPayload: InitGroupPayload): Promise<InitGroupResponse> {
+    async _initGroup(
+        initGroupPayload: InitGroupPayload,
+    ): Promise<InitGroupResponse> {
         const { group, clientGroupId, clientUuid } = initGroupPayload;
-        const subGroupsOfClient = await this.kcApi.groups.getSubGroupsByParentId(clientGroupId);
+        const subGroupsOfClient =
+            await this.kcApi.groups.getSubGroupsByParentId(clientGroupId);
 
-        let groupInDatabase: GroupRepresentation | undefined = subGroupsOfClient.find((g) => g.name === group.name);
+        let groupInDatabase: GroupRepresentation | undefined =
+            subGroupsOfClient.find((g) => g.name === group.name);
 
         if (!groupInDatabase)
             groupInDatabase = await this.kcApi.groups.createGroup({
@@ -219,10 +283,11 @@ export class RealmBuilder extends BaseController implements IRealmBuilder {
         }
 
         for (const role of group.roles) {
-            const roleInPublicClientDatabase = await this.kcApi.publicClients.getRoleByName({
-                roleName: role.name,
-                clientUuid: clientUuid,
-            });
+            const roleInPublicClientDatabase =
+                await this.kcApi.publicClients.getRoleByName({
+                    roleName: role.name,
+                    clientUuid: clientUuid,
+                });
             if (!roleInPublicClientDatabase || !roleInPublicClientDatabase.id) {
                 throw new BadConfigError({
                     code: 'ROLE_NOT_FOUND_IN_PUBLIC_CLIENT',
@@ -249,7 +314,9 @@ export class RealmBuilder extends BaseController implements IRealmBuilder {
                 label: 'User profile config not found',
                 externalService: 'Keycloak',
             });
-        const usernameIndex = config.attributes.findIndex((attr) => attr.name === 'username');
+        const usernameIndex = config.attributes.findIndex(
+            (attr) => attr.name === 'username',
+        );
         config.attributes[usernameIndex].validations = {};
         await this.kcApi.users.updateUserProileConfig(config);
     }
