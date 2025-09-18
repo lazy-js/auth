@@ -1,5 +1,5 @@
-import { IError, ValidationErrorOptions, AuthenticationErrorOptions, AuthorizationErrorOptions, DatabaseErrorOptions, ConflictErrorOptions, NetworkErrorOptions, NotFoundErrorOptions, ExternalServiceErrorOptions, InternalErrorOptions, ErrorContextBase } from "./types/errors";
-import { ErrorCategory, ErrorConstructorMap, NetworkErrorCodes, DatabaseErrorCodes } from "./constants";
+import { IError, ValidationErrorOptions, AuthenticationErrorOptions, AuthorizationErrorOptions, DatabaseErrorOptions, ConflictErrorOptions, NetworkErrorOptions, NotFoundErrorOptions, ExternalServiceErrorOptions, InternalErrorOptions, ErrorContextBase, BadConfigErrorOptions } from './types/errors';
+import { ErrorCategory, ErrorConstructorMap, NetworkErrorCodes, DatabaseErrorCodes } from './constants';
 export declare class CustomError extends Error implements IError {
     readonly code: string;
     readonly category: ErrorCategory;
@@ -8,14 +8,14 @@ export declare class CustomError extends Error implements IError {
     context?: ErrorContextBase;
     timestamp: Date;
     readonly label: string;
-    stack?: string;
+    stack: string;
     readonly name: ErrorConstructorMap;
     constructor(error: IError, name: ErrorConstructorMap);
-    getStack(clean?: boolean): string;
+    createStack(): string;
+    log(logContext?: boolean): void;
     updateTimestamp(timestamp: Date): void;
     updateTimestampToNow(): void;
     updateContext(context: ErrorContextBase): void;
-    updateStack(stack: string): void;
 }
 export declare class ValidationError extends CustomError implements IError {
     static readonly _statusCode: number;
@@ -64,6 +64,12 @@ export declare class NetworkError extends CustomError implements IError {
     static readonly CODES: typeof NetworkErrorCodes;
     static readonly _name: ErrorConstructorMap;
     constructor(error: NetworkErrorOptions);
+}
+export declare class BadConfigError extends CustomError implements IError {
+    static readonly _statusCode: number;
+    static readonly CODES: typeof NetworkErrorCodes;
+    static readonly _name: ErrorConstructorMap;
+    constructor(error: BadConfigErrorOptions);
 }
 export declare function getErrorConstructor(constructor: ErrorConstructorMap): typeof ValidationError;
 export type ErrorInstance = ValidationError | ConflictError | ExternalServiceError | DatabaseError | InternalError | NotFoundError | AuthenticationError | AuthorizationError | NetworkError;

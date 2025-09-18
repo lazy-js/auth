@@ -10,6 +10,7 @@ export var ErrorCategory;
     ErrorCategory["NETWORK"] = "network";
     ErrorCategory["CONFIGURATION"] = "configuration";
     ErrorCategory["INTERNAL"] = "internal";
+    ErrorCategory["BAD_CONFIG"] = "bad_config";
 })(ErrorCategory || (ErrorCategory = {}));
 export var ErrorLayer;
 (function (ErrorLayer) {
@@ -31,6 +32,7 @@ export var ErrorConstructorMap;
     ErrorConstructorMap["NetworkError"] = "NetworkError";
     ErrorConstructorMap["AuthorizationError"] = "AuthorizationError";
     ErrorConstructorMap["AuthenticationError"] = "AuthenticationError";
+    ErrorConstructorMap["BadConfigError"] = "BadConfigError";
 })(ErrorConstructorMap || (ErrorConstructorMap = {}));
 export var NetworkErrorCodes;
 (function (NetworkErrorCodes) {

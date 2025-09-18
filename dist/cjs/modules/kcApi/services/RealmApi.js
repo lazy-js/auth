@@ -46,10 +46,15 @@ let RealmApi = class RealmApi {
      * @returns Promise<boolean> - true if the realm exists, false otherwise
      */
     async realmExists() {
-        const realm = await this.kcAdmin.realms.findOne({
-            realm: this.kcAdmin.workingRealmName,
-        });
-        return !!realm;
+        try {
+            const realm = await this.kcAdmin.realms.findOne({
+                realm: this.kcAdmin.workingRealmName,
+            });
+            return !!realm;
+        }
+        catch (error) {
+            return false;
+        }
     }
     /**
      * @description Delete a realm if it exists and nothing if not exists
@@ -64,7 +69,9 @@ let RealmApi = class RealmApi {
 };
 exports.RealmApi = RealmApi;
 exports.RealmApi = RealmApi = __decorate([
-    (0, decorators_1.AutoTransform)(),
+    (0, decorators_1.AutoTransform)({
+        exclude: ['realmExists'],
+    }),
     __metadata("design:paramtypes", [KcAdminApi_1.KcAdmin, ErrorTransformer_1.ErrorTransformer])
 ], RealmApi);
 /**
@@ -80,8 +87,8 @@ const realmRequiredActionsProvidedIds = {
     UPDATE_PROFILE: { priority: 50, enabled: false, defaultAction: false },
     VERIFY_EMAIL: { priority: 60, enabled: false, defaultAction: false },
     delete_account: { priority: 70, enabled: false, defaultAction: false },
-    "webauthn-register": { priority: 80, enabled: false, defaultAction: false },
-    "webauthn-register-passwordless": { priority: 90, enabled: false, defaultAction: false },
+    'webauthn-register': { priority: 80, enabled: false, defaultAction: false },
+    'webauthn-register-passwordless': { priority: 90, enabled: false, defaultAction: false },
     VERIFY_PROFILE: { priority: 100, enabled: false, defaultAction: false },
     delete_credential: { priority: 1000, enabled: false, defaultAction: false },
 };

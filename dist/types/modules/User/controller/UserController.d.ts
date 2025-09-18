@@ -1,9 +1,15 @@
-import { NextFunction, Request, Response } from '@lazy-js/server';
+import { NextFunction, Request, Response, BaseController } from '@lazy-js/server';
 import { UserService } from '../service/UserService';
 import { IKcApi } from '../../kcApi';
 import { IClient } from '../../Realm';
-import { BaseController } from '@lazy-js/server';
 import { INotificationClientSdk } from '../../../types';
+export declare const registerPath = "/register";
+export declare const loginPath = "/login";
+export declare const validateAccessTokenPath = "/validate-access-token";
+export declare const validateRolePath = "/validate-role";
+export declare const refreshAccessTokenPath = "/refresh-access-token";
+export declare const updatePasswordPath = "/me/password";
+export declare const verifyPath = "/me/verify";
 declare class UserController extends BaseController {
     userService: UserService;
     client: IClient;

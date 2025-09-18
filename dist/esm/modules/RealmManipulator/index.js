@@ -116,7 +116,7 @@ export class RealmManipulator {
                     client.clientAuthConfiguration.registerConfig.verified;
                 const registerStatus = client.clientAuthConfiguration.registerConfig.status;
                 const loginStatus = client.clientAuthConfiguration.loginConfig.status;
-                const clientUrl = `http://localhost:${this.port}${this.routerPrefix}${client.appPath}/${client.name}`;
+                const clientUrl = `${this.routerPrefix}${client.appPath}/${client.name}`;
                 const primaryFields = client.clientAuthConfiguration.primaryFields.join(", ");
                 return {
                     appName: app.name,
@@ -129,7 +129,17 @@ export class RealmManipulator {
                     loginUrl: `${clientUrl}/login`,
                 };
             });
-            console.table(clientsSummary);
+            clientsSummary.forEach((client) => {
+                console.log("---------------" + client.name + " ------------");
+                console.log("name: ", client.name);
+                console.log("methods", client.primaryFields);
+                console.log("verified by default: ", client.verified ? "yes" : "no");
+                console.log("login status: ", client.loginStatus);
+                console.log("login url: ", client.loginUrl);
+                console.log("register status: ", client.registerStatus);
+                console.log("login url: ", client.registerUrl);
+                console.log("---------------end of client ------------");
+            });
             console.log("--------------------------------");
         });
     }

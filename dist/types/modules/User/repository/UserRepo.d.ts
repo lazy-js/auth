@@ -4,35 +4,35 @@ import { IUserRepository } from './UserRepo.types';
 export declare class UserRepository implements IUserRepository {
     model: IUserModel;
     constructor();
-    createUser(user: CreateUserPayload): Promise<import("mongoose").Document<unknown, {}, IUserSchema, {}, {}> & IUserSchema & {
-        _id: import("mongoose").Types.ObjectId;
-    } & {
+    createUser(user: CreateUserPayload): Promise<import("mongoose").Document<unknown, {}, IUserSchema, {}, {}> & IUserSchema & Required<{
+        _id: import("mongoose").Schema.Types.ObjectId;
+    }> & {
         __v: number;
     }>;
-    getUserById(id: string): Promise<(import("mongoose").Document<unknown, {}, IUserSchema, {}, {}> & IUserSchema & {
-        _id: import("mongoose").Types.ObjectId;
-    } & {
+    getUserById(id: string): Promise<(import("mongoose").Document<unknown, {}, IUserSchema, {}, {}> & IUserSchema & Required<{
+        _id: import("mongoose").Schema.Types.ObjectId;
+    }> & {
         __v: number;
     }) | null>;
-    getUserByEmail(email: string): Promise<(import("mongoose").Document<unknown, {}, IUserSchema, {}, {}> & IUserSchema & {
-        _id: import("mongoose").Types.ObjectId;
-    } & {
+    getUserByEmail(email: string): Promise<(import("mongoose").Document<unknown, {}, IUserSchema, {}, {}> & IUserSchema & Required<{
+        _id: import("mongoose").Schema.Types.ObjectId;
+    }> & {
         __v: number;
     }) | null>;
-    getUserByPhone(phone: string): Promise<(import("mongoose").Document<unknown, {}, IUserSchema, {}, {}> & IUserSchema & {
-        _id: import("mongoose").Types.ObjectId;
-    } & {
+    getUserByPhone(phone: string): Promise<(import("mongoose").Document<unknown, {}, IUserSchema, {}, {}> & IUserSchema & Required<{
+        _id: import("mongoose").Schema.Types.ObjectId;
+    }> & {
         __v: number;
     }) | null>;
     getUserByUsername(username: string): Promise<IUserSchema | null>;
-    getUserByKeycloakId(uuid: string): Promise<(import("mongoose").Document<unknown, {}, IUserSchema, {}, {}> & IUserSchema & {
-        _id: import("mongoose").Types.ObjectId;
-    } & {
+    getUserByKeycloakId(uuid: string): Promise<(import("mongoose").Document<unknown, {}, IUserSchema, {}, {}> & IUserSchema & Required<{
+        _id: import("mongoose").Schema.Types.ObjectId;
+    }> & {
         __v: number;
     }) | null>;
-    verifyUserEmail(email: string): Promise<(import("mongoose").Document<unknown, {}, IUserSchema, {}, {}> & IUserSchema & {
-        _id: import("mongoose").Types.ObjectId;
-    } & {
+    verifyUserEmail(email: string): Promise<(import("mongoose").Document<unknown, {}, IUserSchema, {}, {}> & IUserSchema & Required<{
+        _id: import("mongoose").Schema.Types.ObjectId;
+    }> & {
         __v: number;
     }) | null>;
 }

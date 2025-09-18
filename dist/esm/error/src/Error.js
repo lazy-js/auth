@@ -1,10 +1,5 @@
-import { ErrorCategory, ErrorConstructorMap, NetworkErrorCodes, DatabaseErrorCodes } from "./constants";
-import { generateStack } from "./utils";
-import { cleanStack } from "./utils";
-const stackConfig = {
-    removeWorkingDirectoryPrefix: true,
-    clean: ["node_modules", "internal/", "generateStack", "updateStack"],
-};
+import { ErrorCategory, ErrorConstructorMap, NetworkErrorCodes, DatabaseErrorCodes } from './constants';
+import { StackHelper } from './StackHelper';
 export class CustomError extends Error {
     constructor(error, name) {
         var _a;
@@ -12,19 +7,34 @@ export class CustomError extends Error {
         this.code = error.code;
         this.context = error.context;
         this.name = name;
-        this.label = (_a = error.label) !== null && _a !== void 0 ? _a : "";
-        this.stack = error.stack ? error.stack : generateStack({ ...stackConfig, errorName: name });
+        this.label = (_a = error.label) !== null && _a !== void 0 ? _a : '';
         this.category = error.category;
         this.statusCode = error.statusCode;
         this.isOperational = error.isOperational;
         this.timestamp = error.timestamp;
+        this.stack = this.createStack();
     }
-    getStack(clean = true) {
-        var _a, _b, _c, _d;
-        if (clean && stackConfig.clean && stackConfig.clean.length > 0) {
-            return (_c = (_a = this.stack) !== null && _a !== void 0 ? _a : cleanStack((_b = this.stack) !== null && _b !== void 0 ? _b : "", ...stackConfig.clean)) !== null && _c !== void 0 ? _c : "";
+    createStack() {
+        return StackHelper.createStack(this.name, this.code);
+    }
+    log(logContext = true) {
+        const keywordsFilter = ['node_modules', 'node:internal'];
+        const callStack = StackHelper.getAndFilterCallStack(this.stack || '', keywordsFilter);
+        StackHelper.doubleLineSeparator('Error');
+        StackHelper.logErrorName(this.name, this.code);
+        StackHelper.logCallStack(callStack);
+        StackHelper.singleLineSeparator('Context');
+        if (logContext && this.context) {
+            Object.keys(this.context).forEach((key) => {
+                var _a;
+                StackHelper.warningConsole(`- ${key}: `);
+                console.log((_a = this.context) === null || _a === void 0 ? void 0 : _a[key]);
+            });
         }
-        return (_d = this.stack) !== null && _d !== void 0 ? _d : "";
+        else {
+            StackHelper.warningConsole('No context');
+        }
+        StackHelper.doubleLineSeparator('End of Error');
     }
     updateTimestamp(timestamp) {
         this.timestamp = timestamp;
@@ -33,12 +43,10 @@ export class CustomError extends Error {
         this.timestamp = new Date();
     }
     updateContext(context) {
+        if (context.originalError && context.originalError.stack) {
+            this.stack = context.originalError.stack;
+        }
         this.context = { ...this.context, ...context };
-    }
-    updateStack(stack) {
-        this.stack = generateStack({ ...stackConfig, errorName: this.name });
-        this.stack = this.stack + "\n";
-        this.stack = this.stack + stack;
     }
 }
 export class ValidationError extends CustomError {
@@ -162,6 +170,20 @@ export class NetworkError extends CustomError {
 NetworkError._statusCode = 500;
 NetworkError.CODES = NetworkErrorCodes;
 NetworkError._name = ErrorConstructorMap.NetworkError;
+export class BadConfigError extends CustomError {
+    constructor(error) {
+        const defaultOptions = {
+            category: ErrorCategory.BAD_CONFIG,
+            statusCode: BadConfigError._statusCode,
+            isOperational: true,
+            timestamp: new Date(),
+        };
+        super({ ...defaultOptions, ...error }, BadConfigError._name);
+    }
+}
+BadConfigError._statusCode = 500;
+BadConfigError.CODES = NetworkErrorCodes;
+BadConfigError._name = ErrorConstructorMap.BadConfigError;
 export function getErrorConstructor(constructor) {
     switch (constructor) {
         case ErrorConstructorMap.ValidationError:
@@ -182,6 +204,8 @@ export function getErrorConstructor(constructor) {
             return AuthorizationError;
         case ErrorConstructorMap.NetworkError:
             return NetworkError;
+        case ErrorConstructorMap.BadConfigError:
+            return BadConfigError;
     }
 }
 //# sourceMappingURL=Error.js.map

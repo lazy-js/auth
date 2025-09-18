@@ -8,7 +8,8 @@ export declare enum ErrorCategory {
     DATABASE = "database",
     NETWORK = "network",
     CONFIGURATION = "configuration",
-    INTERNAL = "internal"
+    INTERNAL = "internal",
+    BAD_CONFIG = "bad_config"
 }
 export declare enum ErrorLayer {
     APP = "app",
@@ -27,7 +28,8 @@ export declare enum ErrorConstructorMap {
     NotFoundError = "NotFoundError",
     NetworkError = "NetworkError",
     AuthorizationError = "AuthorizationError",
-    AuthenticationError = "AuthenticationError"
+    AuthenticationError = "AuthenticationError",
+    BadConfigError = "BadConfigError"
 }
 export declare enum NetworkErrorCodes {
     NETWORK_CONNECTION_ERROR = "NETWORK_CONNECTION_ERROR",

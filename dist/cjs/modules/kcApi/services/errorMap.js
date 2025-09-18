@@ -7,161 +7,174 @@ const jose_1 = require("jose");
 exports.errorMap = [
     {
         input: {
-            condition: "includes",
-            messageParts: ["Top level group", "already exists"],
+            condition: 'includes',
+            messageParts: ['Top level group', 'already exists'],
         },
         output: {
-            type: "ErrorInstance",
+            type: 'ErrorInstance',
             error: new Error_1.ConflictError({
-                code: "TOP_LEVEL_GROUP_ALREADY_EXISTS",
-                label: "top level group already exists",
+                code: 'TOP_LEVEL_GROUP_ALREADY_EXISTS',
+                label: 'top level group already exists',
             }),
         },
     },
     {
         input: {
-            condition: "includes",
-            messageParts: ["sibling group", "already exists"],
+            condition: 'includes',
+            messageParts: ['sibling group', 'already exists'],
         },
         output: {
-            type: "ErrorInstance",
+            type: 'ErrorInstance',
             error: new Error_1.ConflictError({
-                code: "SUB_GROUP_ALREADY_EXISTS",
-                label: "Sub group already exists",
+                code: 'SUB_GROUP_ALREADY_EXISTS',
+                label: 'Sub group already exists',
             }),
         },
     },
     {
         input: {
-            condition: "instanceOf",
+            condition: 'instanceOf',
             error: Error_1.ConflictError,
         },
         output: {
-            type: "ErrorInstance",
+            type: 'ErrorInstance',
             error: new Error_1.ConflictError({
-                code: "SUB_GROUP_ALREADY_EXISTS",
-                label: "Sub group already exists",
+                code: 'SUB_GROUP_ALREADY_EXISTS',
+                label: 'Sub group already exists',
             }),
         },
     },
     {
         input: {
-            condition: "instanceOf",
+            condition: 'instanceOf',
             error: jose_1.errors.JWTExpired,
         },
         output: {
-            type: "ErrorInstance",
+            type: 'ErrorInstance',
             error: new Error_1.AuthenticationError({
-                code: "EXPIRED_ACCESS_TOKEN",
-                label: "Expired access token",
+                code: 'EXPIRED_ACCESS_TOKEN',
+                label: 'Expired access token',
             }),
         },
     },
     {
         input: {
-            condition: "instanceOf",
+            condition: 'instanceOf',
             error: jose_1.errors.JWTInvalid,
         },
         output: {
-            type: "ErrorInstance",
+            type: 'ErrorInstance',
             error: new Error_1.AuthenticationError({
-                code: "INVALID_ACCESS_TOKEN",
-                label: "Invalid access token",
+                code: 'INVALID_ACCESS_TOKEN',
+                label: 'Invalid access token',
             }),
         },
     },
     {
         input: {
-            condition: "instanceOf",
+            condition: 'instanceOf',
             error: jose_1.errors.JWSSignatureVerificationFailed,
         },
         output: {
-            type: "ErrorInstance",
+            type: 'ErrorInstance',
             error: new Error_1.AuthenticationError({
-                code: "INVALID_ACCESS_TOKEN",
-                label: "Invalid access token",
+                code: 'INVALID_ACCESS_TOKEN',
+                label: 'Invalid access token',
             }),
         },
     },
     {
         input: {
-            condition: "includes",
-            messageParts: ["invalid", "grant"],
+            condition: 'includes',
+            messageParts: ['invalid', 'grant'],
         },
         output: {
-            type: "ErrorInstance",
+            type: 'ErrorInstance',
             error: new Error_1.AuthenticationError({
-                code: "INVALID_GRANT",
-                label: "Invalid grant",
+                code: 'INVALID_CREDENTIALS',
+                label: 'Invalid credentials',
             }),
         },
     },
     {
         input: {
-            condition: "includes",
-            messageParts: ["Realm", "already exists"],
+            condition: 'includes',
+            messageParts: ['Realm', 'already exists'],
         },
         output: {
-            type: "ErrorInstance",
+            type: 'ErrorInstance',
             error: new Error_1.ConflictError({
-                code: "REALM_ALREADY_EXISTS",
-                label: "REALM ALREADY EXISTS",
+                code: 'REALM_ALREADY_EXISTS',
+                label: 'REALM ALREADY EXISTS',
             }),
         },
     },
     {
         input: {
-            condition: "equals",
-            message: "User exists with same username",
+            condition: 'equals',
+            message: 'User exists with same username',
         },
         output: {
-            type: "ErrorInstance",
+            type: 'ErrorInstance',
             error: new Error_1.ConflictError({
-                code: "USER_ALREADY_EXISTS",
-                label: "user with that username already exists",
+                code: 'USER_ALREADY_EXISTS',
+                label: 'user with that username already exists',
             }),
         },
     },
     {
         input: {
-            condition: "includes",
-            messageParts: ["Could not find group", "by id"],
+            condition: 'includes',
+            messageParts: ['Could not find group', 'by id'],
         },
         output: {
-            type: "ErrorInstance",
+            type: 'ErrorInstance',
             error: new Error_1.NotFoundError({
-                code: "GROUP_NOT_FOUND",
-                label: "no group with that id",
+                code: 'GROUP_NOT_FOUND',
+                label: 'no group with that id',
             }),
         },
     },
     {
         input: {
-            condition: "instanceOf",
+            condition: 'instanceOf',
             error: Error_1.NotFoundError,
         },
-        output: "pass",
+        output: 'pass',
     },
     {
         input: {
-            condition: "includes",
-            messageParts: ["401", "Unauthorized"],
+            condition: 'includes',
+            messageParts: ['401', 'Unauthorized'],
         },
         output: {
-            type: "ErrorInstance",
+            type: 'ErrorInstance',
             error: new Error_1.AuthorizationError({
-                code: "KEYCLOAK_UNAUTHORIZED",
-                label: "keycloak unthorized",
-            })
-        }
+                code: 'KEYCLOAK_UNAUTHORIZED',
+                label: 'keycloak unthorized',
+            }),
+        },
+    },
+    {
+        input: {
+            condition: 'instanceOf',
+            error: jose_1.errors.JWSInvalid,
+        },
+        output: {
+            type: 'ErrorInstance',
+            error: new Error_1.AuthorizationError({
+                code: 'INVALID_ACCESS_TOKEN',
+                label: 'invalid access token',
+            }),
+        },
     },
 ];
 exports.defaultError = new Error_1.InternalError({
-    code: "UNKNOWN_KEYCLOAK_ERROR",
-    label: "Unknown error",
+    code: 'UNKNOWN_KEYCLOAK_ERROR',
+    label: 'Unknown error',
 });
 exports.errorTransformer = new ErrorTransformer_1.ErrorTransformer(exports.errorMap, exports.defaultError, {
-    messagePropertyName: "message",
-    log: "all",
+    messagePropertyName: 'message',
+    log: 'all',
 });
 //# sourceMappingURL=errorMap.js.map

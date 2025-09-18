@@ -1,27 +1,24 @@
-import { getErrorConstructor } from "./Error";
-const ERROR_TRANSFORMER_ERROR_PREFIX = "ERROR TRANSFORMER:";
-const ERROR_TRANSFORMER_ERROR_POSTFIX = "\n END ERROR TRANSFORMER: \n--------------------------- \n";
+import { getErrorConstructor } from './Error';
+const ERROR_TRANSFORMER_ERROR_PREFIX = 'ERROR TRANSFORMER:';
+const ERROR_TRANSFORMER_ERROR_POSTFIX = '\n END ERROR TRANSFORMER: \n--------------------------- \n';
 export class ErrorTransformer {
     constructor(errorMap, defaultError, options) {
         this.options = options;
         this.errorMap = errorMap;
         this.defaultError = defaultError;
-        this.messagePropertyName = (options === null || options === void 0 ? void 0 : options.messagePropertyName) || "message";
-        this.log = (options === null || options === void 0 ? void 0 : options.log) || "never";
+        this.messagePropertyName = (options === null || options === void 0 ? void 0 : options.messagePropertyName) || 'message';
+        this.log = (options === null || options === void 0 ? void 0 : options.log) || 'never';
     }
     transform(err, patchedContext) {
-        if (typeof this.defaultError !== "string") {
+        if (typeof this.defaultError !== 'string') {
             this.defaultError.updateContext({
                 ...patchedContext,
-                originalError: JSON.stringify(err, null, 2),
+                originalError: err instanceof Error ? err : new Error(err),
             });
-            if (err && err.stack && typeof err.stack === "string" && err.stack.length > 0) {
-                this.defaultError.updateStack(err.stack);
-            }
             this.defaultError.updateTimestampToNow();
         }
         let _err = err;
-        if (typeof err === "string") {
+        if (typeof err === 'string') {
             _err = new Error(err);
         }
         if (!_err || !_err[this.messagePropertyName]) {
@@ -32,16 +29,16 @@ export class ErrorTransformer {
                 this.handleOutput(error.output, patchedContext, _err);
             }
         }
-        if (this.log === "all" || this.log === "unknow") {
-            console.log(ERROR_TRANSFORMER_ERROR_PREFIX);
-            console.log(this.defaultError);
-            console.log(ERROR_TRANSFORMER_ERROR_POSTFIX);
+        if (this.log === 'all' || this.log === 'unknow') {
+            if (typeof this.defaultError !== 'string') {
+                this.defaultError.log();
+            }
         }
         throw this.defaultError;
     }
     withAsyncTransform(wrappedMethod, patchedContext) {
         if (!wrappedMethod) {
-            throw new Error("Wrapped method is required");
+            throw new Error('Wrapped method is required');
         }
         return async (...args) => {
             try {
@@ -55,7 +52,7 @@ export class ErrorTransformer {
     }
     withSyncTransform(wrappedMethod, patchedContext) {
         if (!wrappedMethod) {
-            throw new Error("Wrapped method is required");
+            throw new Error('Wrapped method is required');
         }
         return (...args) => {
             try {
@@ -82,43 +79,46 @@ export class ErrorTransformer {
     }
     handleInput(input, err) {
         switch (input.condition) {
-            case "includes":
+            case 'includes':
                 return this.msgIncludes(err, ...input.messageParts);
-            case "matches":
+            case 'matches':
                 return this.msgMatches(err, input.messageRegex);
-            case "equals":
+            case 'equals':
                 return this.msgEquals(err, input.message);
-            case "instanceOf":
+            case 'instanceOf':
                 return this.errorInstanceOf(err, input.error);
             default:
                 return false;
         }
     }
     handleOutput(output, patchedContext, originalError) {
-        var _a;
-        if (output === "pass") {
+        if (output === 'pass') {
             throw originalError;
         }
-        else if (output.type === "ErrorInstance") {
+        else if (output.type === 'ErrorInstance') {
             let error = output.error;
-            error.updateContext({ ...error.context, ...patchedContext });
+            const newContext = {
+                ...error.context,
+                ...patchedContext,
+                originalError: originalError instanceof Error ? originalError : new Error(originalError),
+            };
+            error.updateContext(newContext);
             if (output.replaceConstructor) {
                 const Constructor = getErrorConstructor(output.replaceConstructor);
                 error = new Constructor({
                     ...error,
-                    stack: (_a = originalError === null || originalError === void 0 ? void 0 : originalError.stack) !== null && _a !== void 0 ? _a : undefined,
+                    context: {
+                        ...newContext,
+                    },
                 });
             }
-            if (this.log === "all" || this.log === "known") {
-                console.log(ERROR_TRANSFORMER_ERROR_PREFIX);
-                console.log("Known Error\n");
-                console.log(error);
-                console.log(ERROR_TRANSFORMER_ERROR_POSTFIX);
+            if (this.log === 'all' || this.log === 'known') {
+                error.log();
             }
             throw error;
         }
         else {
-            if (this.log === "all" || this.log === "known") {
+            if (this.log === 'all' || this.log === 'known') {
                 console.log(ERROR_TRANSFORMER_ERROR_PREFIX);
                 console.log(output.code);
                 console.log(ERROR_TRANSFORMER_ERROR_POSTFIX);

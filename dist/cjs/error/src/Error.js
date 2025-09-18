@@ -1,14 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.NetworkError = exports.InternalError = exports.DatabaseError = exports.ExternalServiceError = exports.ConflictError = exports.NotFoundError = exports.AuthorizationError = exports.AuthenticationError = exports.ValidationError = exports.CustomError = void 0;
+exports.BadConfigError = exports.NetworkError = exports.InternalError = exports.DatabaseError = exports.ExternalServiceError = exports.ConflictError = exports.NotFoundError = exports.AuthorizationError = exports.AuthenticationError = exports.ValidationError = exports.CustomError = void 0;
 exports.getErrorConstructor = getErrorConstructor;
 const constants_1 = require("./constants");
-const utils_1 = require("./utils");
-const utils_2 = require("./utils");
-const stackConfig = {
-    removeWorkingDirectoryPrefix: true,
-    clean: ["node_modules", "internal/", "generateStack", "updateStack"],
-};
+const StackHelper_1 = require("./StackHelper");
 class CustomError extends Error {
     constructor(error, name) {
         var _a;
@@ -16,19 +11,34 @@ class CustomError extends Error {
         this.code = error.code;
         this.context = error.context;
         this.name = name;
-        this.label = (_a = error.label) !== null && _a !== void 0 ? _a : "";
-        this.stack = error.stack ? error.stack : (0, utils_1.generateStack)({ ...stackConfig, errorName: name });
+        this.label = (_a = error.label) !== null && _a !== void 0 ? _a : '';
         this.category = error.category;
         this.statusCode = error.statusCode;
         this.isOperational = error.isOperational;
         this.timestamp = error.timestamp;
+        this.stack = this.createStack();
     }
-    getStack(clean = true) {
-        var _a, _b, _c, _d;
-        if (clean && stackConfig.clean && stackConfig.clean.length > 0) {
-            return (_c = (_a = this.stack) !== null && _a !== void 0 ? _a : (0, utils_2.cleanStack)((_b = this.stack) !== null && _b !== void 0 ? _b : "", ...stackConfig.clean)) !== null && _c !== void 0 ? _c : "";
+    createStack() {
+        return StackHelper_1.StackHelper.createStack(this.name, this.code);
+    }
+    log(logContext = true) {
+        const keywordsFilter = ['node_modules', 'node:internal'];
+        const callStack = StackHelper_1.StackHelper.getAndFilterCallStack(this.stack || '', keywordsFilter);
+        StackHelper_1.StackHelper.doubleLineSeparator('Error');
+        StackHelper_1.StackHelper.logErrorName(this.name, this.code);
+        StackHelper_1.StackHelper.logCallStack(callStack);
+        StackHelper_1.StackHelper.singleLineSeparator('Context');
+        if (logContext && this.context) {
+            Object.keys(this.context).forEach((key) => {
+                var _a;
+                StackHelper_1.StackHelper.warningConsole(`- ${key}: `);
+                console.log((_a = this.context) === null || _a === void 0 ? void 0 : _a[key]);
+            });
         }
-        return (_d = this.stack) !== null && _d !== void 0 ? _d : "";
+        else {
+            StackHelper_1.StackHelper.warningConsole('No context');
+        }
+        StackHelper_1.StackHelper.doubleLineSeparator('End of Error');
     }
     updateTimestamp(timestamp) {
         this.timestamp = timestamp;
@@ -37,12 +47,10 @@ class CustomError extends Error {
         this.timestamp = new Date();
     }
     updateContext(context) {
+        if (context.originalError && context.originalError.stack) {
+            this.stack = context.originalError.stack;
+        }
         this.context = { ...this.context, ...context };
-    }
-    updateStack(stack) {
-        this.stack = (0, utils_1.generateStack)({ ...stackConfig, errorName: this.name });
-        this.stack = this.stack + "\n";
-        this.stack = this.stack + stack;
     }
 }
 exports.CustomError = CustomError;
@@ -176,6 +184,21 @@ exports.NetworkError = NetworkError;
 NetworkError._statusCode = 500;
 NetworkError.CODES = constants_1.NetworkErrorCodes;
 NetworkError._name = constants_1.ErrorConstructorMap.NetworkError;
+class BadConfigError extends CustomError {
+    constructor(error) {
+        const defaultOptions = {
+            category: constants_1.ErrorCategory.BAD_CONFIG,
+            statusCode: BadConfigError._statusCode,
+            isOperational: true,
+            timestamp: new Date(),
+        };
+        super({ ...defaultOptions, ...error }, BadConfigError._name);
+    }
+}
+exports.BadConfigError = BadConfigError;
+BadConfigError._statusCode = 500;
+BadConfigError.CODES = constants_1.NetworkErrorCodes;
+BadConfigError._name = constants_1.ErrorConstructorMap.BadConfigError;
 function getErrorConstructor(constructor) {
     switch (constructor) {
         case constants_1.ErrorConstructorMap.ValidationError:
@@ -196,6 +219,8 @@ function getErrorConstructor(constructor) {
             return AuthorizationError;
         case constants_1.ErrorConstructorMap.NetworkError:
             return NetworkError;
+        case constants_1.ErrorConstructorMap.BadConfigError:
+            return BadConfigError;
     }
 }
 //# sourceMappingURL=Error.js.map

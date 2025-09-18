@@ -230,6 +230,8 @@ export function getErrorConstructor(constructor: ErrorConstructorMap) {
             return AuthorizationError;
         case ErrorConstructorMap.NetworkError:
             return NetworkError;
+        case ErrorConstructorMap.BadConfigError:
+            return BadConfigError;
     }
 }
 

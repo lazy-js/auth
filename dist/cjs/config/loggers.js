@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.appLogger = exports.userControllerLogger = exports.userServiceLogger = exports.userModuleLogger = exports.realmBuilderLogger = void 0;
+exports.appLogger = exports.userValidatorLogger = exports.userControllerLogger = exports.userServiceLogger = exports.userModuleLogger = exports.realmBuilderLogger = void 0;
 const utils_1 = require("@lazy-js/utils");
 const disable = true;
 exports.realmBuilderLogger = utils_1.Logger.create('Realm Builder', {
@@ -23,6 +23,13 @@ const userServiceLogger = userModuleLogger.child('User Service', {
     disableError: disable,
 });
 exports.userServiceLogger = userServiceLogger;
+const userValidatorLogger = userModuleLogger.child('User Validator', {
+    disableDebug: disable,
+    disableError: disable,
+    disableInfo: disable,
+    disableWarn: disable,
+});
+exports.userValidatorLogger = userValidatorLogger;
 const userControllerLogger = userModuleLogger.child('User Controller', {
     disableInfo: disable,
     disableWarn: disable,

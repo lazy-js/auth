@@ -1,10 +1,10 @@
-import { IUserApi, CreateUserReturn, LoginWithUsernamePayload, RefreshAccessTokenPayload, ValidateAccessTokenReturn, CreateUserPayload } from "../types";
-import { KcAdmin } from "./KcAdminApi";
-import UserRepresentation from "@keycloak/keycloak-admin-client/lib/defs/userRepresentation";
-import { UserProfileConfig } from "@keycloak/keycloak-admin-client/lib/defs/userProfileMetadata";
-import { TokenResponse } from "@keycloak/keycloak-admin-client/lib/utils/auth";
-import { GroupRepresentation } from "../types/shared";
-import { ErrorTransformer } from "../../../error/src/ErrorTransformer";
+import { IUserApi, CreateUserReturn, LoginWithUsernamePayload, RefreshAccessTokenPayload, ValidateAccessTokenReturn, CreateUserPayload } from '../types';
+import { KcAdmin } from './KcAdminApi';
+import UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation';
+import { UserProfileConfig } from '@keycloak/keycloak-admin-client/lib/defs/userProfileMetadata';
+import { TokenResponse } from '@keycloak/keycloak-admin-client/lib/utils/auth';
+import { GroupRepresentation } from '../types/shared';
+import { ErrorTransformer } from '../../../error/src/ErrorTransformer';
 /**
  * @description UserApi class implements the IUserApi interface and is used to interact with the Keycloak User API
  * @implements IUserApi

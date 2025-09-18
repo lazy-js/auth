@@ -1,11 +1,11 @@
-import { ErrorConstructorMap } from "./constants";
-import { ErrorInstance } from "./Error";
-import { ErrorMap as ErrorMapBase, ErrorMapOut as ErrorMapOutBase, ErrorMapInput as ErrorMapInputBase } from "./types/transformer";
-import { ErrorContextBase } from "./types/errors";
+import { ErrorConstructorMap } from './constants';
+import { ErrorInstance } from './Error';
+import { ErrorMap as ErrorMapBase, ErrorMapOut as ErrorMapOutBase, ErrorMapInput as ErrorMapInputBase } from './types/transformer';
+import { ErrorContextBase } from './types/errors';
 export type ErrorMap = ErrorMapBase<ErrorInstance, ErrorConstructorMap>;
 export type ErrorMapOut = ErrorMapOutBase<ErrorInstance, ErrorConstructorMap>;
 export type ErrorMapInput = ErrorMapInputBase;
-type LogLevels = "unknow" | "known" | "all" | "never";
+type LogLevels = 'unknow' | 'known' | 'all' | 'never';
 interface ErrorTransformerOptions {
     messagePropertyName: string;
     log: LogLevels;

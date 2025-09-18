@@ -1,8 +1,9 @@
-import { ErrorCategory, ErrorLayer, NetworkErrorCodes, DatabaseErrorCodes } from "../constants";
+import { ErrorCategory, ErrorLayer, NetworkErrorCodes, DatabaseErrorCodes } from '../constants';
 export type ErrorContextBase = {
     layer?: ErrorLayer;
     className?: string;
     methodName?: string;
+    originalError?: Error;
 } & Record<string, any>;
 export interface IError {
     code: string;
@@ -14,9 +15,9 @@ export interface IError {
     context?: ErrorContextBase;
     stack?: string;
 }
-export type ErrorOptions = Omit<IError, "category" | "statusCode" | "isOperational" | "timestamp">;
-export type ValueType = "string" | "number" | "boolean" | "object" | "array" | "null" | "undefined";
-export type ValidationConstraint = "required" | "min" | "max" | "pattern" | "type" | "enum" | "custom" | "unique";
+export type ErrorOptions = Omit<IError, 'category' | 'statusCode' | 'isOperational' | 'timestamp'>;
+export type ValueType = 'string' | 'number' | 'boolean' | 'object' | 'array' | 'null' | 'undefined';
+export type ValidationConstraint = 'required' | 'min' | 'max' | 'pattern' | 'type' | 'enum' | 'custom' | 'unique';
 export interface ValidationErrorContext extends ErrorContextBase {
     providedValueType?: ValueType;
     providedValue?: any;
@@ -42,4 +43,5 @@ export type ConflictErrorOptions = ErrorOptions;
 export type NotFoundErrorOptions = ErrorOptions;
 export type AuthorizationErrorOptions = ErrorOptions;
 export type AuthenticationErrorOptions = ErrorOptions;
+export type BadConfigErrorOptions = ErrorOptions;
 //# sourceMappingURL=errors.d.ts.map

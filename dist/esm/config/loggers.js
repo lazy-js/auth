@@ -18,13 +18,19 @@ const userServiceLogger = userModuleLogger.child('User Service', {
     disableDebug: disable,
     disableError: disable,
 });
+const userValidatorLogger = userModuleLogger.child('User Validator', {
+    disableDebug: disable,
+    disableError: disable,
+    disableInfo: disable,
+    disableWarn: disable,
+});
 const userControllerLogger = userModuleLogger.child('User Controller', {
     disableInfo: disable,
     disableWarn: disable,
     disableDebug: disable,
     disableError: disable,
 });
-export { userModuleLogger, userServiceLogger, userControllerLogger };
+export { userModuleLogger, userServiceLogger, userControllerLogger, userValidatorLogger };
 const appLogger = Logger.create('App', {
     disableInfo: disable,
     disableWarn: disable,

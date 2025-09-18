@@ -43,14 +43,12 @@ let UserApi = class UserApi {
     async createUser(user) {
         const newKcUser = {
             username: user.username,
-            credentials: user.password
-                ? [{ type: "password", value: user.password, temporary: false }]
-                : [],
+            credentials: user.password ? [{ type: 'password', value: user.password, temporary: false }] : [],
             email: user.email,
             firstName: user.firstName,
             lastName: user.lastName,
             enabled: true,
-            emailVerified: typeof user.verified === "boolean" ? user.verified : true,
+            emailVerified: typeof user.verified === 'boolean' ? user.verified : true,
             realmRoles: [],
         };
         const userResponse = await this.kcAdmin.users.create({
@@ -70,7 +68,7 @@ let UserApi = class UserApi {
             realm: this.kcAdmin.workingRealmName,
         });
         if (!roleId || !roleId.id) {
-            throw new Error("Default Realm Role Not Found");
+            throw new Error('Default Realm Role Not Found');
         }
         return await this.kcAdmin.users.delRealmRoleMappings({
             id: userId,
@@ -214,7 +212,7 @@ let UserApi = class UserApi {
                 username,
                 password,
                 clientId,
-                grantType: "password",
+                grantType: 'password',
             },
         });
         return token;
@@ -245,13 +243,16 @@ let UserApi = class UserApi {
      * @returns Promise<TokenResponse> - The token as TokenResponse
      */
     async refreshAccessToken(payload) {
+        if (payload.refreshToken && payload.refreshToken.startsWith('Bearer ')) {
+            payload.refreshToken = payload.refreshToken.replace('Bearer ', '');
+        }
         const newToken = await (0, auth_1.getToken)({
             realmName: this.kcAdmin.workingRealmName,
             baseUrl: this.kcAdmin.baseUrl,
             credentials: {
                 clientId: payload.clientId,
                 refreshToken: payload.refreshToken,
-                grantType: "refresh_token",
+                grantType: 'refresh_token',
             },
         });
         return newToken;

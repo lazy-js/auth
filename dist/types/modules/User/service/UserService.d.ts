@@ -1,16 +1,22 @@
-import { CreateUserParams, IUserRepository, IUserService, IUserValidator, UserCreationDto, PrivateUserService, VerifyDto } from "./UserService.types";
-import { IKcApi, TokenResponse, AccessTokenPayload } from "../../kcApi";
-import { IClient } from "../../Realm";
-import { IUserSchema } from "../model/UserModel.types";
-import { INotificationClientSdk } from "../../../types";
-type RegisterReturn = IUserSchema | {
-    mustVerify: boolean;
-} | null;
+import { CreateUserParams, IUserRepository, IUserService, IUserValidator, UserCreationDto, PrivateUserService, VerifyDto } from './UserService.types';
+import { IKcApi, TokenResponse, AccessTokenPayload } from '../../kcApi';
+import { IClient } from '../../Realm';
+import { IUserSchema } from '../model/UserModel.types';
+import { INotificationClientSdk } from '../../../types';
+import { Schema } from 'mongoose';
+interface PublicRegisterReturn {
+    _id: Schema.Types.ObjectId;
+    username: string;
+    method: string;
+    verified: boolean;
+    createdAt: Date;
+    email?: string;
+    phone?: string;
+}
+type RegisterReturn = PublicRegisterReturn | null;
 type LoginReturn = {
-    token: TokenResponse;
-    user: IUserSchema;
-} | {
-    mustVerify: boolean;
+    token: TokenResponse | null;
+    user: PublicRegisterReturn;
 };
 /**
  * UserService is the service that handles the user registration, login, verification, and password update.
@@ -50,14 +56,25 @@ export declare class UserService implements IUserService, PrivateUserService {
             isDefault: boolean;
         };
     }): Promise<IUserSchema | null>;
-    _publicRegister(createUserParams: CreateUserParams): Promise<IUserSchema | {
-        mustVerify: boolean;
-    } | null>;
-    _privateRegister(createUserParams: CreateUserParams): Promise<IUserSchema | {
-        mustVerify: boolean;
-    } | null>;
+    _publicRegister(createUserParams: CreateUserParams): Promise<{
+        [x: string]: string | boolean | Date | Schema.Types.ObjectId | undefined;
+        _id: Schema.Types.ObjectId;
+        username: string;
+        method: "email" | "phone" | "username";
+        verified: boolean;
+        createdAt: Date;
+    }>;
+    _privateRegister(createUserParams: CreateUserParams): Promise<{
+        [x: string]: string | boolean | Date | Schema.Types.ObjectId | undefined;
+        _id: Schema.Types.ObjectId;
+        username: string;
+        method: "email" | "phone" | "username";
+        verified: boolean;
+        createdAt: Date;
+    }>;
     _generateUsername(userDto: UserCreationDto): string;
     _generateConfirmCode(): string;
+    _sendVerificationCode(userDto: UserCreationDto, confirmCode: string): Promise<void>;
 }
 export {};
 //# sourceMappingURL=UserService.d.ts.map

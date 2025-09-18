@@ -35,6 +35,7 @@ export interface User {
     };
 }
 export interface IUserSchema extends Schema, User {
+    _id: Schema.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
 }
