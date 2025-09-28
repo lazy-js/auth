@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
+const error_guard_1 = require("@lazy-js/error-guard");
 class User {
     constructor(user) {
         this.user = user;
@@ -36,7 +37,7 @@ class User {
                 group: this.user.group.toJson(),
             };
         }
-        throw new Error('Invalid user');
+        throw new error_guard_1.BadConfigError('Invalid user');
     }
 }
 exports.User = User;

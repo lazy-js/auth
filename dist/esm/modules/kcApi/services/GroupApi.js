@@ -7,10 +7,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import errors from '../../../config/errors';
 import { KcAdmin } from './KcAdminApi';
-import { AutoTransform } from '../../../error/src/decorators';
-import { ErrorTransformer } from '../../../error/src/ErrorTransformer';
+import { AutoTransform, ErrorTransformer, NotFoundError, } from '@lazy-js/error-guard';
+import { MANUALLY_THROWN_ERROR_CODES } from './errorMap';
 /**
  * @description GroupApi class
  * @implements IGroupApi
@@ -96,7 +95,7 @@ let GroupApi = class GroupApi {
     async getGroupsByParentPath(parentPath) {
         const parentGroup = await this.getGroupByPath(parentPath);
         if (!parentGroup || !parentGroup.id) {
-            throw new Error(errors.NO_GROUP_WITH_THAT_PATH.code);
+            throw new NotFoundError(MANUALLY_THROWN_ERROR_CODES.NO_GROUP_WITH_THAT_PATH);
         }
         return await this.getSubGroupsByParentId(parentGroup.id);
     }
@@ -153,7 +152,7 @@ let GroupApi = class GroupApi {
         });
         const role = allRoles.find((role) => role.id === roleId);
         if (!role || !role.name) {
-            throw new Error(errors.NO_ROLE_WITH_THAT_ID.code);
+            throw new NotFoundError(MANUALLY_THROWN_ERROR_CODES.NO_ROLE_WITH_THAT_ID);
         }
         await this.kcAdmin.groups.addClientRoleMappings({
             id: groupId,
@@ -172,7 +171,7 @@ let GroupApi = class GroupApi {
         const { groupId, attributes } = payload;
         const group = await this.getGroupById(groupId);
         if (!group) {
-            throw new Error(errors.NO_GROUP_WITH_THAT_ID.code);
+            throw new NotFoundError(MANUALLY_THROWN_ERROR_CODES.NO_GROUP_WITH_THAT_ID);
         }
         await this.kcAdmin.groups.update({ id: groupId, realm: this.kcAdmin.workingRealmName }, {
             ...group,

@@ -1,37 +1,35 @@
-import { App, handleMainException } from '@lazy-js/server';
-import { Database } from '@lazy-js/mongo-db';
+import { App } from '@lazy-js/server';
+import { Database } from './database';
+import { ExpressErrorHandlerMiddleware } from '@lazy-js/error-guard';
 // modules
 import { RealmBuilder } from './modules/RealmBuilder/index';
 import { RealmManipulator } from './modules/RealmManipulator/index';
-import { Logger } from '@lazy-js/utils';
 import { checkServerRequest } from './utils';
 // exports
 export * from './modules/Realm';
 export * from './utils';
 export * from './types';
+function getErrorHandler({ serviceName, traceIdHeader }) {
+    const expressErrorHandler = new ExpressErrorHandlerMiddleware({
+        serviceName,
+        traceIdHeader,
+    });
+    const handler = expressErrorHandler.getHandler();
+    return handler.bind(expressErrorHandler);
+}
 export class LazyAuth {
-    constructor(keycloakConfig, serviceConfig, realm, notificationSdk) {
+    constructor(keycloakConfig, appConfig, realm, notificationSdk) {
+        // default options for app
+        appConfig.config.globalErrorHandler = getErrorHandler({
+            serviceName: appConfig.config.serviceName,
+            traceIdHeader: appConfig.config.traceIdHeader,
+        });
+        appConfig.config.parseJson = true;
+        this.app = new App(appConfig);
+        this.logger = this.app.log.logger;
         this.keycloakConfig = keycloakConfig;
-        this.serviceConfig = serviceConfig;
         this.realm = realm;
         this.notificationSdk = notificationSdk;
-        const enableServiceLogging = this.serviceConfig.enableServiceLogging || false;
-        this.stateLogger = new Logger({
-            module: 'Lazy Auth - ',
-            disableDebug: enableServiceLogging,
-            disableError: enableServiceLogging,
-            disableInfo: enableServiceLogging,
-            disableWarn: enableServiceLogging,
-        });
-        this.app = new App({
-            port: this.serviceConfig.port,
-            prefix: this.serviceConfig.routerPrefix,
-            allowedOrigins: this.serviceConfig.allowedOrigins,
-            disableRequestLogging: !this.serviceConfig.enableRequestLogging,
-            disableSecurityHeaders: this.serviceConfig.disableSecurityHeaders,
-            enableRoutesLogging: this.serviceConfig.enableRoutesLogging,
-            serviceName: this.serviceConfig.serviceName,
-        });
     }
     async _isKeycloakServiceAvailable() {
         return await checkServerRequest(this.keycloakConfig.keycloakServiceUrl);
@@ -41,70 +39,64 @@ export class LazyAuth {
             const realmBuilderModule = await RealmBuilder.create(this.realm, {
                 url: this.keycloakConfig.keycloakServiceUrl,
                 password: this.keycloakConfig.keycloakAdminPassword,
-                reAuthenticateIntervalMs: this.keycloakConfig
-                    .keycloakAdminReAuthenticateIntervalMs || 30000,
+                reAuthenticateIntervalMs: this.keycloakConfig.keycloakAdminReAuthenticateIntervalMs || 30000,
             }, this.notificationSdk);
             await realmBuilderModule.build();
             return realmBuilderModule;
         }
         catch (error) {
-            this.stateLogger.error('Error building realm: \n', JSON.stringify(error, null, 4));
-            process.exit(1);
+            this.logger.error('Error building realm: \n', console.log(error));
+            throw error;
         }
     }
     async connectDatabase() {
-        const database = new Database(this.serviceConfig.mongoDbUrl);
+        const database = new Database(this.keycloakConfig.localMongoDbURL);
         database.on('connected', () => {
-            this.stateLogger.info('Monogo database connected successfully');
+            this.logger.info('Mongo database connected successfully');
         });
         database.on('disconnected', () => {
-            this.stateLogger.info('Monogo database disconnected successfully');
+            this.logger.info('Mongo database disconnected successfully');
         });
         database.on('error', (err) => {
-            this.stateLogger.error('Monogo database error \n', JSON.stringify(err, null, 4));
+            this.logger.error('Mongo database error \n', JSON.stringify(err, null, 4));
         });
         await database.connect();
         return database;
     }
     async prepareApp() {
-        this.app.on('error', (err) => {
-            this.stateLogger.error('App Service Request Error \n', JSON.stringify(err, null, 4));
+        this.app.on('err-in-global-handler', (err) => {
+            this.logger.error('EVENT:err-in-global-handler \n', JSON.stringify(err, null, 4));
+            this.logger.error('END OF EVENT:err-in-global-handler \n');
         });
         this.app.on('started', () => {
-            this.stateLogger.info('App service started successfully');
+            this.logger.info('App service started successfully');
         });
         return this.app;
     }
     logSummary() {
         const realmManipulator = new RealmManipulator({
             realm: this.realm,
-            port: this.serviceConfig.port.toString(),
-            routerPrefix: this.serviceConfig.routerPrefix,
+            port: this.app.config.port.toString(),
+            routerPrefix: this.app.config.routerPrefix,
         });
         realmManipulator.getRealmSummary();
     }
     async start() {
-        try {
-            if (!(await this._isKeycloakServiceAvailable())) {
-                this.stateLogger.error(`Keycloak on url ${this.keycloakConfig.keycloakServiceUrl} is DOWN`);
-                return;
-            }
-            else {
-                this.stateLogger.info(`Keycloak on url ${this.keycloakConfig.keycloakServiceUrl} is UP`);
-            }
-            await this.connectDatabase();
-            const realmBuilderModule = await this.buildRealm();
-            if (this.serviceConfig.enableRealmSummary) {
-                this.logSummary();
-            }
-            await this.prepareApp();
-            this.app.mountModule(realmBuilderModule);
-            this.app.start();
+        if (!(await this._isKeycloakServiceAvailable())) {
+            this.logger.error(`Keycloak on url ${this.keycloakConfig.keycloakServiceUrl} is DOWN`);
+            return;
         }
-        catch (err) {
-            const error = await handleMainException(err, this.start.bind(this), 2);
-            this.stateLogger.error('Error Starting App: \n', JSON.stringify(error, null, 4));
+        else {
+            this.logger.info(`Keycloak on url ${this.keycloakConfig.keycloakServiceUrl} is UP`);
         }
+        await this.connectDatabase();
+        const realmBuilderModule = await this.buildRealm();
+        if (this.keycloakConfig.logKeycloakInfo) {
+            this.logSummary();
+        }
+        await this.prepareApp();
+        this.app.mountModule(realmBuilderModule);
+        this.app.start();
     }
 }
 //# sourceMappingURL=index.js.map

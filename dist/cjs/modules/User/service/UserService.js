@@ -1,14 +1,11 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
 const UserRepo_1 = require("../repository/UserRepo");
 const UserValidator_1 = require("../validator/UserValidator");
-const errors_1 = __importDefault(require("../../../config/errors"));
-const utils_1 = require("@lazy-js/utils");
 const loggers_1 = require("../../../config/loggers");
+const error_guard_1 = require("@lazy-js/error-guard");
+const constants_1 = require("../constants");
 /**
  * UserService is the service that handles the user registration, login, verification, and password update.
  * @requires IUserRepository
@@ -30,12 +27,10 @@ class UserService {
         if (status === 'public') {
             return await this._publicRegister(createUserParams);
         }
-        else if (status === 'private') {
+        if (status === 'private') {
             return await this._privateRegister(createUserParams);
         }
-        else if (status === 'disabled') {
-            return null;
-        }
+        // disabled
         return null;
     }
     async login(loginParams) {
@@ -44,66 +39,42 @@ class UserService {
         const loginDto = await this.userValidator.validateLoginDto(body, primaryFields);
         const userInDb = await this._getUser(loginDto);
         if (!userInDb)
-            this.throwInvalidCredentialsError(loginDto.method);
-        try {
-            let verified = loginDto.method === 'username';
-            if (loginDto.method === 'email') {
-                const linkedEmail = userInDb.linkedEmails.find((linkedEmail) => linkedEmail.email === loginDto.email);
-                if (!linkedEmail)
-                    this.throwInvalidCredentialsError(loginDto.method);
-                if (!linkedEmail.verified) {
-                    verified = false;
-                }
-                else {
-                    verified = true;
-                }
-            }
-            if (loginDto.method === 'phone') {
-                const linkedPhone = userInDb.linkedPhones.find((linkedPhone) => linkedPhone.phone === loginDto.phone);
-                if (!linkedPhone)
-                    this.throwInvalidCredentialsError(loginDto.method);
-                if (!linkedPhone.verified) {
-                    verified = false;
-                }
-                else {
-                    verified = true;
-                }
-            }
-            let tokenResponse = null;
-            if (verified)
-                tokenResponse = await this.kcApi.users.loginWithUsername({
-                    username: userInDb.username,
-                    password: loginDto.password,
-                    clientId: this.client.clientId,
-                });
-            const user = {
-                _id: userInDb._id,
+            this.throwInvalidCredentialsError();
+        let verified = loginDto.method === 'username';
+        if (loginDto.method === 'email') {
+            const linkedEmail = userInDb.linkedEmails.find((linkedEmail) => linkedEmail.email === loginDto.email);
+            if (!linkedEmail)
+                this.throwInvalidCredentialsError();
+            verified = linkedEmail.verified;
+        }
+        if (loginDto.method === 'phone') {
+            const linkedPhone = userInDb.linkedPhones.find((linkedPhone) => linkedPhone.phone === loginDto.phone);
+            if (!linkedPhone)
+                this.throwInvalidCredentialsError();
+            verified = linkedPhone.verified;
+        }
+        let tokenResponse = null;
+        if (verified)
+            tokenResponse = await this.kcApi.users.loginWithUsername({
                 username: userInDb.username,
-                method: loginDto.method,
-                [loginDto.method]: loginDto[loginDto.method],
-                verified: verified,
-                createdAt: userInDb.createdAt,
-            };
-            return { token: tokenResponse, user: user };
-        }
-        catch (error) {
-            if (error instanceof Error &&
-                error.message.includes('invalid_grant')) {
-                this.throwInvalidCredentialsError(loginDto.method);
-            }
-            throw error;
-        }
+                password: loginDto.password,
+                clientId: this.client.clientId,
+            });
+        const user = {
+            _id: userInDb._id,
+            username: userInDb.username,
+            method: loginDto.method,
+            [loginDto.method]: loginDto[loginDto.method],
+            verified: verified,
+            createdAt: userInDb.createdAt,
+        };
+        return { token: tokenResponse, user: user };
     }
-    throwInvalidCredentialsError(method) {
-        if (method === 'email') {
-            throw new utils_1.AppError(errors_1.default.INVALID_EMAIL_OR_PASSWORD);
-        }
-        else if (method === 'phone') {
-            throw new utils_1.AppError(errors_1.default.INVALID_PHONE_OR_PASSWORD);
-        }
-        else {
-            throw new utils_1.AppError(errors_1.default.INVALID_USERNAME_OR_PASSWORD);
-        }
+    throwInvalidCredentialsError() {
+        throw new error_guard_1.AuthenticationError(constants_1.USER_SERVICE_OPERATIONAL_ERRORS.INVALID_CREDENTIALS).updateContext({
+            layer: 'SERVICE',
+            methodName: 'login',
+        });
     }
     async verify(verifyDto) {
         // validate the dto
@@ -114,31 +85,32 @@ class UserService {
             const userInDb = await this.userRepository.getUserByEmail(validatedVerifyDto.email);
             // check if the user exists
             if (!userInDb) {
-                throw new utils_1.AppError(errors_1.default.USER_NOT_FOUND);
+                throw new error_guard_1.NotFoundError(constants_1.USER_SERVICE_OPERATIONAL_ERRORS.USER_NOT_FOUND);
             }
             // check if the email is linked to the user
             const linkedEmail = userInDb.linkedEmails.find((linkedEmail) => linkedEmail.email === validatedVerifyDto.email);
             if (!linkedEmail) {
-                throw new utils_1.AppError(errors_1.default.USER_NOT_FOUND);
+                throw new error_guard_1.NotFoundError(constants_1.USER_SERVICE_OPERATIONAL_ERRORS.USER_NOT_FOUND);
             }
             // check if the email is already verified
             if (linkedEmail.verified) {
-                throw new utils_1.AppError(errors_1.default.EMAIL_ALREADY_VERIFIED);
+                throw new error_guard_1.ConflictError(constants_1.USER_SERVICE_OPERATIONAL_ERRORS.EMAIL_ALREADY_VERIFIED);
             }
             // check if the code is expired
             const _5Minutes = 5 * 60 * 1000;
             if (userInDb.updatedAt &&
                 userInDb.updatedAt.getTime() + _5Minutes < Date.now()) {
-                throw new utils_1.AppError(errors_1.default.CODE_EXPIRED);
+                throw new error_guard_1.ValidationError(constants_1.USER_SERVICE_OPERATIONAL_ERRORS.CODE_EXPIRED);
             }
             // check if the code is correct
             if (linkedEmail.confirmCode !== validatedVerifyDto.code) {
-                throw new utils_1.AppError(errors_1.default.INVALID_CODE);
+                throw new error_guard_1.ValidationError(constants_1.USER_SERVICE_OPERATIONAL_ERRORS.INVALID_CODE);
             }
             // update the user
             await this.userRepository.verifyUserEmail(validatedVerifyDto.email);
+            return;
         }
-        else if (validatedVerifyDto.method === 'phone') {
+        if (validatedVerifyDto.method === 'phone') {
             const userInDb = await this.userRepository.getUserByPhone(validatedVerifyDto.phone);
         }
     }
@@ -151,59 +123,54 @@ class UserService {
         });
     }
     async validateAccessToken(accessToken) {
-        if (!accessToken ||
-            accessToken === '' ||
-            accessToken === 'undefined' ||
-            !accessToken.startsWith('Bearer ') ||
-            accessToken.split(' ')[1] === '') {
-            throw new utils_1.AppError(errors_1.default.INVALID_ACCESS_TOKEN);
-        }
-        const { payload } = await this.kcApi.users.validateAccessToken(accessToken.split(' ')[1]);
+        const validatedAccessToken = await this.userValidator.validateTokenString(accessToken, 'access');
+        const { payload } = await this.kcApi.users.validateAccessToken(validatedAccessToken);
         if (!payload.sub)
-            throw new Error('User Id (sub) is undefined');
+            throw new error_guard_1.InternalError(constants_1.USER_SERVICE_INTERNAL_ERRORS.SUB_NOT_DEFINED).updateContext({
+                layer: 'SERVICE',
+                methodName: 'validateAccessToken',
+                className: 'UserService',
+                payload: payload,
+            });
         // sub in payload is the id of user in keyloak
-        const userInLocalDb = (await this.userRepository.getUserByKeycloakId(payload.sub));
+        const userInLocalDb = await this.userRepository.getUserByKeycloakId(payload.sub);
         if (!userInLocalDb) {
-            throw new utils_1.AppError({
-                code: 'ErrorInValidteAccessToken',
-                label: 'no user with keycload user id',
+            throw new error_guard_1.InternalError(constants_1.USER_SERVICE_INTERNAL_ERRORS.USER_NOT_FOUND_IN_LOCAL_DB).updateContext({
+                layer: 'SERVICE',
+                methodName: 'validateAccessToken',
+                className: 'UserService',
+                payload: payload,
             });
         }
         return { ...payload, _id: userInLocalDb._id };
     }
     async refreshToken(refreshToken) {
-        if (!refreshToken ||
-            refreshToken === '' ||
-            refreshToken === 'undefined') {
-            throw new utils_1.AppError(errors_1.default.INVALID_REFRESH_TOKEN);
-        }
+        const validatedRefreshToken = await this.userValidator.validateTokenString(refreshToken, 'refresh');
         const tokenResponse = await this.kcApi.users.refreshAccessToken({
-            refreshToken: refreshToken,
+            refreshToken: validatedRefreshToken,
             clientId: this.client.clientId,
         });
         return tokenResponse;
     }
     async validateRole(accessToken, role) {
         const payload = await this.validateAccessToken(accessToken);
-        // azp is the client name which token issued with
-        if (!payload ||
-            !payload.resource_access ||
-            !payload.azp ||
-            !payload.resource_access[payload.azp] ||
-            payload.azp !== this.client.clientId ||
-            !payload.resource_access[payload.azp].roles ||
-            !Array.isArray(payload.resource_access[payload.azp].roles)) {
-            throw new utils_1.AppError(errors_1.default.INVALID_ACCESS_TOKEN);
+        // azp is the client id which token issued with
+        const payloadClientId = payload.azp;
+        if (!payloadClientId || payloadClientId !== this.client.clientId) {
+            throw new error_guard_1.AuthorizationError(constants_1.USER_SERVICE_OPERATIONAL_ERRORS.UNAUTHORIZED);
         }
-        const roles = payload.resource_access[payload.azp].roles;
-        if (!roles)
-            throw new utils_1.AppError(errors_1.default.UNAUTHORIZED);
+        const payloadResouceAccess = payload.resource_access;
+        if (!payloadResouceAccess ||
+            !payloadResouceAccess[payloadClientId] ||
+            !payloadResouceAccess[payloadClientId].roles) {
+            throw new error_guard_1.ValidationError(constants_1.USER_SERVICE_OPERATIONAL_ERRORS.INVALID_ACCESS_TOKEN);
+        }
+        const roles = payloadResouceAccess[payloadClientId].roles;
         const canAccess = Array.isArray(role)
             ? role.some((r) => roles.includes(r))
             : roles.includes(role);
-        loggers_1.userServiceLogger.info(`User has role ${role}: ${canAccess}`);
         if (!canAccess) {
-            throw new utils_1.AppError(errors_1.default.UNAUTHORIZED);
+            throw new error_guard_1.AuthorizationError(constants_1.USER_SERVICE_OPERATIONAL_ERRORS.UNAUTHORIZED);
         }
         return payload;
     }
@@ -221,7 +188,12 @@ class UserService {
         if (userInDb) {
             const userInKc = await this.kcApi.users.getUserById(userInDb.keycloakUserId);
             if (!userInKc) {
-                loggers_1.userServiceLogger.error(`User ${user.method} ${user.email || user.phone || user.username} not found in Keycloak`);
+                throw new error_guard_1.InternalError(constants_1.USER_SERVICE_INTERNAL_ERRORS.USER_NOT_FOUND_IN_LOCAL_DB).updateContext({
+                    layer: 'SERVICE',
+                    methodName: '_getUser',
+                    className: 'UserService',
+                    user: userInDb,
+                });
             }
             return userInDb;
         }
@@ -229,15 +201,17 @@ class UserService {
     }
     async _getClientDefaultGroupId() {
         const defaultGroup = this.client.groups.find((group) => group.isDefault);
-        if (!defaultGroup)
-            throw new Error(errors_1.default.MULTIPLE_DEFAULT_GROUPS.code);
+        if (!defaultGroup) {
+            throw new error_guard_1.BadConfigError(constants_1.USER_SERVICE_INTERNAL_ERRORS.NO_DEFAULT_GROUP_CONFIGURED);
+        }
         const deafaltGroupPath = `${this.client.appPath}/${this.client.name}/${defaultGroup.name}`;
         return await this._getGroupIdByPath(deafaltGroupPath);
     }
     async _getGroupIdByPath(path) {
         const group = await this.kcApi.groups.getGroupByPath(path);
-        if (!group)
-            throw new Error(errors_1.default.NO_GROUP_WITH_THAT_NAME.code);
+        if (!group) {
+            throw new error_guard_1.InternalError(constants_1.USER_SERVICE_INTERNAL_ERRORS.NO_GROUP_WITH_THAT_PATH);
+        }
         return group.id;
     }
     async _registerUserInKeycloak(userDto, groupId) {
@@ -303,7 +277,6 @@ class UserService {
             client: this.client.name,
             confirmCode: confirmCode,
         });
-        loggers_1.userServiceLogger.info(`User ${username} created in local db`);
         return userInDb;
     }
     async _publicRegister(createUserParams) {
@@ -313,59 +286,52 @@ class UserService {
             'public' &&
             this.client.clientAuthConfiguration.registerConfig.verified;
         const userDto = await this.userValidator.validateUserCreationDto(body, primaryFields);
-        const userInDb = await this._getUser(userDto);
-        if (userInDb) {
-            throw new utils_1.AppError(errors_1.default.USER_ALREADY_EXISTS);
+        const doesUserExists = await this._getUser(userDto);
+        if (doesUserExists) {
+            throw new error_guard_1.ConflictError(constants_1.USER_SERVICE_OPERATIONAL_ERRORS.USER_ALREADY_EXISTS);
         }
-        else {
-            // generate username
-            const username = this._generateUsername(userDto);
-            const _verifiedByDefault = verifiedByDefault || userDto.method === 'username';
-            // create user in keycloak db
-            const keycloakUserId = await this._registerUserInKeycloak({
-                ...userDto,
-                username: username,
-            });
-            // create user in local db
-            const confirmCode = this._generateConfirmCode();
-            const userInDb = await this.userRepository.createUser({
-                ...userDto,
-                username: username,
-                keycloakUserId: keycloakUserId,
-                verified: _verifiedByDefault,
-                app: this.client.appName,
-                client: this.client.name,
-                confirmCode: confirmCode,
-            });
-            if (!userInDb) {
-                throw new utils_1.AppError({
-                    code: 'User_Not_Created',
-                    label: 'User creation failed',
-                });
-            }
-            if (!_verifiedByDefault) {
-                await this._sendVerificationCode(userDto, confirmCode);
-            }
-            return {
-                _id: userInDb._id,
-                username: username,
-                method: userDto.method,
-                [userDto.method]: userDto[userDto.method],
-                verified: _verifiedByDefault,
-                createdAt: userInDb.createdAt,
-            };
+        // generate username
+        const username = this._generateUsername(userDto);
+        const _verifiedByDefault = verifiedByDefault || userDto.method === 'username';
+        // create user in keycloak db
+        const keycloakUserId = await this._registerUserInKeycloak({
+            ...userDto,
+            username: username,
+        });
+        // create user in local db
+        const confirmCode = this._generateConfirmCode();
+        const userInDb = await this.userRepository.createUser({
+            ...userDto,
+            username: username,
+            keycloakUserId: keycloakUserId,
+            verified: _verifiedByDefault,
+            app: this.client.appName,
+            client: this.client.name,
+            confirmCode: confirmCode,
+        });
+        if (!_verifiedByDefault) {
+            await this._sendVerificationCode(userDto, confirmCode);
         }
+        return {
+            _id: userInDb._id,
+            username: username,
+            method: userDto.method,
+            [userDto.method]: userDto[userDto.method],
+            verified: _verifiedByDefault,
+            createdAt: userInDb.createdAt,
+        };
     }
     async _privateRegister(createUserParams) {
-        if (this.client.clientAuthConfiguration.registerConfig.status !==
-            'private')
-            throw new Error('Invalid register config, this function should be used only for private register');
+        const { status } = this.client.clientAuthConfiguration.registerConfig;
+        if (status !== 'private') {
+            throw new error_guard_1.BadConfigError(constants_1.USER_SERVICE_INTERNAL_ERRORS.SHOULD_CALLED_IN_PRIVATE_REGISTER);
+        }
         const { accessToken } = createUserParams;
-        if (!accessToken)
-            throw new Error(errors_1.default.UNAUTHORIZED.code);
-        const privateRegisterAccessRoles = this.client.clientAuthConfiguration.registerConfig
-            .privateAccessRoles;
-        await this.validateRole(accessToken, privateRegisterAccessRoles.map((role) => role.name));
+        if (!accessToken) {
+            throw new error_guard_1.AuthenticationError(constants_1.USER_SERVICE_OPERATIONAL_ERRORS.UNAUTHORIZED);
+        }
+        const { privateAccessRoles } = this.client.clientAuthConfiguration.registerConfig;
+        await this.validateRole(accessToken, privateAccessRoles.map((role) => role.name));
         return await this._publicRegister(createUserParams);
     }
     _generateUsername(userDto) {

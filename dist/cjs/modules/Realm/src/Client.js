@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Client = void 0;
+const error_guard_1 = require("@lazy-js/error-guard");
 /**
  * @description this is thr client Constructor for creating clients that are parts of apps
  * let us suppose we have an app that has a mobile app and a dashboard app
@@ -23,7 +24,7 @@ class Client {
         if (group.isDefault) {
             const defaultGroup = this.groups.find((g) => g.isDefault);
             if (defaultGroup)
-                throw new Error('Each client should contain only one default group');
+                throw new error_guard_1.BadConfigError('Each client should contain only one default group');
         }
         group.setClientName(this.name);
         group.setClientPath(this.appPath + '/' + this.appName);

@@ -5,6 +5,7 @@ export declare class IUserValidator {
     validateLoginDto(loginDto: LoginDto, primaryFields: PrimaryField[]): Promise<LoginWithEmail | LoginWithPhone | LoginWithUsername>;
     validatePassword(password: string): Promise<string>;
     validateVerifyDto(verifyDto: VerifyDto): Promise<VerifyWithEmail | VerifyWithPhone>;
+    validateTokenString(token: string, tokenType: 'refresh' | 'access'): Promise<string>;
 }
 export interface RegisterWithUsername {
     username: string;

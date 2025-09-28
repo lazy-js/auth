@@ -16,7 +16,7 @@ export interface CreateUserPayload {
 }
 export declare class IUserRepository {
     model: IUserModel;
-    createUser(user: CreateUserPayload): Promise<IUserSchema | null>;
+    createUser(user: CreateUserPayload): Promise<IUserSchema>;
     getUserById(id: string): Promise<IUserSchema | null>;
     getUserByEmail(email: string): Promise<IUserSchema | null>;
     getUserByPhone(phone: string): Promise<IUserSchema | null>;

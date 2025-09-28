@@ -1,3 +1,4 @@
+import { BadConfigError } from '@lazy-js/error-guard';
 /**
  * @description this is thr client Constructor for creating clients that are parts of apps
  * let us suppose we have an app that has a mobile app and a dashboard app
@@ -20,7 +21,7 @@ export class Client {
         if (group.isDefault) {
             const defaultGroup = this.groups.find((g) => g.isDefault);
             if (defaultGroup)
-                throw new Error('Each client should contain only one default group');
+                throw new BadConfigError('Each client should contain only one default group');
         }
         group.setClientName(this.name);
         group.setClientPath(this.appPath + '/' + this.appName);

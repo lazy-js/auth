@@ -14,10 +14,9 @@
  * @version 1.0.0
  * @since 2024
  */
-import { AppError } from '@lazy-js/utils';
-import { userValidatorLogger } from '../../../config/loggers';
+import { ValidationError } from '@lazy-js/error-guard';
+import { USER_VALIDATOR_OPERATIONAL_ERRORS } from '../constants';
 import z from 'zod';
-import errors from '../../../config/errors';
 /**
  * Logger instance for UserValidator module
  * Configured to log all levels (debug, info, warn, error) for comprehensive debugging
@@ -33,55 +32,15 @@ import errors from '../../../config/errors';
  * @class UserValidator
  */
 export class UserValidator {
-    /**
-     * Creates an instance of UserValidator
-     *
-     * @constructor
-     */
     constructor() { }
-    /**
-     * Validates user creation DTO for registration
-     *
-     * Performs comprehensive validation of user registration data including:
-     * - Method validation against supported primary fields
-     * - Field-specific validation based on registration method
-     * - Password strength requirements
-     * - Optional field validation (locale, names)
-     *
-     * @async
-     * @method validateUserCreationDto
-     * @param {UserCreationDto} userDto - The user creation data to validate
-     * @param {PrimaryField[]} primaryFields - Array of supported authentication methods
-     * @returns {Promise<RegisterWithPhone | RegisterWithUsername | RegisterWithEmail>}
-     *          Validated and typed user creation data
-     * @throws {AppError} When method is missing or not supported
-     * @throws {ZodError} When validation fails for specific fields
-     *
-     * @example
-     * ```typescript
-     * const validator = new UserValidator();
-     * const userDto = {
-     *   method: 'email',
-     *   email: 'user@example.com',
-     *   password: 'securePassword123',
-     *   firstName: 'John',
-     *   lastName: 'Doe'
-     * };
-     * const validated = await validator.validateUserCreationDto(userDto, ['email', 'phone']);
-     * ```
-     */
     async validateUserCreationDto(userDto, primaryFields) {
-        userValidatorLogger.info('received userDto', userDto);
-        userValidatorLogger.info('primaryFields for this client', primaryFields);
         // Validate that method is provided
         if (!userDto.method) {
-            userValidatorLogger.error('method is required');
-            throw new AppError(errors.INVALID_LOGIN_METHOD);
+            throw new ValidationError(USER_VALIDATOR_OPERATIONAL_ERRORS.INVALID_METHOD);
         }
         // Validate that method is supported by the system
         if (!primaryFields.includes(userDto.method)) {
-            userValidatorLogger.error('method is not supported by this client');
-            throw new AppError(errors.NOT_SUPPORTED_REGISTER_METHOD);
+            throw new ValidationError(USER_VALIDATOR_OPERATIONAL_ERRORS.INVALID_METHOD);
         }
         // Use discriminated union to validate based on method type
         const createUserDtoSchema = z.discriminatedUnion('method', [
@@ -91,41 +50,10 @@ export class UserValidator {
         ]);
         return await createUserDtoSchema.parseAsync(userDto);
     }
-    /**
-     * Validates login DTO for authentication
-     *
-     * Validates user login credentials including:
-     * - Method validation against supported primary fields
-     * - Credential validation based on login method
-     * - Password validation
-     *
-     * @async
-     * @method validateLoginDto
-     * @param {LoginDto} loginDto - The login credentials to validate
-     * @param {PrimaryField[]} primaryFields - Array of supported authentication methods
-     * @returns {Promise<LoginWithEmail | LoginWithPhone | LoginWithUsername>}
-     *          Validated and typed login data
-     * @throws {AppError} When method is missing or not supported
-     * @throws {ZodError} When validation fails for specific fields
-     *
-     * @example
-     * ```typescript
-     * const loginDto = {
-     *   method: 'email',
-     *   email: 'user@example.com',
-     *   password: 'securePassword123'
-     * };
-     * const validated = await validator.validateLoginDto(loginDto, ['email', 'username']);
-     * ```
-     */
     async validateLoginDto(loginDto, primaryFields) {
         // Validate that method is provided
-        if (!loginDto.method) {
-            throw new AppError(errors.INVALID_LOGIN_METHOD);
-        }
-        // Validate that method is supported by the system
-        if (!primaryFields.includes(loginDto.method)) {
-            throw new AppError(errors.INVALID_LOGIN_METHOD);
+        if (!loginDto.method || !primaryFields.includes(loginDto.method)) {
+            throw new ValidationError(USER_VALIDATOR_OPERATIONAL_ERRORS.INVALID_METHOD);
         }
         // Use discriminated union to validate based on method type
         const loginDtoSchema = z.discriminatedUnion('method', [
@@ -135,86 +63,16 @@ export class UserValidator {
         ]);
         return await loginDtoSchema.parseAsync(loginDto);
     }
-    /**
-     * Validates password strength and format
-     *
-     * Ensures password meets security requirements:
-     * - Minimum length of 8 characters
-     * - Non-empty string
-     *
-     * @async
-     * @method validatePassword
-     * @param {string} password - The password to validate
-     * @returns {Promise<string>} The validated password
-     * @throws {ZodError} When password doesn't meet requirements
-     *
-     * @example
-     * ```typescript
-     * const password = 'securePassword123';
-     * const validatedPassword = await validator.validatePassword(password);
-     * ```
-     */
     async validatePassword(password) {
         return await passwordSchema.parseAsync(password);
     }
-    /**
-     * Validates verification DTO for email/phone verification
-     *
-     * Validates verification codes for account verification:
-     * - Method validation (email or phone)
-     * - Code format validation (6-digit code)
-     * - Contact information validation
-     *
-     * @async
-     * @method validateVerifyDto
-     * @param {VerifyDto} verifyDto - The verification data to validate
-     * @returns {Promise<VerifyWithEmail | VerifyWithPhone>}
-     *          Validated and typed verification data
-     * @throws {ZodError} When validation fails for specific fields
-     *
-     * @example
-     * ```typescript
-     * const verifyDto = {
-     *   method: 'email',
-     *   email: 'user@example.com',
-     *   code: '123456'
-     * };
-     * const validated = await validator.validateVerifyDto(verifyDto);
-     * ```
-     */
     async validateVerifyDto(verifyDto) {
-        const verifyDtoSchema = z.discriminatedUnion('method', [
-            verifyEmailSchema,
-            verifyPhoneSchema,
-        ]);
+        const verifyDtoSchema = z.discriminatedUnion('method', [verifyEmailSchema, verifyPhoneSchema]);
         return await verifyDtoSchema.parseAsync(verifyDto);
     }
-    /**
-     * Validates authentication method
-     *
-     * Simple validation to ensure the provided method is valid and supported.
-     * This is a utility method for basic method validation without full DTO validation.
-     *
-     * @method validateMethod
-     * @param {PrimaryField} method - The authentication method to validate
-     * @throws {AppError} When method is missing or invalid
-     *
-     * @example
-     * ```typescript
-     * validator.validateMethod('email'); // Valid
-     * validator.validateMethod('invalid'); // Throws AppError
-     * ```
-     */
-    validateMethod(method) {
-        const primaryFields = ['email', 'phone', 'username'];
-        // Validate that method is provided
-        if (!method) {
-            throw new AppError(errors.INVALID_LOGIN_METHOD);
-        }
-        // Validate that method is in the list of supported methods
-        if (!primaryFields.includes(method)) {
-            throw new AppError(errors.INVALID_LOGIN_METHOD);
-        }
+    async validateTokenString(token, tokenType) {
+        const res = await getJwtSchema(tokenType).parseAsync(token);
+        return res;
     }
 }
 // ============================================================================
@@ -229,8 +87,8 @@ export class UserValidator {
  * - Uses centralized error messages from config
  */
 const passwordSchema = z
-    .string({ message: errors.PASSWORD_REQUIRED.code })
-    .min(8, errors.PASSWORD_INVALID.code);
+    .string(USER_VALIDATOR_OPERATIONAL_ERRORS.PASSWORD_REQUIRED)
+    .min(8, USER_VALIDATOR_OPERATIONAL_ERRORS.PASSWORD_INVALID);
 /**
  * Email validation schema
  *
@@ -239,8 +97,8 @@ const passwordSchema = z
  * - Uses centralized error messages from config
  */
 const emailSchema = z
-    .string({ message: errors.EMAIL_REQUIRED.code })
-    .email(errors.EMAIL_INVALID.code);
+    .string(USER_VALIDATOR_OPERATIONAL_ERRORS.EMAIL_REQUIRED)
+    .email(USER_VALIDATOR_OPERATIONAL_ERRORS.EMAIL_INVALID);
 /**
  * Username validation schema
  *
@@ -250,8 +108,8 @@ const emailSchema = z
  * - Uses centralized error messages from config
  */
 const usernameSchema = z
-    .string({ message: errors.USERNAME_REQUIRED.code })
-    .min(3, errors.USERNAME_INVALID.code);
+    .string(USER_VALIDATOR_OPERATIONAL_ERRORS.USERNAME_REQUIRED)
+    .min(3, USER_VALIDATOR_OPERATIONAL_ERRORS.USERNAME_INVALID);
 /**
  * Phone validation schema
  *
@@ -261,8 +119,8 @@ const usernameSchema = z
  * - Uses centralized error messages from config
  */
 const phoneSchema = z
-    .string({ message: errors.PHONE_REQUIRED.code })
-    .min(10, errors.PHONE_INVALID.code);
+    .string(USER_VALIDATOR_OPERATIONAL_ERRORS.PASSWORD_REQUIRED)
+    .min(10, USER_VALIDATOR_OPERATIONAL_ERRORS.PASSWORD_INVALID);
 /**
  * Verification code validation schema
  *
@@ -272,9 +130,9 @@ const phoneSchema = z
  * - Uses centralized error messages from config
  */
 const codeSchema = z
-    .string({ message: errors.INVALID_CODE.code })
-    .min(6, errors.INVALID_CODE.code)
-    .max(6, errors.INVALID_CODE.code);
+    .string(USER_VALIDATOR_OPERATIONAL_ERRORS.INVALID_CODE)
+    .min(6, USER_VALIDATOR_OPERATIONAL_ERRORS.INVALID_CODE)
+    .max(6, USER_VALIDATOR_OPERATIONAL_ERRORS.INVALID_CODE);
 // ============================================================================
 // LOGIN SCHEMAS
 // ============================================================================
@@ -379,4 +237,24 @@ const verifyPhoneSchema = z.object({
     phone: phoneSchema,
     code: codeSchema,
 });
+function getJwtSchema(tokenType) {
+    let TOKEN_REQUIRED = USER_VALIDATOR_OPERATIONAL_ERRORS.ACCESS_OKEN_REQUIRED;
+    let INVALID_TOKEN_SHAPE = USER_VALIDATOR_OPERATIONAL_ERRORS.INVALID_ACCESS_TOKEN_SHAPE;
+    if (tokenType === 'refresh') {
+        TOKEN_REQUIRED = USER_VALIDATOR_OPERATIONAL_ERRORS.REFRESH_TOKEN_REQUIRED;
+        INVALID_TOKEN_SHAPE = USER_VALIDATOR_OPERATIONAL_ERRORS.INVALID_REFRESH_TOKEN_SHAPE;
+    }
+    return z
+        .string(TOKEN_REQUIRED)
+        .refine((val) => val.startsWith('Bearer '), {
+        message: INVALID_TOKEN_SHAPE,
+    })
+        .refine((val) => {
+        const parts = val.split(' ');
+        return parts.length === 2 && parts[1].trim().length > 0;
+    }, {
+        message: INVALID_TOKEN_SHAPE,
+    })
+        .transform((val) => val.split(' ')[1]);
+}
 //# sourceMappingURL=UserValidator.js.map

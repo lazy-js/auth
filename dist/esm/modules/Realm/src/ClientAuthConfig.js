@@ -1,7 +1,8 @@
+import { BadConfigError } from '@lazy-js/error-guard';
 export class ClientAuthConfig {
     constructor(primaryFields) {
         if (!primaryFields || primaryFields.length === 0) {
-            throw new Error('At least one primary field must be specified');
+            throw new BadConfigError('At least one primary field must be specified');
         }
         this.primaryFields = primaryFields;
         this.registerConfig = {

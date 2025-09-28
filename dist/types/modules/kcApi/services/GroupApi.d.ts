@@ -1,7 +1,7 @@
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation';
 import { KcAdmin } from './KcAdminApi';
 import { IGroupApi, CreateGroupPayload, CreateGroupReturn, MapClientRoleToGroupPayload, AddAttributesToGroupPayload } from '../types/IGroupApi';
-import { ErrorTransformer } from '../../../error/src/ErrorTransformer';
+import { ErrorTransformer } from '@lazy-js/error-guard';
 /**
  * @description GroupApi class
  * @implements IGroupApi

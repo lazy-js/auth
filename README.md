@@ -15,7 +15,7 @@ A TypeScript toolkit to model and bootstrap Keycloak realms and expose ready-to-
 ## Installation
 
 ```bash
-npm install lazy-js/auth
+npm install github:lazy-js/auth
 # or if used via monorepo path, ensure peer deps are satisfied
 ```
 
@@ -37,15 +37,7 @@ Peer dependencies used internally:
 2. Define your realm structure
 
 ```ts
-import {
-    Realm,
-    App,
-    Client,
-    ClientAuthConfig,
-    Group,
-    User,
-    createRolesTree,
-} from 'lazy-js/auth';
+import { Realm, App, Client, ClientAuthConfig, Group, User, createRolesTree } from 'lazy-js/auth';
 
 // Define roles and role hierarchy
 const roles = createRolesTree([
@@ -75,9 +67,7 @@ const adminClientAuth = new ClientAuthConfig(['email', 'username'])
     .setBuiltInUser(defaultUser);
 
 // Clients
-const adminClient = new Client('admin-client', adminClientAuth).addGroup(
-    adminGroup,
-);
+const adminClient = new Client('admin-client', adminClientAuth).addGroup(adminGroup);
 
 // App
 const app1 = new App('app1').addClient(adminClient);
@@ -89,11 +79,7 @@ export const realm = new Realm('myrealm').addApp(app1);
 3. Start the service
 
 ```ts
-import {
-    LazyAuth,
-    type KeycloakConfig,
-    type ServiceConfig,
-} from 'lazy-js/auth';
+import { LazyAuth, type KeycloakConfig, type ServiceConfig } from 'lazy-js/auth';
 import { realm } from './realm';
 
 // Implement your notification SDK (email, etc.)
@@ -114,12 +100,7 @@ const serviceConfig: ServiceConfig = {
 
 const notificationSdk = new MyNotificationSdk();
 
-const service = new LazyAuth(
-    keycloakConfig,
-    serviceConfig,
-    realm,
-    notificationSdk,
-);
+const service = new LazyAuth(keycloakConfig, serviceConfig, realm, notificationSdk);
 service.start();
 ```
 

@@ -11,14 +11,13 @@ import {
     InitClientResponse,
     InitGroupPayload,
     InitGroupResponse,
-    ProfileAttribute,
 } from './types';
 
 import { BaseController } from '@lazy-js/server';
 import { UserController } from '../User';
 import { INotificationClientSdk } from '../../types';
 import { realmBuilderLogger } from '../../config/loggers';
-import { BadConfigError, ExternalServiceError } from '../../error';
+import { BadConfigError, ExternalServiceError } from '@lazy-js/error-guard';
 
 export class RealmBuilder extends BaseController implements IRealmBuilder {
     public realm: IRealm;
@@ -44,7 +43,7 @@ export class RealmBuilder extends BaseController implements IRealmBuilder {
         kcApi: IKcApi,
         notificationClientSdk: INotificationClientSdk,
     ) {
-        super({ pathname: `/${realm.name}` });
+        super({ pathname: `/${realm.name}`, healthRoute: '/health' });
         this.realm = realm;
         this.kcApi = kcApi;
         this.notificationClientSdk = notificationClientSdk;
@@ -132,7 +131,7 @@ export class RealmBuilder extends BaseController implements IRealmBuilder {
         if (!rootGroup || !rootGroup.id)
             throw new ExternalServiceError({
                 code: 'ROOT_GROUP_CREATION_ERROR',
-                label: 'Root group creation error',
+                message: 'Root group creation error',
                 externalService: 'Keycloak',
             });
         return {
@@ -165,7 +164,7 @@ export class RealmBuilder extends BaseController implements IRealmBuilder {
         if (!appInDatabase || !appInDatabase.id)
             throw new ExternalServiceError({
                 code: 'APP_GROUP_CREATION_ERROR',
-                label: 'App group creation error',
+                message: 'App group creation error',
                 externalService: 'Keycloak',
             });
 
@@ -277,7 +276,7 @@ export class RealmBuilder extends BaseController implements IRealmBuilder {
         if (!groupInDatabase || !groupInDatabase.id) {
             throw new ExternalServiceError({
                 code: 'GROUP_IN_CREATION_ERROR',
-                label: 'Group in creation error',
+                message: 'Group in creation error',
                 externalService: 'Keycloak',
             });
         }
@@ -291,7 +290,7 @@ export class RealmBuilder extends BaseController implements IRealmBuilder {
             if (!roleInPublicClientDatabase || !roleInPublicClientDatabase.id) {
                 throw new BadConfigError({
                     code: 'ROLE_NOT_FOUND_IN_PUBLIC_CLIENT',
-                    label: `Role not found in public client ${clientUuid} when trying to map role ${role.name} to group ${group.name}`,
+                    message: `Role not found in public client ${clientUuid} when trying to map role ${role.name} to group ${group.name}`,
                 });
             }
             await this.kcApi.groups.mapClientRoleToGroup({
@@ -311,7 +310,7 @@ export class RealmBuilder extends BaseController implements IRealmBuilder {
         if (!config.attributes)
             throw new ExternalServiceError({
                 code: 'USER_PROFILE_CONFIG_NOT_FOUND',
-                label: 'User profile config not found',
+                message: 'User profile config not found',
                 externalService: 'Keycloak',
             });
         const usernameIndex = config.attributes.findIndex(

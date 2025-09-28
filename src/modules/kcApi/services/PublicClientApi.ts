@@ -1,5 +1,5 @@
 import ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation';
-import errors from '../../../config/errors';
+
 import {
     IPublicClientApi,
     CreateClientPayload,
@@ -16,8 +16,13 @@ import {
     GetRoleByIdPayload,
 } from '../types';
 import { KcAdmin } from './KcAdminApi';
-import { AutoTransform } from '../../../error/src/decorators';
-import { ErrorTransformer } from '../../../error/src/ErrorTransformer';
+import {
+    AutoTransform,
+    ErrorTransformer,
+    InternalError,
+    NotFoundError,
+} from '@lazy-js/error-guard';
+import { MANUALLY_THROWN_ERROR_CODES } from './errorMap';
 
 /**
  * @description PublicClientApi class implements the IPublicClientApi interface and is used to interact with the Keycloak Public Client API
@@ -120,7 +125,9 @@ export class PublicClientApi implements IPublicClientApi {
         });
         const addedRole = await this.getRoleByName(payload);
         if (!addedRole || !addedRole.id)
-            throw new Error(errors.UNKNOWN_ERROR_IN_KC_API.code);
+            throw new InternalError(
+                MANUALLY_THROWN_ERROR_CODES.UNKNOWN_ERROR_IN_KC_API,
+            );
         return addedRole;
     }
 
@@ -146,8 +153,13 @@ export class PublicClientApi implements IPublicClientApi {
             roleId: payload.parentRoleId,
             clientUuid: payload.clientUuid,
         });
+
         if (!doesParentRoleExists) {
-            throw new Error(errors.PARENT_ROLE_NOT_EXISTS.code);
+            throw new NotFoundError(
+                MANUALLY_THROWN_ERROR_CODES.NO_ROLE_WITH_THAT_ID,
+            ).updateContext({
+                payload,
+            });
         }
 
         await this.kcAdmin.clients.createRole({
@@ -159,7 +171,9 @@ export class PublicClientApi implements IPublicClientApi {
         const childRole = await this.getRoleByName(payload);
 
         if (!childRole || !childRole.id) {
-            throw new Error('addChildRole Error');
+            throw new InternalError(
+                MANUALLY_THROWN_ERROR_CODES.UNKNOWN_ERROR_IN_KC_API,
+            );
         }
         await this.kcAdmin.roles.createComposite(
             {

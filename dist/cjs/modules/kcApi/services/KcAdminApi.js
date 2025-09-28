@@ -38,12 +38,12 @@ class KcAdmin extends keycloak_admin_client_1.default {
         // authenticate the client
         await client.authenticate(password);
         // assign interval for re-authenticating the client
-        console.log('First time authenticate');
-        console.log('Access token expires in', client.expiresIn);
-        console.log('Refresh token expires in', client.refreshExpiresIn);
+        // console.log('First time authenticate');
+        // console.log('Access token expires in', client.expiresIn);
+        // console.log('Refresh token expires in', client.refreshExpiresIn);
         setInterval(async () => {
             await client.authenticate(password);
-            console.log('Re-authenticating the client');
+            // console.log('Re-authenticating the client');
         }, client.expiresIn * 1000 - 10 * 1000);
         return client;
     }
@@ -89,8 +89,8 @@ class KcAdmin extends keycloak_admin_client_1.default {
             this.refreshToken = refreshToken;
         }
         catch (err) {
-            console.log('Error when authenticating to keycloak server');
-            console.log(err);
+            // console.log('Error when authenticating to keycloak server');
+            // console.log(err);
         }
         // await this.auth({
         //         grantType: ADMIN_GRANT_TYPE,

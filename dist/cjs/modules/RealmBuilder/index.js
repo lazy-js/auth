@@ -5,7 +5,7 @@ const index_1 = require("../kcApi/index");
 const server_1 = require("@lazy-js/server");
 const User_1 = require("../User");
 const loggers_1 = require("../../config/loggers");
-const error_1 = require("../../error");
+const error_guard_1 = require("@lazy-js/error-guard");
 class RealmBuilder extends server_1.BaseController {
     static async create(realm, kcApiConfig, notificationClientSdk) {
         const kcApi = await index_1.KcApi.create({
@@ -17,7 +17,7 @@ class RealmBuilder extends server_1.BaseController {
         return new RealmBuilder(realm, kcApi, notificationClientSdk);
     }
     constructor(realm, kcApi, notificationClientSdk) {
-        super({ pathname: `/${realm.name}` });
+        super({ pathname: `/${realm.name}`, healthRoute: '/health' });
         this.realm = realm;
         this.kcApi = kcApi;
         this.notificationClientSdk = notificationClientSdk;
@@ -83,9 +83,9 @@ class RealmBuilder extends server_1.BaseController {
         rootGroup = await this.kcApi.groups.getGroupById(rootGroup.id);
         await this._removeUsernameValidator();
         if (!rootGroup || !rootGroup.id)
-            throw new error_1.ExternalServiceError({
+            throw new error_guard_1.ExternalServiceError({
                 code: 'ROOT_GROUP_CREATION_ERROR',
-                label: 'Root group creation error',
+                message: 'Root group creation error',
                 externalService: 'Keycloak',
             });
         return {
@@ -106,9 +106,9 @@ class RealmBuilder extends server_1.BaseController {
             });
         appInDatabase = await this.kcApi.groups.getGroupById(appInDatabase.id);
         if (!appInDatabase || !appInDatabase.id)
-            throw new error_1.ExternalServiceError({
+            throw new error_guard_1.ExternalServiceError({
                 code: 'APP_GROUP_CREATION_ERROR',
-                label: 'App group creation error',
+                message: 'App group creation error',
                 externalService: 'Keycloak',
             });
         return {
@@ -178,9 +178,9 @@ class RealmBuilder extends server_1.BaseController {
                 },
             });
         if (!groupInDatabase || !groupInDatabase.id) {
-            throw new error_1.ExternalServiceError({
+            throw new error_guard_1.ExternalServiceError({
                 code: 'GROUP_IN_CREATION_ERROR',
-                label: 'Group in creation error',
+                message: 'Group in creation error',
                 externalService: 'Keycloak',
             });
         }
@@ -190,9 +190,9 @@ class RealmBuilder extends server_1.BaseController {
                 clientUuid: clientUuid,
             });
             if (!roleInPublicClientDatabase || !roleInPublicClientDatabase.id) {
-                throw new error_1.BadConfigError({
+                throw new error_guard_1.BadConfigError({
                     code: 'ROLE_NOT_FOUND_IN_PUBLIC_CLIENT',
-                    label: `Role not found in public client ${clientUuid} when trying to map role ${role.name} to group ${group.name}`,
+                    message: `Role not found in public client ${clientUuid} when trying to map role ${role.name} to group ${group.name}`,
                 });
             }
             await this.kcApi.groups.mapClientRoleToGroup({
@@ -209,9 +209,9 @@ class RealmBuilder extends server_1.BaseController {
     async _removeUsernameValidator() {
         const config = await this.kcApi.users.getUserProfileConfig();
         if (!config.attributes)
-            throw new error_1.ExternalServiceError({
+            throw new error_guard_1.ExternalServiceError({
                 code: 'USER_PROFILE_CONFIG_NOT_FOUND',
-                label: 'User profile config not found',
+                message: 'User profile config not found',
                 externalService: 'Keycloak',
             });
         const usernameIndex = config.attributes.findIndex((attr) => attr.name === 'username');

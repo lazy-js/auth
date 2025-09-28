@@ -8,15 +8,11 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GroupApi = void 0;
-const errors_1 = __importDefault(require("../../../config/errors"));
 const KcAdminApi_1 = require("./KcAdminApi");
-const decorators_1 = require("../../../error/src/decorators");
-const ErrorTransformer_1 = require("../../../error/src/ErrorTransformer");
+const error_guard_1 = require("@lazy-js/error-guard");
+const errorMap_1 = require("./errorMap");
 /**
  * @description GroupApi class
  * @implements IGroupApi
@@ -102,7 +98,7 @@ let GroupApi = class GroupApi {
     async getGroupsByParentPath(parentPath) {
         const parentGroup = await this.getGroupByPath(parentPath);
         if (!parentGroup || !parentGroup.id) {
-            throw new Error(errors_1.default.NO_GROUP_WITH_THAT_PATH.code);
+            throw new error_guard_1.NotFoundError(errorMap_1.MANUALLY_THROWN_ERROR_CODES.NO_GROUP_WITH_THAT_PATH);
         }
         return await this.getSubGroupsByParentId(parentGroup.id);
     }
@@ -159,7 +155,7 @@ let GroupApi = class GroupApi {
         });
         const role = allRoles.find((role) => role.id === roleId);
         if (!role || !role.name) {
-            throw new Error(errors_1.default.NO_ROLE_WITH_THAT_ID.code);
+            throw new error_guard_1.NotFoundError(errorMap_1.MANUALLY_THROWN_ERROR_CODES.NO_ROLE_WITH_THAT_ID);
         }
         await this.kcAdmin.groups.addClientRoleMappings({
             id: groupId,
@@ -178,7 +174,7 @@ let GroupApi = class GroupApi {
         const { groupId, attributes } = payload;
         const group = await this.getGroupById(groupId);
         if (!group) {
-            throw new Error(errors_1.default.NO_GROUP_WITH_THAT_ID.code);
+            throw new error_guard_1.NotFoundError(errorMap_1.MANUALLY_THROWN_ERROR_CODES.NO_GROUP_WITH_THAT_ID);
         }
         await this.kcAdmin.groups.update({ id: groupId, realm: this.kcAdmin.workingRealmName }, {
             ...group,
@@ -191,8 +187,8 @@ let GroupApi = class GroupApi {
 };
 exports.GroupApi = GroupApi;
 exports.GroupApi = GroupApi = __decorate([
-    (0, decorators_1.AutoTransform)(),
+    (0, error_guard_1.AutoTransform)(),
     __metadata("design:paramtypes", [KcAdminApi_1.KcAdmin,
-        ErrorTransformer_1.ErrorTransformer])
+        error_guard_1.ErrorTransformer])
 ], GroupApi);
 //# sourceMappingURL=GroupApi.js.map

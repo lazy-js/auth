@@ -4,7 +4,7 @@ import UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRep
 import { UserProfileConfig } from '@keycloak/keycloak-admin-client/lib/defs/userProfileMetadata';
 import { TokenResponse } from '@keycloak/keycloak-admin-client/lib/utils/auth';
 import { GroupRepresentation } from '../types/shared';
-import { ErrorTransformer } from '../../../error/src/ErrorTransformer';
+import { ErrorTransformer } from '@lazy-js/error-guard';
 /**
  * @description UserApi class implements the IUserApi interface and is used to interact with the Keycloak User API
  * @implements IUserApi

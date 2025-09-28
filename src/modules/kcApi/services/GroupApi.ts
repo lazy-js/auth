@@ -1,4 +1,3 @@
-import errors from '../../../config/errors';
 import type GroupRepresentation from '@keycloak/keycloak-admin-client/lib/defs/groupRepresentation';
 import { KcAdmin } from './KcAdminApi';
 import {
@@ -8,8 +7,12 @@ import {
     MapClientRoleToGroupPayload,
     AddAttributesToGroupPayload,
 } from '../types/IGroupApi';
-import { AutoTransform } from '../../../error/src/decorators';
-import { ErrorTransformer } from '../../../error/src/ErrorTransformer';
+import {
+    AutoTransform,
+    ErrorTransformer,
+    NotFoundError,
+} from '@lazy-js/error-guard';
+import { MANUALLY_THROWN_ERROR_CODES } from './errorMap';
 
 /**
  * @description GroupApi class
@@ -115,9 +118,10 @@ export class GroupApi implements IGroupApi {
     ): Promise<GroupRepresentation[]> {
         const parentGroup = await this.getGroupByPath(parentPath);
         if (!parentGroup || !parentGroup.id) {
-            throw new Error(errors.NO_GROUP_WITH_THAT_PATH.code);
+            throw new NotFoundError(
+                MANUALLY_THROWN_ERROR_CODES.NO_GROUP_WITH_THAT_PATH,
+            );
         }
-
         return await this.getSubGroupsByParentId(parentGroup.id);
     }
 
@@ -185,7 +189,9 @@ export class GroupApi implements IGroupApi {
         });
         const role = allRoles.find((role) => role.id === roleId);
         if (!role || !role.name) {
-            throw new Error(errors.NO_ROLE_WITH_THAT_ID.code);
+            throw new NotFoundError(
+                MANUALLY_THROWN_ERROR_CODES.NO_ROLE_WITH_THAT_ID,
+            );
         }
 
         await this.kcAdmin.groups.addClientRoleMappings({
@@ -208,7 +214,9 @@ export class GroupApi implements IGroupApi {
         const { groupId, attributes } = payload;
         const group = await this.getGroupById(groupId);
         if (!group) {
-            throw new Error(errors.NO_GROUP_WITH_THAT_ID.code);
+            throw new NotFoundError(
+                MANUALLY_THROWN_ERROR_CODES.NO_GROUP_WITH_THAT_ID,
+            );
         }
         await this.kcAdmin.groups.update(
             { id: groupId, realm: this.kcAdmin.workingRealmName },

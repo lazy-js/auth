@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkServerRequest = checkServerRequest;
 async function checkServerRequest(url) {
     try {
-        const res = await fetch(url);
+        await fetch(url);
         return true;
     }
     catch (err) {

@@ -12,17 +12,7 @@ export interface KeycloakConfig {
     keycloakServiceUrl: string;
     keycloakAdminPassword: string;
     keycloakAdminReAuthenticateIntervalMs?: number;
-}
-export interface ServiceConfig {
-    allowedOrigins: string[];
-    port: number;
-    routerPrefix: string;
-    serviceName?: string;
-    mongoDbUrl: string;
-    disableSecurityHeaders?: boolean;
-    enableRealmSummary?: boolean;
-    enableServiceLogging?: boolean;
-    enableRequestLogging?: boolean;
-    enableRoutesLogging?: boolean;
+    localMongoDbURL: string;
+    logKeycloakInfo?: boolean;
 }
 //# sourceMappingURL=index.d.ts.map

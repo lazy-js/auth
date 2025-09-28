@@ -1,9 +1,6 @@
 import KeycloakAdminClient from '@keycloak/keycloak-admin-client';
 import { KeycloakCreateObject } from '../types/shared';
-import {
-    getToken,
-    TokenResponse,
-} from '@keycloak/keycloak-admin-client/lib/utils/auth';
+import { getToken } from '@keycloak/keycloak-admin-client/lib/utils/auth';
 
 const ADMIN_CLIENT_ID = 'admin-cli';
 const ADMIN_USERNAME = 'admin';
@@ -50,13 +47,13 @@ export class KcAdmin extends KeycloakAdminClient {
         await client.authenticate(password);
 
         // assign interval for re-authenticating the client
-        console.log('First time authenticate');
-        console.log('Access token expires in', client.expiresIn);
-        console.log('Refresh token expires in', client.refreshExpiresIn);
+        // console.log('First time authenticate');
+        // console.log('Access token expires in', client.expiresIn);
+        // console.log('Refresh token expires in', client.refreshExpiresIn);
 
         setInterval(async () => {
             await client.authenticate(password);
-            console.log('Re-authenticating the client');
+            // console.log('Re-authenticating the client');
         }, client.expiresIn * 1000 - 10 * 1000);
 
         return client;
@@ -108,8 +105,8 @@ export class KcAdmin extends KeycloakAdminClient {
             this.refreshExpiresIn = refreshExpiresIn;
             this.refreshToken = refreshToken;
         } catch (err: any) {
-            console.log('Error when authenticating to keycloak server');
-            console.log(err);
+            // console.log('Error when authenticating to keycloak server');
+            // console.log(err);
         }
         // await this.auth({
         //         grantType: ADMIN_GRANT_TYPE,

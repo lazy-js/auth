@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.App = void 0;
+const error_guard_1 = require("@lazy-js/error-guard");
 class App {
     constructor(name) {
         this.name = name;
@@ -24,7 +25,7 @@ class App {
         client.setAppName(this.name);
         client.setAppPath(this.realmPath + '/' + this.name);
         if (!client.groups.some((group) => group.isDefault)) {
-            throw new Error('Each Client must contain a default group');
+            throw new error_guard_1.BadConfigError('Each Client must contain a default group');
         }
         this.clients.push(client);
         return this;

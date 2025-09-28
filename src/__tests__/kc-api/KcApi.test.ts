@@ -3,15 +3,15 @@ import { errors as joseErrors } from 'jose';
 
 // target module
 import { KcApi } from '../../modules/kcApi/services/KcApi';
-import { errorMap, defaultError } from '../../modules/kcApi/services/errorMap';
+import { errorTransformer } from '../../modules/kcApi/services/errorMap';
 
 // dependencies
 import {
     AuthenticationError,
     ConflictError,
     InternalError,
-} from '../../error/src/Error';
-import { ErrorTransformer } from '../../error/src/ErrorTransformer';
+    ErrorTransformer,
+} from '@lazy-js/error-guard';
 
 import { checkServerRequest } from '../../utils';
 
@@ -330,12 +330,6 @@ describe('KcApi Integration Test Suite', () => {
                 {},
             );
 
-            // Test error transformation
-            const errorTransformer = new ErrorTransformer(
-                errorMap,
-                defaultError,
-            );
-
             expect(() => {
                 errorTransformer.transform(jwtExpiredError, {
                     methodName: 'testMethod',
@@ -345,11 +339,6 @@ describe('KcApi Integration Test Suite', () => {
 
         it('should transform group conflict errors', async () => {
             const conflictError = new Error('sibling group already exists');
-
-            const errorTransformer = new ErrorTransformer(
-                errorMap,
-                defaultError,
-            );
 
             expect(() => {
                 errorTransformer.transform(conflictError, {
@@ -361,11 +350,6 @@ describe('KcApi Integration Test Suite', () => {
         it('should transform invalid grant errors', async () => {
             const invalidGrantError = new Error('invalid grant');
 
-            const errorTransformer = new ErrorTransformer(
-                errorMap,
-                defaultError,
-            );
-
             expect(() => {
                 errorTransformer.transform(invalidGrantError, {
                     methodName: 'testMethod',
@@ -375,11 +359,6 @@ describe('KcApi Integration Test Suite', () => {
 
         it('should use default error for unknown errors', async () => {
             const unknownError = new Error('Unknown error type');
-
-            const errorTransformer = new ErrorTransformer(
-                errorMap,
-                defaultError,
-            );
 
             expect(() => {
                 errorTransformer.transform(unknownError, {
@@ -392,10 +371,6 @@ describe('KcApi Integration Test Suite', () => {
     describe('�� Error Context and Stack Trace Testing', () => {
         it('should preserve error context in transformed errors', async () => {
             const testError = new Error('Test error');
-            const errorTransformer = new ErrorTransformer(
-                errorMap,
-                defaultError,
-            );
 
             try {
                 errorTransformer.transform(testError, {
@@ -415,11 +390,6 @@ describe('KcApi Integration Test Suite', () => {
         it('should preserve original error stack trace', async () => {
             const testError = new Error('Test error');
             testError.stack = 'Original stack trace';
-
-            const errorTransformer = new ErrorTransformer(
-                errorMap,
-                defaultError,
-            );
 
             try {
                 errorTransformer.transform(testError, {

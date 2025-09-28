@@ -11,8 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RealmApi = void 0;
 const KcAdminApi_1 = require("./KcAdminApi");
-const ErrorTransformer_1 = require("../../../error/src/ErrorTransformer");
-const decorators_1 = require("../../../error/src/decorators");
+const error_guard_1 = require("@lazy-js/error-guard");
 /**
  * @description RealmApi class implements the IRealmApi interface and is used to interact with the Keycloak Realm API
  * @implements IRealmApi
@@ -69,11 +68,11 @@ let RealmApi = class RealmApi {
 };
 exports.RealmApi = RealmApi;
 exports.RealmApi = RealmApi = __decorate([
-    (0, decorators_1.AutoTransform)({
+    (0, error_guard_1.AutoTransform)({
         exclude: ['realmExists'],
     }),
     __metadata("design:paramtypes", [KcAdminApi_1.KcAdmin,
-        ErrorTransformer_1.ErrorTransformer])
+        error_guard_1.ErrorTransformer])
 ], RealmApi);
 /**
  * @description Realm required actions provided ids

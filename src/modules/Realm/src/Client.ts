@@ -1,3 +1,4 @@
+import { BadConfigError } from '@lazy-js/error-guard';
 import {
     IClient,
     IRole,
@@ -43,7 +44,7 @@ export class Client implements IClient {
         if (group.isDefault) {
             const defaultGroup = this.groups.find((g) => g.isDefault);
             if (defaultGroup)
-                throw new Error(
+                throw new BadConfigError(
                     'Each client should contain only one default group',
                 );
         }

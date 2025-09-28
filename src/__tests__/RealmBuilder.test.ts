@@ -2,23 +2,10 @@ import { RealmBuilder } from '../modules/RealmBuilder';
 import { testRealm as realm } from './utils/realm';
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { MockNotificationClientSdk } from './utils/MockNotificationSdkClient';
-import { MongoMemoryServer } from 'mongodb-memory-server';
-import { Database } from '@lazy-js/mongo-db';
-import { defineConfig } from 'vitest/config';
+//         "mongodb-memory-server": "^10.2.0",
 
-// disable testing for this file
-export default defineConfig({
-    test: {
-        testTimeout: 0,
-        // Also configure hook timeouts if needed
-        exclude: [
-            'tests/RealmBuilder.test.ts',
-            'tests/KcApi.test.ts',
-            'tests/index.test.ts',
-        ],
-        hookTimeout: 0,
-    },
-});
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import { Database } from '../database';
 
 const kcApiOptions = {
     url: 'http://localhost:8080',

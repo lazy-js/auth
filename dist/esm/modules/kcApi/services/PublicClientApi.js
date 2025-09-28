@@ -7,10 +7,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import errors from '../../../config/errors';
 import { KcAdmin } from './KcAdminApi';
-import { AutoTransform } from '../../../error/src/decorators';
-import { ErrorTransformer } from '../../../error/src/ErrorTransformer';
+import { AutoTransform, ErrorTransformer, InternalError, NotFoundError, } from '@lazy-js/error-guard';
+import { MANUALLY_THROWN_ERROR_CODES } from './errorMap';
 /**
  * @description PublicClientApi class implements the IPublicClientApi interface and is used to interact with the Keycloak Public Client API
  * @implements IPublicClientApi
@@ -98,7 +97,7 @@ let PublicClientApi = class PublicClientApi {
         });
         const addedRole = await this.getRoleByName(payload);
         if (!addedRole || !addedRole.id)
-            throw new Error(errors.UNKNOWN_ERROR_IN_KC_API.code);
+            throw new InternalError(MANUALLY_THROWN_ERROR_CODES.UNKNOWN_ERROR_IN_KC_API);
         return addedRole;
     }
     /**
@@ -122,7 +121,9 @@ let PublicClientApi = class PublicClientApi {
             clientUuid: payload.clientUuid,
         });
         if (!doesParentRoleExists) {
-            throw new Error(errors.PARENT_ROLE_NOT_EXISTS.code);
+            throw new NotFoundError(MANUALLY_THROWN_ERROR_CODES.NO_ROLE_WITH_THAT_ID).updateContext({
+                payload,
+            });
         }
         await this.kcAdmin.clients.createRole({
             id: payload.clientUuid,
@@ -131,7 +132,7 @@ let PublicClientApi = class PublicClientApi {
         });
         const childRole = await this.getRoleByName(payload);
         if (!childRole || !childRole.id) {
-            throw new Error('addChildRole Error');
+            throw new InternalError(MANUALLY_THROWN_ERROR_CODES.UNKNOWN_ERROR_IN_KC_API);
         }
         await this.kcAdmin.roles.createComposite({
             roleId: payload.parentRoleId,

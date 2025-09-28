@@ -1,7 +1,6 @@
 import { IRealmApi, CreateRealmReturn } from '../types';
 import { KcAdmin } from './KcAdminApi';
-import { ErrorTransformer } from '../../../error/src/ErrorTransformer';
-import { AutoTransform } from '../../../error/src/decorators';
+import { ErrorTransformer, AutoTransform } from '@lazy-js/error-guard';
 
 /**
  * @description RealmApi class implements the IRealmApi interface and is used to interact with the Keycloak Realm API

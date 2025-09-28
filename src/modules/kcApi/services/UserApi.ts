@@ -16,8 +16,12 @@ import {
 } from '@keycloak/keycloak-admin-client/lib/utils/auth';
 import { jwtVerify, createRemoteJWKSet } from 'jose';
 import { GroupRepresentation } from '../types/shared';
-import { ErrorTransformer } from '../../../error/src/ErrorTransformer';
-import { AutoTransform } from '../../../error/src/decorators';
+import {
+    ErrorTransformer,
+    AutoTransform,
+    NotFoundError,
+} from '@lazy-js/error-guard';
+import { MANUALLY_THROWN_ERROR_CODES } from './errorMap';
 
 /**
  * @description UserApi class implements the IUserApi interface and is used to interact with the Keycloak User API
@@ -80,7 +84,9 @@ export class UserApi implements IUserApi {
             realm: this.kcAdmin.workingRealmName,
         });
         if (!roleId || !roleId.id) {
-            throw new Error('Default Realm Role Not Found');
+            throw new NotFoundError(
+                MANUALLY_THROWN_ERROR_CODES.DEFAULT_REALM_ROLE_NOT_FOUND,
+            );
         }
         return await this.kcAdmin.users.delRealmRoleMappings({
             id: userId,

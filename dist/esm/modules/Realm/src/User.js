@@ -1,3 +1,4 @@
+import { BadConfigError } from '@lazy-js/error-guard';
 class User {
     constructor(user) {
         this.user = user;
@@ -33,7 +34,7 @@ class User {
                 group: this.user.group.toJson(),
             };
         }
-        throw new Error('Invalid user');
+        throw new BadConfigError('Invalid user');
     }
 }
 export { User };

@@ -11,9 +11,9 @@ export declare class IUserValidator {
         primaryFields: PrimaryField[],
     ): Promise<LoginWithEmail | LoginWithPhone | LoginWithUsername>;
     validatePassword(password: string): Promise<string>;
-    validateVerifyDto(
-        verifyDto: VerifyDto,
-    ): Promise<VerifyWithEmail | VerifyWithPhone>;
+    validateVerifyDto(verifyDto: VerifyDto): Promise<VerifyWithEmail | VerifyWithPhone>;
+
+    validateTokenString(token: string, tokenType: 'refresh' | 'access'): Promise<string>;
 }
 
 export interface RegisterWithUsername {

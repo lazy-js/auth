@@ -13,7 +13,7 @@ import { UserApi } from './UserApi';
 import { GroupApi } from './GroupApi';
 import { PublicClientApi } from './PublicClientApi';
 import { errorTransformer } from './errorMap';
-import { ErrorTransformer } from '../../../error/src/ErrorTransformer';
+import { ErrorTransformer } from '@lazy-js/error-guard';
 
 /**
  * @description KcApi class implements the IKcApi interface and is used to create a KcApi instance

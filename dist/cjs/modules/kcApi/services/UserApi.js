@@ -13,8 +13,8 @@ exports.UserApi = void 0;
 const KcAdminApi_1 = require("./KcAdminApi");
 const auth_1 = require("@keycloak/keycloak-admin-client/lib/utils/auth");
 const jose_1 = require("jose");
-const ErrorTransformer_1 = require("../../../error/src/ErrorTransformer");
-const decorators_1 = require("../../../error/src/decorators");
+const error_guard_1 = require("@lazy-js/error-guard");
+const errorMap_1 = require("./errorMap");
 /**
  * @description UserApi class implements the IUserApi interface and is used to interact with the Keycloak User API
  * @implements IUserApi
@@ -70,7 +70,7 @@ let UserApi = class UserApi {
             realm: this.kcAdmin.workingRealmName,
         });
         if (!roleId || !roleId.id) {
-            throw new Error('Default Realm Role Not Found');
+            throw new error_guard_1.NotFoundError(errorMap_1.MANUALLY_THROWN_ERROR_CODES.DEFAULT_REALM_ROLE_NOT_FOUND);
         }
         return await this.kcAdmin.users.delRealmRoleMappings({
             id: userId,
@@ -263,9 +263,9 @@ let UserApi = class UserApi {
 };
 exports.UserApi = UserApi;
 exports.UserApi = UserApi = __decorate([
-    (0, decorators_1.AutoTransform)(),
+    (0, error_guard_1.AutoTransform)(),
     __metadata("design:paramtypes", [KcAdminApi_1.KcAdmin,
-        ErrorTransformer_1.ErrorTransformer])
+        error_guard_1.ErrorTransformer])
 ], UserApi);
 /**
  * @description User template

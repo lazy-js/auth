@@ -22,13 +22,13 @@ class UserController extends server_1.BaseController {
         this.kcApi = kcApi;
         this.notificationClientSdk = notificationClientSdk;
         this.userService = new UserService_1.UserService(client, kcApi, notificationClientSdk);
-        this.mountPostRoute(exports.registerPath, this.register.bind(this));
-        this.mountPostRoute(exports.loginPath, this.login.bind(this));
-        this.mountPostRoute(exports.validateAccessTokenPath, this.validateAccessToken.bind(this));
-        this.mountPostRoute(exports.validateRolePath, this.validateRole.bind(this));
-        this.mountPostRoute(exports.refreshAccessTokenPath, this.refreshToken.bind(this));
-        this.mountPutRoute(exports.updatePasswordPath, this.updatePassword.bind(this));
-        this.mountPutRoute(exports.verifyPath, this.verify.bind(this));
+        this.post(exports.registerPath, this.register.bind(this));
+        this.post(exports.loginPath, this.login.bind(this));
+        this.post(exports.validateAccessTokenPath, this.validateAccessToken.bind(this));
+        this.post(exports.validateRolePath, this.validateRole.bind(this));
+        this.post(exports.refreshAccessTokenPath, this.refreshToken.bind(this));
+        this.put(exports.updatePasswordPath, this.updatePassword.bind(this));
+        this.put(exports.verifyPath, this.verify.bind(this));
     }
     async register(req, res, next) {
         try {

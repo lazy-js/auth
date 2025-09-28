@@ -1,7 +1,6 @@
 import { CreateUserParams, IUserRepository, IUserService, IUserValidator, UserCreationDto, PrivateUserService, VerifyDto } from './UserService.types';
 import { IKcApi, TokenResponse, AccessTokenPayload } from '../../kcApi';
 import { IClient } from '../../Realm';
-import { IUserSchema } from '../model/UserModel.types';
 import { INotificationClientSdk } from '../../../types';
 import { Schema } from 'mongoose';
 interface PublicRegisterReturn {
@@ -35,7 +34,7 @@ export declare class UserService implements IUserService, PrivateUserService {
     constructor(client: IClient, kcApi: IKcApi, notificationClientSdk: INotificationClientSdk);
     register(createUserParams: CreateUserParams): Promise<RegisterReturn>;
     login(loginParams: CreateUserParams): Promise<LoginReturn>;
-    throwInvalidCredentialsError(method: string): never;
+    throwInvalidCredentialsError(): never;
     verify(verifyDto: VerifyDto): Promise<void>;
     updatePassword(accessToken: string, newPassword: string): Promise<void>;
     validateAccessToken<T extends string>(accessToken?: string): Promise<AccessTokenPayload<T> & {
@@ -45,7 +44,7 @@ export declare class UserService implements IUserService, PrivateUserService {
     validateRole(accessToken: string, role: string | string[]): Promise<AccessTokenPayload<string> & {
         _id: string;
     }>;
-    _getUser(user: UserCreationDto): Promise<IUserSchema | null>;
+    _getUser(user: UserCreationDto): Promise<import("../model/UserModel.types").IUserSchema | null>;
     _getClientDefaultGroupId(): Promise<string>;
     _getGroupIdByPath(path: string): Promise<string>;
     _registerUserInKeycloak(userDto: UserCreationDto, groupId?: string): Promise<string>;
@@ -55,9 +54,9 @@ export declare class UserService implements IUserService, PrivateUserService {
             clientPath: string;
             isDefault: boolean;
         };
-    }): Promise<IUserSchema | null>;
+    }): Promise<import("../model/UserModel.types").IUserSchema>;
     _publicRegister(createUserParams: CreateUserParams): Promise<{
-        [x: string]: string | boolean | Date | Schema.Types.ObjectId | undefined;
+        [x: string]: string | boolean | Schema.Types.ObjectId | Date | undefined;
         _id: Schema.Types.ObjectId;
         username: string;
         method: "email" | "phone" | "username";
@@ -65,7 +64,7 @@ export declare class UserService implements IUserService, PrivateUserService {
         createdAt: Date;
     }>;
     _privateRegister(createUserParams: CreateUserParams): Promise<{
-        [x: string]: string | boolean | Date | Schema.Types.ObjectId | undefined;
+        [x: string]: string | boolean | Schema.Types.ObjectId | Date | undefined;
         _id: Schema.Types.ObjectId;
         username: string;
         method: "email" | "phone" | "username";

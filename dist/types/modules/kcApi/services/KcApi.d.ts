@@ -1,6 +1,6 @@
 import { IKcApi, IPublicClientApi, KeycloakCreateObject, IGroupApi, IRealmApi, IUserApi } from '../types';
 import { KcAdmin } from './KcAdminApi';
-import { ErrorTransformer } from '../../../error/src/ErrorTransformer';
+import { ErrorTransformer } from '@lazy-js/error-guard';
 /**
  * @description KcApi class implements the IKcApi interface and is used to create a KcApi instance
  * @description KcApi is the main class that is used to interact with the Keycloak Admin API

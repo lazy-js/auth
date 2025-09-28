@@ -1,3 +1,4 @@
+import { BadConfigError } from '@lazy-js/error-guard';
 import { IClient, IApp, Attribute, AttributeValue } from '../types';
 
 export class App implements IApp {
@@ -32,7 +33,9 @@ export class App implements IApp {
         client.setAppPath(this.realmPath + '/' + this.name);
 
         if (!client.groups.some((group) => group.isDefault)) {
-            throw new Error('Each Client must contain a default group');
+            throw new BadConfigError(
+                'Each Client must contain a default group',
+            );
         }
 
         this.clients.push(client);

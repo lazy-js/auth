@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RealmManipulator = void 0;
+const error_guard_1 = require("@lazy-js/error-guard");
 class RealmManipulator {
     constructor(config) {
         this.realm = config.realm;
@@ -30,7 +31,7 @@ class RealmManipulator {
      */
     getAppByName(appName) {
         if (!this.getAppNames().includes(appName)) {
-            throw new Error(`Unknown App Name: ${appName}`);
+            throw new error_guard_1.BadConfigError(`Unknown App Name: ${appName}`);
         }
         return this.getApps().find((app) => app.name === appName);
     }
@@ -59,7 +60,7 @@ class RealmManipulator {
      */
     getAppClientByClientName(appName, clientName) {
         if (!this.getAppClientNames(appName).includes(clientName)) {
-            throw new Error(`Unknown Client Name for ${appName}. Client name: ${clientName}`);
+            throw new error_guard_1.BadConfigError(`Unknown Client Name for ${appName}. Client name: ${clientName}`);
         }
         const requiredClient = this.getAppClients(appName).filter((client) => {
             return client.name === clientName;

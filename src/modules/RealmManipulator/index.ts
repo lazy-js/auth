@@ -1,3 +1,4 @@
+import { BadConfigError } from '@lazy-js/error-guard';
 import { IRealm, IApp, IClient } from '../Realm';
 
 interface IRealmManipulatorConfig {
@@ -43,7 +44,7 @@ export class RealmManipulator {
      */
     getAppByName(appName: string): IApp | undefined {
         if (!this.getAppNames().includes(appName)) {
-            throw new Error(`Unknown App Name: ${appName}`);
+            throw new BadConfigError(`Unknown App Name: ${appName}`);
         }
         return this.getApps().find((app) => app.name === appName);
     }
@@ -75,7 +76,7 @@ export class RealmManipulator {
      */
     getAppClientByClientName(appName: string, clientName: string): IClient {
         if (!this.getAppClientNames(appName).includes(clientName)) {
-            throw new Error(
+            throw new BadConfigError(
                 `Unknown Client Name for ${appName}. Client name: ${clientName}`,
             );
         }

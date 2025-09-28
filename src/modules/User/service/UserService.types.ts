@@ -34,14 +34,8 @@ export declare class IUserService {
 
 export interface PrivateUserService {
     _getUser(user: UserCreationDto): Promise<IUserSchema | null>;
-    _registerUserInKeycloak(
-        userDto: UserCreationDto,
-        groupId?: string,
-    ): Promise<string>;
+    _registerUserInKeycloak(userDto: UserCreationDto, groupId?: string): Promise<string>;
     _getClientDefaultGroupId(client: IClient): Promise<string>;
     _generateUsername(userDto: UserCreationDto): string;
-    _publicRegister(
-        createUserParams: CreateUserParams,
-        groupId?: string,
-    ): Promise<any>;
+    _publicRegister(createUserParams: CreateUserParams, groupId?: string): Promise<any>;
 }

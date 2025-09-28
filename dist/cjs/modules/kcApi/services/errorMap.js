@@ -1,180 +1,62 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.errorTransformer = exports.defaultError = exports.errorMap = void 0;
-const Error_1 = require("../../../error/src/Error");
-const ErrorTransformer_1 = require("../../../error/src/ErrorTransformer");
+exports.errorTransformer = exports.MANUALLY_THROWN_ERROR_CODES = exports.rollbackError = void 0;
+const error_guard_1 = require("@lazy-js/error-guard");
 const jose_1 = require("jose");
-exports.errorMap = [
-    {
-        input: {
-            condition: 'includes',
-            messageParts: ['Top level group', 'already exists'],
-        },
-        output: {
-            type: 'ErrorInstance',
-            error: new Error_1.ConflictError({
-                code: 'TOP_LEVEL_GROUP_ALREADY_EXISTS',
-                label: 'top level group already exists',
-            }),
-        },
-    },
-    {
-        input: {
-            condition: 'includes',
-            messageParts: ['sibling group', 'already exists'],
-        },
-        output: {
-            type: 'ErrorInstance',
-            error: new Error_1.ConflictError({
-                code: 'SUB_GROUP_ALREADY_EXISTS',
-                label: 'Sub group already exists',
-            }),
-        },
-    },
-    {
-        input: {
-            condition: 'instanceOf',
-            error: Error_1.ConflictError,
-        },
-        output: {
-            type: 'ErrorInstance',
-            error: new Error_1.ConflictError({
-                code: 'SUB_GROUP_ALREADY_EXISTS',
-                label: 'Sub group already exists',
-            }),
-        },
-    },
-    {
-        input: {
-            condition: 'instanceOf',
-            error: jose_1.errors.JWTExpired,
-        },
-        output: {
-            type: 'ErrorInstance',
-            error: new Error_1.AuthenticationError({
-                code: 'EXPIRED_ACCESS_TOKEN',
-                label: 'Expired access token',
-            }),
-        },
-    },
-    {
-        input: {
-            condition: 'instanceOf',
-            error: jose_1.errors.JWTInvalid,
-        },
-        output: {
-            type: 'ErrorInstance',
-            error: new Error_1.AuthenticationError({
-                code: 'INVALID_ACCESS_TOKEN',
-                label: 'Invalid access token',
-            }),
-        },
-    },
-    {
-        input: {
-            condition: 'instanceOf',
-            error: jose_1.errors.JWSSignatureVerificationFailed,
-        },
-        output: {
-            type: 'ErrorInstance',
-            error: new Error_1.AuthenticationError({
-                code: 'INVALID_ACCESS_TOKEN',
-                label: 'Invalid access token',
-            }),
-        },
-    },
-    {
-        input: {
-            condition: 'includes',
-            messageParts: ['invalid', 'grant'],
-        },
-        output: {
-            type: 'ErrorInstance',
-            error: new Error_1.AuthenticationError({
-                code: 'INVALID_CREDENTIALS',
-                label: 'Invalid credentials',
-            }),
-        },
-    },
-    {
-        input: {
-            condition: 'includes',
-            messageParts: ['Realm', 'already exists'],
-        },
-        output: {
-            type: 'ErrorInstance',
-            error: new Error_1.ConflictError({
-                code: 'REALM_ALREADY_EXISTS',
-                label: 'REALM ALREADY EXISTS',
-            }),
-        },
-    },
-    {
-        input: {
-            condition: 'equals',
-            message: 'User exists with same username',
-        },
-        output: {
-            type: 'ErrorInstance',
-            error: new Error_1.ConflictError({
-                code: 'USER_ALREADY_EXISTS',
-                label: 'user with that username already exists',
-            }),
-        },
-    },
-    {
-        input: {
-            condition: 'includes',
-            messageParts: ['Could not find group', 'by id'],
-        },
-        output: {
-            type: 'ErrorInstance',
-            error: new Error_1.NotFoundError({
-                code: 'GROUP_NOT_FOUND',
-                label: 'no group with that id',
-            }),
-        },
-    },
-    {
-        input: {
-            condition: 'instanceOf',
-            error: Error_1.NotFoundError,
-        },
-        output: 'pass',
-    },
-    {
-        input: {
-            condition: 'includes',
-            messageParts: ['401', 'Unauthorized'],
-        },
-        output: {
-            type: 'ErrorInstance',
-            error: new Error_1.AuthorizationError({
-                code: 'KEYCLOAK_UNAUTHORIZED',
-                label: 'keycloak unthorized',
-            }),
-        },
-    },
-    {
-        input: {
-            condition: 'instanceOf',
-            error: jose_1.errors.JWSInvalid,
-        },
-        output: {
-            type: 'ErrorInstance',
-            error: new Error_1.AuthorizationError({
-                code: 'INVALID_ACCESS_TOKEN',
-                label: 'invalid access token',
-            }),
-        },
-    },
-];
-exports.defaultError = new Error_1.InternalError({
+exports.rollbackError = new error_guard_1.InternalError({
     code: 'UNKNOWN_KEYCLOAK_ERROR',
-    label: 'Unknown error',
+    message: 'Unknown error',
 });
-exports.errorTransformer = new ErrorTransformer_1.ErrorTransformer(exports.errorMap, exports.defaultError, {
-    messagePropertyName: 'message',
-    log: 'all',
+const errorMapBuilder = new error_guard_1.ErrorMapBuilder({
+    globalProperty: 'message',
+    rollbackError: exports.rollbackError,
 });
+var MANUALLY_THROWN_ERROR_CODES;
+(function (MANUALLY_THROWN_ERROR_CODES) {
+    MANUALLY_THROWN_ERROR_CODES["NO_GROUP_WITH_THAT_PATH"] = "NO_GROUP_WITH_THAT_PATH";
+    MANUALLY_THROWN_ERROR_CODES["NO_ROLE_WITH_THAT_ID"] = "NO_ROLE_WITH_THAT_ID";
+    MANUALLY_THROWN_ERROR_CODES["NO_GROUP_WITH_THAT_ID"] = "NO_GROUP_WITH_THAT_ID";
+    MANUALLY_THROWN_ERROR_CODES["UNKNOWN_ERROR_IN_KC_API"] = "UNKNOWN_ERROR_IN_KC_API";
+    MANUALLY_THROWN_ERROR_CODES["DEFAULT_REALM_ROLE_NOT_FOUND"] = "DEFAULT_REALM_ROLE_NOT_FOUND";
+})(MANUALLY_THROWN_ERROR_CODES || (exports.MANUALLY_THROWN_ERROR_CODES = MANUALLY_THROWN_ERROR_CODES = {}));
+var TRANSFORMER_THROWN_ERROR_CODES;
+(function (TRANSFORMER_THROWN_ERROR_CODES) {
+    TRANSFORMER_THROWN_ERROR_CODES["TOP_LEVEL_GROUP_ALREADY_EXISTS"] = "TOP_LEVEL_GROUP_ALREADY_EXISTS";
+    TRANSFORMER_THROWN_ERROR_CODES["SUB_GROUP_ALREADY_EXISTS"] = "SUB_GROUP_ALREADY_EXISTS";
+    TRANSFORMER_THROWN_ERROR_CODES["EXPIRED_ACCESS_TOKEN"] = "EXPIRED_ACCESS_TOKEN";
+    TRANSFORMER_THROWN_ERROR_CODES["INVALID_ACCESS_TOKEN"] = "INVALID_ACCESS_TOKEN";
+    TRANSFORMER_THROWN_ERROR_CODES["INVALID_CREDENTIALS"] = "INVALID_CREDENTIALS";
+    TRANSFORMER_THROWN_ERROR_CODES["REALM_ALREADY_EXISTS"] = "REALM_ALREADY_EXISTS";
+    TRANSFORMER_THROWN_ERROR_CODES["USER_ALREADY_EXISTS"] = "USER_ALREADY_EXISTS";
+    TRANSFORMER_THROWN_ERROR_CODES["NO_GROUP_WITH_THAT_ID"] = "NO_GROUP_WITH_THAT_ID";
+    TRANSFORMER_THROWN_ERROR_CODES["KEYCLOAK_UNAUTHORIZED"] = "KEYCLOAK_UNAUTHORIZED";
+})(TRANSFORMER_THROWN_ERROR_CODES || (TRANSFORMER_THROWN_ERROR_CODES = {}));
+errorMapBuilder
+    .instanceOf(error_guard_1.CustomError)
+    .pass()
+    .includes(['Top level group', 'already exists'])
+    .throwErrorInstance(new error_guard_1.ConflictError(TRANSFORMER_THROWN_ERROR_CODES.TOP_LEVEL_GROUP_ALREADY_EXISTS))
+    .includes(['sibling group', 'already exists'])
+    .throwErrorInstance(new error_guard_1.ConflictError(TRANSFORMER_THROWN_ERROR_CODES.SUB_GROUP_ALREADY_EXISTS))
+    .instanceOf(jose_1.errors.JWTExpired)
+    .throwErrorInstance(new error_guard_1.AuthenticationError(TRANSFORMER_THROWN_ERROR_CODES.EXPIRED_ACCESS_TOKEN))
+    .instanceOf(jose_1.errors.JWTInvalid)
+    .throwErrorInstance(new error_guard_1.AuthenticationError(TRANSFORMER_THROWN_ERROR_CODES.INVALID_ACCESS_TOKEN))
+    .instanceOf(jose_1.errors.JWSSignatureVerificationFailed)
+    .throwErrorInstance(new error_guard_1.AuthenticationError(TRANSFORMER_THROWN_ERROR_CODES.INVALID_ACCESS_TOKEN))
+    .includes(['invalid', 'grant'])
+    .throwErrorInstance(new error_guard_1.AuthenticationError(TRANSFORMER_THROWN_ERROR_CODES.INVALID_CREDENTIALS))
+    .includes(['Realm', 'already exists'])
+    .throwErrorInstance(new error_guard_1.ConflictError(TRANSFORMER_THROWN_ERROR_CODES.REALM_ALREADY_EXISTS))
+    .equals('User exists with same username')
+    .throwErrorInstance(new error_guard_1.ConflictError(TRANSFORMER_THROWN_ERROR_CODES.USER_ALREADY_EXISTS))
+    .includes(['Could not find group', 'by id'])
+    .throwErrorInstance(new error_guard_1.NotFoundError(TRANSFORMER_THROWN_ERROR_CODES.NO_GROUP_WITH_THAT_ID))
+    .instanceOf(error_guard_1.NotFoundError)
+    .pass()
+    .includes(['401', 'Unauthorized'])
+    .throwErrorInstance(new error_guard_1.InternalError(TRANSFORMER_THROWN_ERROR_CODES.KEYCLOAK_UNAUTHORIZED))
+    .instanceOf(jose_1.errors.JWSInvalid)
+    .throwErrorInstance(new error_guard_1.AuthorizationError(TRANSFORMER_THROWN_ERROR_CODES.INVALID_ACCESS_TOKEN));
+exports.errorTransformer = new error_guard_1.ErrorTransformer({ errorMap: errorMapBuilder }, { log: 'never' });
 //# sourceMappingURL=errorMap.js.map

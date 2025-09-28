@@ -1,4 +1,4 @@
-import { LazyAuth, KeycloakConfig, ServiceConfig } from '..';
+import { LazyAuth, KeycloakConfig, AppParams } from '..';
 import { testRealm, testPublicClient } from './utils/realm';
 import { MockNotificationClientSdk } from './utils/MockNotificationSdkClient';
 import { beforeAll, describe, it, afterAll, expect } from 'vitest';
@@ -12,38 +12,36 @@ import mongoose from 'mongoose';
 const keycloakConfig: KeycloakConfig = {
     keycloakServiceUrl: 'http://localhost:8080',
     keycloakAdminPassword: 'admin',
+    localMongoDbURL: 'mongodb://localhost:27017/my-auth-db',
 };
 
-const serverConfig: ServiceConfig = {
-    port: 8999,
-    allowedOrigins: ['*'],
-    routerPrefix: '/api/v1',
-    mongoDbUrl: '',
-    enableRoutesLogging: true,
-    enableRealmSummary: true,
-    enableServiceLogging: true,
-    enableRequestLogging: true,
+const appConfig: AppParams = {
+    config: {
+        port: 8999,
+        routerPrefix: '/api/v1',
+        serviceName: 'Testing Keycloak',
+    },
+    security: { cors: { origin: '*' } },
 };
+
+const notificationSdk = new MockNotificationClientSdk();
 
 describe('Lazy Auth Testing Suite', () => {
     let mongoServer: MongoMemoryServer;
     let lazyAuthService: LazyAuth;
     let kcApi: KcApi;
+
     beforeAll(async () => {
         try {
             mongoServer = await MongoMemoryServer.create();
             const mongoDbUrl = mongoServer.getUri();
-            serverConfig.mongoDbUrl = mongoDbUrl;
-
-            const notificationSdk = new MockNotificationClientSdk();
-
+            keycloakConfig.localMongoDbURL = mongoDbUrl;
             lazyAuthService = new LazyAuth(
                 keycloakConfig,
-                serverConfig,
+                appConfig,
                 testRealm,
                 notificationSdk,
             );
-
             kcApi = await KcApi.create({
                 url: keycloakConfig.keycloakServiceUrl,
                 password: keycloakConfig.keycloakAdminPassword,
@@ -66,7 +64,6 @@ describe('Lazy Auth Testing Suite', () => {
 
     it('should start the server', async () => {
         await lazyAuthService.start();
-
         expect(lazyAuthService.app.expressApp).toBeDefined();
 
         const realmExist = await kcApi.realms.realmExists();
@@ -74,17 +71,17 @@ describe('Lazy Auth Testing Suite', () => {
     });
 
     it('the `routerPrevix`/`realmName`/ping should return pong as plain text', async () => {
-        const realmPathname = `/api/v1/${testRealm.name}/ping`;
+        const realmPathname = `/api/v1/${testRealm.name}/health`;
         await request(lazyAuthService.app.expressApp)
             .get(realmPathname)
             .expect((res) => {
-                expect(res.text).toBe('pong');
+                expect(res.text).toBe('ok');
                 expect(res.statusCode).toBe(200);
             });
     });
 
     describe('testing public client', () => {
-        const routerPrefix = serverConfig.routerPrefix;
+        const routerPrefix = appConfig.config.routerPrefix;
         const registerPath = '/register';
         const loginPath = '/login';
         const verifyPath = '/me/verify';
@@ -178,8 +175,6 @@ describe('Lazy Auth Testing Suite', () => {
                     // Test error structure
                     expect(res.body).toHaveProperty('error');
                     expect(res.body.error).toHaveProperty('code');
-                    expect(res.body.error).toHaveProperty('label');
-                    expect(res.body.error).toHaveProperty('date');
                 });
         });
         it('should throw for invalid email', async () => {
@@ -195,8 +190,6 @@ describe('Lazy Auth Testing Suite', () => {
                 .expect((res) => {
                     expect(res.body).toHaveProperty('error');
                     expect(res.body.error).toHaveProperty('code');
-                    expect(res.body.error).toHaveProperty('label');
-                    expect(res.body.error).toHaveProperty('date');
                 });
         });
 
@@ -213,8 +206,6 @@ describe('Lazy Auth Testing Suite', () => {
                 .expect((res) => {
                     expect(res.body).toHaveProperty('error');
                     expect(res.body.error).toHaveProperty('code');
-                    expect(res.body.error).toHaveProperty('label');
-                    expect(res.body.error).toHaveProperty('date');
                 });
         });
         it('should login with no token if user is not verified', async () => {
@@ -306,7 +297,6 @@ describe('Lazy Auth Testing Suite', () => {
                 .set('Content-Type', 'application/json')
                 .set('Authorization', `Bearer ${refreshToken}`)
                 .expect((res) => {
-                    console.log(res.body);
                     expect(res.body).toHaveProperty('data');
                     expect(res.body.data.accessToken).toBeDefined();
                     expect(res.body.data.refreshToken).toBeDefined();
@@ -319,9 +309,8 @@ describe('Lazy Auth Testing Suite', () => {
             await request(lazyAuthService.app.expressApp)
                 .post(`${routerPrefix}${clientPath}${refreshAccessTokenPath}`)
                 .set('Content-Type', 'application/json')
-                .send({ refreshToken: refreshToken })
+                .send({ refreshToken: `Bearer ${refreshToken}` })
                 .expect((res) => {
-                    console.log(res.body);
                     expect(res.body).toHaveProperty('data');
                     expect(res.body.data.accessToken).toBeDefined();
                     expect(res.body.data.refreshToken).toBeDefined();

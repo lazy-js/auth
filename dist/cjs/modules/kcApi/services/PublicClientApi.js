@@ -8,15 +8,11 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PublicClientApi = void 0;
-const errors_1 = __importDefault(require("../../../config/errors"));
 const KcAdminApi_1 = require("./KcAdminApi");
-const decorators_1 = require("../../../error/src/decorators");
-const ErrorTransformer_1 = require("../../../error/src/ErrorTransformer");
+const error_guard_1 = require("@lazy-js/error-guard");
+const errorMap_1 = require("./errorMap");
 /**
  * @description PublicClientApi class implements the IPublicClientApi interface and is used to interact with the Keycloak Public Client API
  * @implements IPublicClientApi
@@ -104,7 +100,7 @@ let PublicClientApi = class PublicClientApi {
         });
         const addedRole = await this.getRoleByName(payload);
         if (!addedRole || !addedRole.id)
-            throw new Error(errors_1.default.UNKNOWN_ERROR_IN_KC_API.code);
+            throw new error_guard_1.InternalError(errorMap_1.MANUALLY_THROWN_ERROR_CODES.UNKNOWN_ERROR_IN_KC_API);
         return addedRole;
     }
     /**
@@ -128,7 +124,9 @@ let PublicClientApi = class PublicClientApi {
             clientUuid: payload.clientUuid,
         });
         if (!doesParentRoleExists) {
-            throw new Error(errors_1.default.PARENT_ROLE_NOT_EXISTS.code);
+            throw new error_guard_1.NotFoundError(errorMap_1.MANUALLY_THROWN_ERROR_CODES.NO_ROLE_WITH_THAT_ID).updateContext({
+                payload,
+            });
         }
         await this.kcAdmin.clients.createRole({
             id: payload.clientUuid,
@@ -137,7 +135,7 @@ let PublicClientApi = class PublicClientApi {
         });
         const childRole = await this.getRoleByName(payload);
         if (!childRole || !childRole.id) {
-            throw new Error('addChildRole Error');
+            throw new error_guard_1.InternalError(errorMap_1.MANUALLY_THROWN_ERROR_CODES.UNKNOWN_ERROR_IN_KC_API);
         }
         await this.kcAdmin.roles.createComposite({
             roleId: payload.parentRoleId,
@@ -216,8 +214,8 @@ let PublicClientApi = class PublicClientApi {
 };
 exports.PublicClientApi = PublicClientApi;
 exports.PublicClientApi = PublicClientApi = __decorate([
-    (0, decorators_1.AutoTransform)(),
+    (0, error_guard_1.AutoTransform)(),
     __metadata("design:paramtypes", [KcAdminApi_1.KcAdmin,
-        ErrorTransformer_1.ErrorTransformer])
+        error_guard_1.ErrorTransformer])
 ], PublicClientApi);
 //# sourceMappingURL=PublicClientApi.js.map
