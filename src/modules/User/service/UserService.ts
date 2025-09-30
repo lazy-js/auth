@@ -24,10 +24,7 @@ import {
     NotFoundError,
     ValidationError,
 } from '@lazy-js/error-guard';
-import {
-    USER_SERVICE_INTERNAL_ERRORS,
-    USER_SERVICE_OPERATIONAL_ERRORS,
-} from '../constants';
+import { USER_SERVICE_INTERNAL_ERRORS, USER_SERVICE_OPERATIONAL_ERRORS } from '../constants';
 
 interface PublicRegisterReturn {
     _id: Schema.Types.ObjectId;
@@ -56,11 +53,7 @@ export class UserService implements IUserService, PrivateUserService {
     public client: IClient;
     public notificationClientSdk: INotificationClientSdk;
 
-    constructor(
-        client: IClient,
-        kcApi: IKcApi,
-        notificationClientSdk: INotificationClientSdk,
-    ) {
+    constructor(client: IClient, kcApi: IKcApi, notificationClientSdk: INotificationClientSdk) {
         this.userRepository = new UserRepository();
         this.userValidator = new UserValidator();
         this.client = client;
@@ -68,9 +61,7 @@ export class UserService implements IUserService, PrivateUserService {
         this.notificationClientSdk = notificationClientSdk;
     }
 
-    async register(
-        createUserParams: CreateUserParams,
-    ): Promise<RegisterReturn> {
+    async register(createUserParams: CreateUserParams): Promise<RegisterReturn> {
         const { status } = this.client.clientAuthConfiguration.registerConfig;
 
         if (status === 'public') {
@@ -88,27 +79,20 @@ export class UserService implements IUserService, PrivateUserService {
         const { body } = loginParams;
         const { primaryFields } = this.client.clientAuthConfiguration;
 
-        const loginDto = await this.userValidator.validateLoginDto(
-            body,
-            primaryFields,
-        );
+        const loginDto = await this.userValidator.validateLoginDto(body, primaryFields);
 
         const userInDb = await this._getUser(loginDto);
-        if (!userInDb) this.throwInvalidCredentialsError();
+        if (!userInDb) throw this.throwInvalidCredentialsError();
 
         let verified = loginDto.method === 'username';
         if (loginDto.method === 'email') {
-            const linkedEmail = userInDb.linkedEmails.find(
-                (linkedEmail) => linkedEmail.email === loginDto.email,
-            );
-            if (!linkedEmail) this.throwInvalidCredentialsError();
+            const linkedEmail = userInDb.linkedEmails.find((linkedEmail) => linkedEmail.email === loginDto.email);
+            if (!linkedEmail) throw this.throwInvalidCredentialsError();
             verified = linkedEmail.verified;
         }
         if (loginDto.method === 'phone') {
-            const linkedPhone = userInDb.linkedPhones.find(
-                (linkedPhone) => linkedPhone.phone === loginDto.phone,
-            );
-            if (!linkedPhone) this.throwInvalidCredentialsError();
+            const linkedPhone = userInDb.linkedPhones.find((linkedPhone) => linkedPhone.phone === loginDto.phone);
+            if (!linkedPhone) throw this.throwInvalidCredentialsError();
             verified = linkedPhone.verified;
         }
 
@@ -124,8 +108,7 @@ export class UserService implements IUserService, PrivateUserService {
             _id: userInDb._id,
             username: userInDb.username,
             method: loginDto.method,
-            [loginDto.method]:
-                loginDto[loginDto.method as keyof typeof loginDto],
+            [loginDto.method]: loginDto[loginDto.method as keyof typeof loginDto],
             verified: verified,
             createdAt: userInDb.createdAt,
         };
@@ -133,9 +116,7 @@ export class UserService implements IUserService, PrivateUserService {
     }
 
     throwInvalidCredentialsError(): never {
-        throw new AuthenticationError(
-            USER_SERVICE_OPERATIONAL_ERRORS.INVALID_CREDENTIALS,
-        ).updateContext({
+        throw new AuthenticationError(USER_SERVICE_OPERATIONAL_ERRORS.INVALID_CREDENTIALS).updateContext({
             layer: 'SERVICE',
             methodName: 'login',
         });
@@ -143,22 +124,16 @@ export class UserService implements IUserService, PrivateUserService {
 
     async verify(verifyDto: VerifyDto): Promise<void> {
         // validate the dto
-        const validatedVerifyDto = await this.userValidator.validateVerifyDto(
-            verifyDto,
-        );
+        const validatedVerifyDto = await this.userValidator.validateVerifyDto(verifyDto);
 
         // verify the email
         if (validatedVerifyDto.method === 'email') {
             // get the user from the database
-            const userInDb = await this.userRepository.getUserByEmail(
-                validatedVerifyDto.email,
-            );
+            const userInDb = await this.userRepository.getUserByEmail(validatedVerifyDto.email);
 
             // check if the user exists
             if (!userInDb) {
-                throw new NotFoundError(
-                    USER_SERVICE_OPERATIONAL_ERRORS.USER_NOT_FOUND,
-                );
+                throw new NotFoundError(USER_SERVICE_OPERATIONAL_ERRORS.USER_NOT_FOUND);
             }
 
             // check if the email is linked to the user
@@ -167,35 +142,24 @@ export class UserService implements IUserService, PrivateUserService {
             );
 
             if (!linkedEmail) {
-                throw new NotFoundError(
-                    USER_SERVICE_OPERATIONAL_ERRORS.USER_NOT_FOUND,
-                );
+                throw new NotFoundError(USER_SERVICE_OPERATIONAL_ERRORS.USER_NOT_FOUND);
             }
 
             // check if the email is already verified
             if (linkedEmail.verified) {
-                throw new ConflictError(
-                    USER_SERVICE_OPERATIONAL_ERRORS.EMAIL_ALREADY_VERIFIED,
-                );
+                throw new ConflictError(USER_SERVICE_OPERATIONAL_ERRORS.EMAIL_ALREADY_VERIFIED);
             }
 
             // check if the code is expired
             const _5Minutes = 5 * 60 * 1000;
 
-            if (
-                userInDb.updatedAt &&
-                userInDb.updatedAt.getTime() + _5Minutes < Date.now()
-            ) {
-                throw new ValidationError(
-                    USER_SERVICE_OPERATIONAL_ERRORS.CODE_EXPIRED,
-                );
+            if (userInDb.updatedAt && userInDb.updatedAt.getTime() + _5Minutes < Date.now()) {
+                throw new ValidationError(USER_SERVICE_OPERATIONAL_ERRORS.CODE_EXPIRED);
             }
 
             // check if the code is correct
             if (linkedEmail.confirmCode !== validatedVerifyDto.code) {
-                throw new ValidationError(
-                    USER_SERVICE_OPERATIONAL_ERRORS.INVALID_CODE,
-                );
+                throw new ValidationError(USER_SERVICE_OPERATIONAL_ERRORS.INVALID_CODE);
             }
 
             // update the user
@@ -203,24 +167,14 @@ export class UserService implements IUserService, PrivateUserService {
             return;
         }
         if (validatedVerifyDto.method === 'phone') {
-            const userInDb = await this.userRepository.getUserByPhone(
-                validatedVerifyDto.phone,
-            );
+            const userInDb = await this.userRepository.getUserByPhone(validatedVerifyDto.phone);
         }
     }
 
-    async updatePassword(
-        accessToken: string,
-        newPassword: string,
-    ): Promise<void> {
-        const payload = await this.validateRole(
-            accessToken,
-            'update-own-password',
-        );
+    async updatePassword(accessToken: string, newPassword: string): Promise<void> {
+        const payload = await this.validateRole(accessToken, 'update-own-password');
 
-        const validatedPassword = await this.userValidator.validatePassword(
-            newPassword as string,
-        );
+        const validatedPassword = await this.userValidator.validatePassword(newPassword as string);
 
         await this.kcApi.users.setUserPassword({
             userId: payload.sub as string,
@@ -231,19 +185,11 @@ export class UserService implements IUserService, PrivateUserService {
     async validateAccessToken<T extends string>(
         accessToken?: string,
     ): Promise<AccessTokenPayload<T> & { _id: string }> {
-        const validatedAccessToken =
-            await this.userValidator.validateTokenString(
-                accessToken as string,
-                'access',
-            );
-        const { payload } = await this.kcApi.users.validateAccessToken(
-            validatedAccessToken,
-        );
+        const validatedAccessToken = await this.userValidator.validateTokenString(accessToken as string, 'access');
+        const { payload } = await this.kcApi.users.validateAccessToken(validatedAccessToken);
 
         if (!payload.sub)
-            throw new InternalError(
-                USER_SERVICE_INTERNAL_ERRORS.SUB_NOT_DEFINED,
-            ).updateContext({
+            throw new InternalError(USER_SERVICE_INTERNAL_ERRORS.SUB_NOT_DEFINED).updateContext({
                 layer: 'SERVICE',
                 methodName: 'validateAccessToken',
                 className: 'UserService',
@@ -251,14 +197,10 @@ export class UserService implements IUserService, PrivateUserService {
             });
 
         // sub in payload is the id of user in keyloak
-        const userInLocalDb = await this.userRepository.getUserByKeycloakId(
-            payload.sub,
-        );
+        const userInLocalDb = await this.userRepository.getUserByKeycloakId(payload.sub);
 
         if (!userInLocalDb) {
-            throw new InternalError(
-                USER_SERVICE_INTERNAL_ERRORS.USER_NOT_FOUND_IN_LOCAL_DB,
-            ).updateContext({
+            throw new InternalError(USER_SERVICE_INTERNAL_ERRORS.USER_NOT_FOUND_IN_LOCAL_DB).updateContext({
                 layer: 'SERVICE',
                 methodName: 'validateAccessToken',
                 className: 'UserService',
@@ -270,11 +212,7 @@ export class UserService implements IUserService, PrivateUserService {
     }
 
     async refreshToken(refreshToken: string): Promise<TokenResponse> {
-        const validatedRefreshToken =
-            await this.userValidator.validateTokenString(
-                refreshToken as string,
-                'refresh',
-            );
+        const validatedRefreshToken = await this.userValidator.validateTokenString(refreshToken as string, 'refresh');
         const tokenResponse = await this.kcApi.users.refreshAccessToken({
             refreshToken: validatedRefreshToken,
             clientId: this.client.clientId,
@@ -290,9 +228,7 @@ export class UserService implements IUserService, PrivateUserService {
         const payloadClientId = payload.azp;
 
         if (!payloadClientId || payloadClientId !== this.client.clientId) {
-            throw new AuthorizationError(
-                USER_SERVICE_OPERATIONAL_ERRORS.UNAUTHORIZED,
-            );
+            throw new AuthorizationError(USER_SERVICE_OPERATIONAL_ERRORS.UNAUTHORIZED);
         }
 
         const payloadResouceAccess = payload.resource_access;
@@ -301,21 +237,15 @@ export class UserService implements IUserService, PrivateUserService {
             !payloadResouceAccess[payloadClientId] ||
             !payloadResouceAccess[payloadClientId].roles
         ) {
-            throw new ValidationError(
-                USER_SERVICE_OPERATIONAL_ERRORS.INVALID_ACCESS_TOKEN,
-            );
+            throw new ValidationError(USER_SERVICE_OPERATIONAL_ERRORS.INVALID_ACCESS_TOKEN);
         }
 
         const roles = payloadResouceAccess[payloadClientId].roles;
 
-        const canAccess = Array.isArray(role)
-            ? role.some((r) => roles.includes(r))
-            : roles.includes(role);
+        const canAccess = Array.isArray(role) ? role.some((r) => roles.includes(r)) : roles.includes(role);
 
         if (!canAccess) {
-            throw new AuthorizationError(
-                USER_SERVICE_OPERATIONAL_ERRORS.UNAUTHORIZED,
-            );
+            throw new AuthorizationError(USER_SERVICE_OPERATIONAL_ERRORS.UNAUTHORIZED);
         }
 
         return payload;
@@ -324,26 +254,16 @@ export class UserService implements IUserService, PrivateUserService {
     async _getUser(user: UserCreationDto) {
         let userInDb;
         if (user.method === 'email') {
-            userInDb = await this.userRepository.getUserByEmail(
-                user.email as string,
-            );
+            userInDb = await this.userRepository.getUserByEmail(user.email as string);
         } else if (user.method === 'phone') {
-            userInDb = await this.userRepository.getUserByPhone(
-                user.phone as string,
-            );
+            userInDb = await this.userRepository.getUserByPhone(user.phone as string);
         } else if (user.method === 'username') {
-            userInDb = await this.userRepository.getUserByUsername(
-                user.username as string,
-            );
+            userInDb = await this.userRepository.getUserByUsername(user.username as string);
         }
         if (userInDb) {
-            const userInKc = await this.kcApi.users.getUserById(
-                userInDb.keycloakUserId,
-            );
+            const userInKc = await this.kcApi.users.getUserById(userInDb.keycloakUserId);
             if (!userInKc) {
-                throw new InternalError(
-                    USER_SERVICE_INTERNAL_ERRORS.USER_NOT_FOUND_IN_LOCAL_DB,
-                ).updateContext({
+                throw new InternalError(USER_SERVICE_INTERNAL_ERRORS.USER_NOT_FOUND_IN_LOCAL_DB).updateContext({
                     layer: 'SERVICE',
                     methodName: '_getUser',
                     className: 'UserService',
@@ -357,14 +277,10 @@ export class UserService implements IUserService, PrivateUserService {
     }
 
     async _getClientDefaultGroupId() {
-        const defaultGroup = this.client.groups.find(
-            (group) => group.isDefault,
-        );
+        const defaultGroup = this.client.groups.find((group) => group.isDefault);
 
         if (!defaultGroup) {
-            throw new BadConfigError(
-                USER_SERVICE_INTERNAL_ERRORS.NO_DEFAULT_GROUP_CONFIGURED,
-            );
+            throw new BadConfigError(USER_SERVICE_INTERNAL_ERRORS.NO_DEFAULT_GROUP_CONFIGURED);
         }
 
         const deafaltGroupPath = `${this.client.appPath}/${this.client.name}/${defaultGroup.name}`;
@@ -374,9 +290,7 @@ export class UserService implements IUserService, PrivateUserService {
     async _getGroupIdByPath(path: string) {
         const group = await this.kcApi.groups.getGroupByPath(path);
         if (!group) {
-            throw new InternalError(
-                USER_SERVICE_INTERNAL_ERRORS.NO_GROUP_WITH_THAT_PATH,
-            );
+            throw new InternalError(USER_SERVICE_INTERNAL_ERRORS.NO_GROUP_WITH_THAT_PATH);
         }
         return group.id as string;
     }
@@ -386,10 +300,8 @@ export class UserService implements IUserService, PrivateUserService {
         try {
             const { username, firstName, lastName, password } = userDto;
             const verified =
-                (this.client.clientAuthConfiguration.registerConfig.status ===
-                    'public' &&
-                    this.client.clientAuthConfiguration.registerConfig
-                        .verified) ||
+                (this.client.clientAuthConfiguration.registerConfig.status === 'public' &&
+                    this.client.clientAuthConfiguration.registerConfig.verified) ||
                 userDto.method === 'username';
             const { id } = await this.kcApi.users.createUser({
                 username: username as string,
@@ -405,13 +317,10 @@ export class UserService implements IUserService, PrivateUserService {
                 password: password,
             });
             // remove default realm roles
-            await this.kcApi.users.removeDefaultRealmRolesFromUser(
-                keycloakUserId,
-            );
+            await this.kcApi.users.removeDefaultRealmRolesFromUser(keycloakUserId);
 
             // add user to default group
-            const defaultGroupId =
-                groupId || (await this._getClientDefaultGroupId());
+            const defaultGroupId = groupId || (await this._getClientDefaultGroupId());
 
             // add user to default group
             await this.kcApi.users.addUserToGroup({
@@ -436,10 +345,7 @@ export class UserService implements IUserService, PrivateUserService {
         const { body, group } = createUserParams;
         const { primaryFields } = this.client.clientAuthConfiguration;
 
-        const userDto = await this.userValidator.validateUserCreationDto(
-            body,
-            primaryFields,
-        );
+        const userDto = await this.userValidator.validateUserCreationDto(body, primaryFields);
 
         // generate username
         const username = this._generateUsername(userDto);
@@ -473,26 +379,19 @@ export class UserService implements IUserService, PrivateUserService {
         const { body } = createUserParams;
         const { primaryFields } = this.client.clientAuthConfiguration;
         const verifiedByDefault =
-            this.client.clientAuthConfiguration.registerConfig.status ===
-                'public' &&
+            this.client.clientAuthConfiguration.registerConfig.status === 'public' &&
             this.client.clientAuthConfiguration.registerConfig.verified;
 
-        const userDto = await this.userValidator.validateUserCreationDto(
-            body,
-            primaryFields,
-        );
+        const userDto = await this.userValidator.validateUserCreationDto(body, primaryFields);
 
         const doesUserExists = await this._getUser(userDto);
         if (doesUserExists) {
-            throw new ConflictError(
-                USER_SERVICE_OPERATIONAL_ERRORS.USER_ALREADY_EXISTS,
-            );
+            throw new ConflictError(USER_SERVICE_OPERATIONAL_ERRORS.USER_ALREADY_EXISTS);
         }
 
         // generate username
         const username = this._generateUsername(userDto);
-        const _verifiedByDefault =
-            verifiedByDefault || userDto.method === 'username';
+        const _verifiedByDefault = verifiedByDefault || userDto.method === 'username';
 
         // create user in keycloak db
         const keycloakUserId = await this._registerUserInKeycloak({
@@ -528,19 +427,14 @@ export class UserService implements IUserService, PrivateUserService {
     async _privateRegister(createUserParams: CreateUserParams) {
         const { status } = this.client.clientAuthConfiguration.registerConfig;
         if (status !== 'private') {
-            throw new BadConfigError(
-                USER_SERVICE_INTERNAL_ERRORS.SHOULD_CALLED_IN_PRIVATE_REGISTER,
-            );
+            throw new BadConfigError(USER_SERVICE_INTERNAL_ERRORS.SHOULD_CALLED_IN_PRIVATE_REGISTER);
         }
         const { accessToken } = createUserParams;
         if (!accessToken) {
-            throw new AuthenticationError(
-                USER_SERVICE_OPERATIONAL_ERRORS.UNAUTHORIZED,
-            );
+            throw new AuthenticationError(USER_SERVICE_OPERATIONAL_ERRORS.UNAUTHORIZED);
         }
 
-        const { privateAccessRoles } =
-            this.client.clientAuthConfiguration.registerConfig;
+        const { privateAccessRoles } = this.client.clientAuthConfiguration.registerConfig;
 
         await this.validateRole(
             accessToken,

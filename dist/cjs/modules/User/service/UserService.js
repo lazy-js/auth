@@ -39,18 +39,18 @@ class UserService {
         const loginDto = await this.userValidator.validateLoginDto(body, primaryFields);
         const userInDb = await this._getUser(loginDto);
         if (!userInDb)
-            this.throwInvalidCredentialsError();
+            throw this.throwInvalidCredentialsError();
         let verified = loginDto.method === 'username';
         if (loginDto.method === 'email') {
             const linkedEmail = userInDb.linkedEmails.find((linkedEmail) => linkedEmail.email === loginDto.email);
             if (!linkedEmail)
-                this.throwInvalidCredentialsError();
+                throw this.throwInvalidCredentialsError();
             verified = linkedEmail.verified;
         }
         if (loginDto.method === 'phone') {
             const linkedPhone = userInDb.linkedPhones.find((linkedPhone) => linkedPhone.phone === loginDto.phone);
             if (!linkedPhone)
-                this.throwInvalidCredentialsError();
+                throw this.throwInvalidCredentialsError();
             verified = linkedPhone.verified;
         }
         let tokenResponse = null;
@@ -98,8 +98,7 @@ class UserService {
             }
             // check if the code is expired
             const _5Minutes = 5 * 60 * 1000;
-            if (userInDb.updatedAt &&
-                userInDb.updatedAt.getTime() + _5Minutes < Date.now()) {
+            if (userInDb.updatedAt && userInDb.updatedAt.getTime() + _5Minutes < Date.now()) {
                 throw new error_guard_1.ValidationError(constants_1.USER_SERVICE_OPERATIONAL_ERRORS.CODE_EXPIRED);
             }
             // check if the code is correct
@@ -166,9 +165,7 @@ class UserService {
             throw new error_guard_1.ValidationError(constants_1.USER_SERVICE_OPERATIONAL_ERRORS.INVALID_ACCESS_TOKEN);
         }
         const roles = payloadResouceAccess[payloadClientId].roles;
-        const canAccess = Array.isArray(role)
-            ? role.some((r) => roles.includes(r))
-            : roles.includes(role);
+        const canAccess = Array.isArray(role) ? role.some((r) => roles.includes(r)) : roles.includes(role);
         if (!canAccess) {
             throw new error_guard_1.AuthorizationError(constants_1.USER_SERVICE_OPERATIONAL_ERRORS.UNAUTHORIZED);
         }
@@ -218,10 +215,8 @@ class UserService {
         let keycloakUserId;
         try {
             const { username, firstName, lastName, password } = userDto;
-            const verified = (this.client.clientAuthConfiguration.registerConfig.status ===
-                'public' &&
-                this.client.clientAuthConfiguration.registerConfig
-                    .verified) ||
+            const verified = (this.client.clientAuthConfiguration.registerConfig.status === 'public' &&
+                this.client.clientAuthConfiguration.registerConfig.verified) ||
                 userDto.method === 'username';
             const { id } = await this.kcApi.users.createUser({
                 username: username,
@@ -282,8 +277,7 @@ class UserService {
     async _publicRegister(createUserParams) {
         const { body } = createUserParams;
         const { primaryFields } = this.client.clientAuthConfiguration;
-        const verifiedByDefault = this.client.clientAuthConfiguration.registerConfig.status ===
-            'public' &&
+        const verifiedByDefault = this.client.clientAuthConfiguration.registerConfig.status === 'public' &&
             this.client.clientAuthConfiguration.registerConfig.verified;
         const userDto = await this.userValidator.validateUserCreationDto(body, primaryFields);
         const doesUserExists = await this._getUser(userDto);
