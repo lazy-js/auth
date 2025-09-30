@@ -1,4 +1,6 @@
 {
-        "folder-color.pathColors": [],
-        "files.exclude": {}
+    "folder-color.pathColors": [],
+    "files.exclude": {
+        ".cursor/rules/00-project-structure.mdc": true
+    }
 }

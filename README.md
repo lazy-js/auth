@@ -1,289 +1,278 @@
-# lazy-auth
+# @lazy-js/auth
 
-A TypeScript toolkit to model and bootstrap Keycloak realms and expose ready-to-use authentication routes. Model your auth domain (Realm → App → Client → Group → Role), auto-provision everything into Keycloak, wire a MongoDB-backed user store, and get HTTP endpoints for register/login/verify/token right away.
+A comprehensive authentication and authorization package built on top of Keycloak, providing a unified API for user management, authentication, and role-based access control across multiple clients and applications.
 
-## Features
+## 🏗️ Architecture Overview
 
--   Define Realm structure in code and build it in Keycloak
--   Create public clients, roles (with hierarchy), groups and role mappings
--   Configurable registration flows (public/private/disabled), primary fields, verification behavior
--   HTTP endpoints for user register, login, token validation/refresh, password update, verify
--   Local MongoDB user repository synced with Keycloak IDs
--   Pluggable notification SDK for email verification
--   First-class Keycloak Admin API helper (typed facade)
+This package implements a **multi-tenant authentication system** that bridges Keycloak's identity management capabilities with a local MongoDB database for enhanced user data management and client-specific configurations.
 
-## Installation
+### Core Components
 
-```bash
-npm install github:lazy-js/auth
-# or if used via monorepo path, ensure peer deps are satisfied
+-   **LazyAuth**: Main orchestrator class that manages the entire authentication lifecycle
+-   **Realm Management**: Dynamic realm creation and configuration for different clients
+-   **User Management**: Comprehensive user registration, login, and profile management
+-   **Keycloak Integration**: Seamless integration with Keycloak Admin API and public client APIs
+-   **Multi-Client Support**: Support for multiple authentication clients with different configurations
+
+## 🚀 Key Features
+
+### Authentication Methods
+
+-   **Multi-method Authentication**: Username, email, or phone number based login
+-   **Flexible Registration**: Configurable registration flows per client
+-   **Token Management**: JWT access and refresh token handling
+-   **Password Management**: Secure password updates and validation
+
+### Authorization & Security
+
+-   **Role-Based Access Control (RBAC)**: Hierarchical role management
+-   **Group Management**: User grouping with inherited permissions
+-   **Client-Specific Permissions**: Isolated permission systems per client
+-   **Token Validation**: Comprehensive access token and role validation
+
+### Multi-Tenancy
+
+-   **Client Isolation**: Separate authentication flows per client
+-   **Custom Attributes**: Client-specific user attributes
+-   **Shared Attributes**: Cross-client user data sharing
+-   **Flexible Configuration**: Per-client authentication settings
+
+## 📦 Dependencies
+
+### Core Dependencies
+
+-   `@keycloak/keycloak-admin-client`: Keycloak administration
+-   `@lazy-js/error-guard`: Centralized error handling
+-   `@lazy-js/server`: Express.js server framework
+-   `@lazy-js/utils`: Utility functions
+-   `jose`: JWT token handling
+-   `mongoose`: MongoDB object modeling
+
+### Development Dependencies
+
+-   `typescript`: TypeScript compilation
+-   `vitest`: Testing framework
+-   `supertest`: HTTP testing utilities
+
+## 🏛️ System Architecture
+
+### High-Level Architecture
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Client Apps   │    │   LazyAuth      │    │   Keycloak      │
+│                 │◄──►│   Package       │◄──►│   Server        │
+│ - Web Apps      │    │                 │    │                 │
+│ - Mobile Apps   │    │ - User Mgmt     │    │ - Identity Mgmt │
+│ - APIs          │    │ - Auth Flow     │    │ - Token Issuance│
+└─────────────────┘    │ - Role Mgmt     │    │ - User Storage  │
+                       └─────────────────┘    └─────────────────┘
+                                │
+                                ▼
+                       ┌─────────────────┐
+                       │   MongoDB       │
+                       │                 │
+                       │ - User Profiles │
+                       │ - Client Config │
+                       │ - Custom Data   │
+                       └─────────────────┘
 ```
 
-Peer dependencies used internally:
+### Module Structure
 
--   `@keycloak/keycloak-admin-client`
--   `@lazy-js/server` (HTTP server + controller utilities)
--   `@lazy-js/mongo-db` (MongoDB wrapper)
--   `@lazy-js/utils`
--   `jose`, `zod`
+```
+src/
+├── modules/
+│   ├── kcApi/           # Keycloak API integration
+│   │   ├── services/    # Admin and public client APIs
+│   │   └── types/       # API type definitions
+│   ├── Realm/           # Realm and client management
+│   │   ├── src/         # Core realm classes
+│   │   └── types/       # Realm type definitions
+│   ├── RealmBuilder/    # Dynamic realm creation
+│   ├── RealmManipulator/# Realm operations
+│   └── User/            # User management
+│       ├── controller/  # HTTP endpoints
+│       ├── service/     # Business logic
+│       ├── model/       # Data models
+│       ├── repository/  # Data access
+│       └── validator/   # Input validation
+├── database/            # Database connection
+├── utils/              # Utility functions
+└── types/              # Global type definitions
+```
 
-## Quick Start
+## 🔧 Installation
 
-1. Run a Keycloak instance locally (defaults assumed in examples):
+```bash
+npm install @lazy-js/auth
+```
 
--   Keycloak URL: `http://localhost:8080`
--   Admin user/password: `admin/admin`
+## 📖 Usage
 
-2. Define your realm structure
+### Basic Setup
 
-```ts
-import { Realm, App, Client, ClientAuthConfig, Group, User, createRolesTree } from 'lazy-js/auth';
+```typescript
+import { LazyAuth, Realm, Client, Group, User, createRolesTree } from '@lazy-js/auth';
 
-// Define roles and role hierarchy
+// Define roles hierarchy
 const roles = createRolesTree([
     {
-        name: 'auth-permissions',
-        childRoles: [{ name: 'add-users' }, { name: 'create-groups' }],
+        name: 'admin',
+        childRoles: [{ name: 'user-management' }, { name: 'content-management' }],
     },
 ]);
 
-// Groups
-const adminGroup = new Group('admin-group', true).addRoles(roles);
+// Create groups
+const adminGroup = new Group('admin-group', true).addRoles(roles).addAttribute('permissions', 'all');
 
-// Built-in user (optional)
-const defaultUser = new User({
-    method: 'username',
-    username: 'admin',
-    password: 'admin1234',
-    firstName: 'Admin',
-    lastName: 'Default',
-    group: adminGroup,
-});
+// Create client configuration
+const client = new Client('my-app', 'my-app-client')
+    .setAuthConfig(
+        new ClientAuthConfig(['email', 'username'])
+            .setRegisterConfig({ status: 'public', verified: false })
+            .setLoginConfig({ status: 'enabled' }),
+    )
+    .addGroup(adminGroup);
 
-// Client auth config
-const adminClientAuth = new ClientAuthConfig(['email', 'username'])
-    .setRegisterConfig('private', true, roles) // private registration, verified by default, roles permitted to register
-    .setLoginConfig('enabled')
-    .setBuiltInUser(defaultUser);
+// Create realm
+const realm = new Realm('my-realm').addClient(client).addUser(
+    new User({
+        username: 'admin',
+        password: 'secure-password',
+        method: 'username',
+        group: adminGroup,
+    }),
+);
 
-// Clients
-const adminClient = new Client('admin-client', adminClientAuth).addGroup(adminGroup);
+// Initialize LazyAuth
+const auth = new LazyAuth(
+    {
+        keycloakServiceUrl: 'http://localhost:8080',
+        keycloakAdminPassword: 'admin-password',
+        localMongoDbURL: 'mongodb://localhost:27017/auth-db',
+        logKeycloakInfo: true,
+    },
+    {
+        config: {
+            port: 3000,
+            serviceName: 'auth-service',
+            routerPrefix: '/api/v1',
+        },
+    },
+    realm,
+    notificationSdk,
+);
 
-// App
-const app1 = new App('app1').addClient(adminClient);
-
-// Realm
-export const realm = new Realm('myrealm').addApp(app1);
+// Start the service
+await auth.start();
 ```
 
-3. Start the service
+### API Endpoints
 
-```ts
-import { LazyAuth, type KeycloakConfig, type ServiceConfig } from 'lazy-js/auth';
-import { realm } from './realm';
+The package automatically exposes the following endpoints for each configured client:
 
-// Implement your notification SDK (email, etc.)
-import { MyNotificationSdk } from './notificationSdk';
+#### Authentication Endpoints
 
-const keycloakConfig: KeycloakConfig = {
-    keycloakServiceUrl: 'http://localhost:8080',
-    keycloakAdminPassword: 'admin',
-};
+-   `POST /{client-name}/register` - User registration
+-   `POST /{client-name}/login` - User login
+-   `POST /{client-name}/validate-access-token` - Token validation
+-   `POST /{client-name}/validate-role` - Role validation
+-   `POST /{client-name}/refresh-access-token` - Token refresh
 
-const serviceConfig: ServiceConfig = {
-    port: 8081,
-    allowedOrigins: ['*'],
-    routerPrefix: '/api/v1',
-    mongoDbUrl: 'mongodb://localhost:27017/my-auth-db',
-    enablelogRealmSummary: true,
-};
+#### User Management Endpoints
 
-const notificationSdk = new MyNotificationSdk();
+-   `PUT /{client-name}/me/password` - Update password
+-   `PUT /{client-name}/me/verify` - Verify user account
 
-const service = new LazyAuth(keycloakConfig, serviceConfig, realm, notificationSdk);
-service.start();
-```
+## 🔐 Security Features
 
-This will:
+### Authentication Security
 
--   Connect to MongoDB
--   Ensure the realm exists (or create it)
--   Create the app, public clients, roles, groups, mappings
--   Create built-in user if configured
--   Start an HTTP server and mount auth routes under `/<realm-name>/<app-name>/<client-name>`
+-   **JWT Token Management**: Secure token generation and validation
+-   **Password Hashing**: Bcrypt-based password security
+-   **Multi-Factor Support**: Email/phone verification capabilities
+-   **Session Management**: Automatic token refresh and expiration
 
-## HTTP Endpoints
+### Authorization Security
 
-Base path pattern: `/<realm>/<app>/<client>` mounted under your `routerPrefix`.
+-   **Role-Based Access**: Hierarchical permission system
+-   **Client Isolation**: Separate permission contexts per client
+-   **Token Validation**: Comprehensive token integrity checks
+-   **Input Validation**: Zod-based request validation
 
-For client `admin-client` of app `app1` under realm `myrealm`, base is:
-`/api/v1/myrealm/app1/admin-client`
+### Data Security
 
--   POST `.../register`
+-   **Encrypted Storage**: Sensitive data encryption in MongoDB
+-   **Secure Communication**: HTTPS-ready API endpoints
+-   **Error Handling**: Secure error responses without data leakage
 
-    -   Body (depends on configured primary fields):
-        -   method: 'email' | 'phone' | 'username'
-        -   For email: { method: 'email', email, password, firstName?, lastName? }
-        -   For username: { method: 'username', username, password, firstName?, lastName? }
-    -   Behavior: public/private/disabled per `ClientAuthConfig`
-    -   Response: user document or `{ mustVerify: true }`
-
--   POST `.../login`
-
-    -   Body: depends on primary fields
-    -   Response: `{ token: { accessToken, refreshToken, expiresIn, refreshExpiresIn }, user }` or `{ mustVerify: true }`
-
--   POST `.../validate-access-token`
-
-    -   Headers: `Authorization: Bearer <accessToken>`
-    -   Response: token payload extended with `_id` (local user id)
-
--   POST `.../validate-role`
-
-    -   Headers: `Authorization: Bearer <accessToken>`
-    -   Body: `{ role: string | string[] }`
-    -   Response: token payload if authorized, otherwise 401
-
--   POST `.../refresh-token`
-
-    -   Body: `{ refreshToken }` or `Authorization: Bearer <refreshToken>`
-    -   Response: new token pair
-
--   POST `.../update-password`
-
-    -   Headers: `Authorization: Bearer <accessToken>`
-    -   Body: `{ newPassword }`
-    -   Requires role `update-own-password` by default
-
--   POST `.../verify`
-    -   Body: `{ method: 'email', email, code }` | `{ method: 'phone', phone, code }`
-    -   Response: `{ canLogin: boolean }`
-
-Example curl:
+## 🧪 Testing
 
 ```bash
-curl -X POST \
-  http://localhost:8081/api/v1/myrealm/app1/admin-client/register \
-  -H "Content-Type: application/json" \
-  -d '{"method":"email","email":"user@example.com","password":"asdf1234"}'
+# Run tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage
+npm run test:coverage
 ```
 
-## Modeling Reference
+## 📊 Monitoring & Logging
 
--   Realm
-    -   `new Realm(name).addApp(app)`
-    -   `addGlobalAttribute(key, value)` to tag the root group
--   App
-    -   `new App(name).addClient(client)`
--   Client
-    -   `new Client(name, clientAuthConfig)`
-    -   Auto clientId: `<appName>-<clientName>`
-    -   `addGroup(group)` — must contain exactly one default group across groups
-    -   `registerRoles(roles)` — roles to create in Keycloak client
-    -   `addGlobalAttribute(key, value)` — saved as group attributes
--   Group
-    -   `new Group(name, isDefault)`
-    -   `addRoles(roles)` to map client roles to group
-    -   `addAttribute(key, value)`
--   Role
-    -   `new Role(name).addChildRole(role)` or build via `createRolesTree([...])`
--   ClientAuthConfig
-    -   `new ClientAuthConfig(primaryFields)` where `primaryFields` ⊆ ['email','phone','username']
-    -   `.setRegisterConfig('public' | 'private' | 'disabled', verifiedByDefault?, privateAccessRoles?)`
-    -   `.setLoginConfig('enabled' | 'disabled')`
-    -   `.setBuiltInUser(user)`
+The package includes comprehensive logging for:
 
-## Programmatic Keycloak API
+-   Authentication events
+-   Authorization decisions
+-   Database operations
+-   Keycloak API interactions
+-   Error tracking and debugging
 
-Use `KcApi` directly for advanced workflows:
+## 🔄 Error Handling
 
-```ts
-import { KcApi } from 'lazy-js/auth';
+The system uses a centralized error handling approach with:
 
-const kcApi = await KcApi.create({
-    url: 'http://localhost:8080',
-    password: 'admin',
-    realmName: 'myrealm',
-});
+-   **Validation Errors**: Input validation failures
+-   **Authentication Errors**: Login/registration failures
+-   **Authorization Errors**: Permission denied scenarios
+-   **System Errors**: Infrastructure and service failures
 
-await kcApi.realms.createRealm();
-const group = await kcApi.groups.createGroup({ groupName: 'myrealm' });
-const client = await kcApi.publicClients.create({
-    clientId: 'app1-admin-client',
-    name: 'app1-admin-client',
-});
-await kcApi.publicClients.addRole({
-    clientUuid: client.id!,
-    roleName: 'admin',
-});
-```
+## 🚀 Performance Considerations
 
-Key areas:
+-   **Connection Pooling**: Optimized database connections
+-   **Token Caching**: Efficient token validation
+-   **Async Operations**: Non-blocking I/O throughout
+-   **Memory Management**: Efficient resource utilization
 
--   `kcApi.realms` — create/delete/check realm
--   `kcApi.groups` — create/find/list subgroups, add attributes, map roles
--   `kcApi.publicClients` — create public client, add roles, list roles
--   `kcApi.users` — CRUD users, passwords, login, token validation/refresh
+## 📈 Scalability
 
-## Notification SDK
+-   **Horizontal Scaling**: Stateless design supports multiple instances
+-   **Database Sharding**: MongoDB sharding support
+-   **Load Balancing**: Ready for load balancer deployment
+-   **Microservice Ready**: Designed for microservice architectures
 
-Provide an implementation of `INotificationClientSdk`:
+## 🔧 Configuration
 
-```ts
-import { INotificationClientSdk, SendEmailBody } from 'lazy-js/auth';
+### Environment Variables
 
-export class MyNotificationSdk implements INotificationClientSdk {
-    async available(): Promise<boolean> {
-        return true;
-    }
-    async sendEmail(body: SendEmailBody): Promise<void> {
-        // integrate with your email provider
-    }
-}
-```
+-   `KEYCLOAK_SERVICE_URL`: Keycloak server URL
+-   `KEYCLOAK_ADMIN_PASSWORD`: Admin password
+-   `MONGODB_URL`: MongoDB connection string
+-   `SERVICE_PORT`: API server port
+-   `SERVICE_NAME`: Service identifier
 
-If unavailable, the service logs the verification code instead.
+### Client Configuration
 
-## Configuration
+Each client can be configured with:
 
--   KeycloakConfig
-    -   `keycloakServiceUrl: string`
-    -   `keycloakAdminPassword: string`
--   ServiceConfig
-    -   `allowedOrigins: string[]`
-    -   `port: number`
-    -   `routerPrefix: string`
-    -   `disableRequestLogging?: boolean`
-    -   `disableSecurityHeaders?: boolean`
-    -   `enableRoutesLogging?: boolean`
-    -   `serviceName?: string`
-    -   `mongoDbUrl: string`
-    -   `logRealmSummary?: boolean` — prints a table of apps/clients and URLs
+-   Primary authentication fields (email, username, phone)
+-   Registration policies (public/private, verification requirements)
+-   Login policies (enabled/disabled)
+-   Custom user attributes
+-   Group and role assignments
 
-## Error Handling
+## 📝 License
 
-Errors are normalized and thrown as `AppError` with codes like:
-
--   INVALID_ACCESS_TOKEN, EXPIRED_ACCESS_TOKEN, INVALID_REFRESH_TOKEN
--   USER_ALREADY_EXISTS, USER_NOT_FOUND, EMAIL_ALREADY_VERIFIED, INVALID_CODE, CODE_EXPIRED
--   NO_GROUP_WITH_THAT_NAME, NO_ROLE_WITH_THAT_ID, MULTIPLE_DEFAULT_GROUPS
-
-Your HTTP framework from `@lazy-js/server` will translate these to responses.
-
-## Testing
-
-```bash
-npm run test
-```
-
-Integration tests rely on a running Keycloak at `http://localhost:8080`.
-
-## License
-
-This project is licensed under the [Apache License 2.0](./LICENSE).
-
-### Attribution
-
--   Keycloak — Red Hat
--   keycloak-admin-client — Apache License 2.0
-    See [NOTICE](./NOTICE).
+ISC License - see LICENSE file for details.
