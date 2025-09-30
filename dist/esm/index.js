@@ -42,37 +42,45 @@ export class LazyAuth {
                 password: this.keycloakConfig.keycloakAdminPassword,
                 reAuthenticateIntervalMs: this.keycloakConfig.keycloakAdminReAuthenticateIntervalMs || 30000,
             }, this.notificationSdk);
+            await realmBuilderModule.build();
             // this is alternative router for the realmBuilderModule
             // instead of sending request to /<realm-name>/<app-name>/<client-name>/<action>
             // we send request to /<action>
             // and put client and app in the body
             // and the router will redirect to the /<realm-name>/<app-name>/<client-name>/<action> route
-            realmBuilderModule.router.all('/:action', (req, res, next) => {
-                const action = req.params.action;
-                const client = req.body.client;
-                const app = req.body.app;
-                if (!client) {
-                    throw new ValidationError(USER_VALIDATOR_OPERATIONAL_ERRORS.CLIENT_IS_REQUIRED);
+            realmBuilderModule.post('/:action', (req, res, next) => {
+                console.log('get a request', req.url);
+                try {
+                    const action = req.params.action;
+                    const client = req.body.client;
+                    const app = req.body.app;
+                    if (!client) {
+                        throw new ValidationError(USER_VALIDATOR_OPERATIONAL_ERRORS.CLIENT_IS_REQUIRED);
+                    }
+                    if (!app) {
+                        throw new ValidationError(USER_VALIDATOR_OPERATIONAL_ERRORS.APP_IS_REQUIRED);
+                    }
+                    // do not add prefix because the router is mounted on the /<realm-name> route
+                    const redirectUrl = `/${this.realm.name}/${app}/${client}/${action}`;
+                    req.url = redirectUrl;
+                    console.log(req.url);
+                    // because router.handle is private, we need to cast it to any
+                    if (realmBuilderModule.router && realmBuilderModule.router.handle) {
+                        realmBuilderModule.router.handle(req, res, next);
+                    }
+                    else {
+                        next(new InternalError('INTERNAL_ERROR').updateContext({
+                            methodName: 'buildRealm',
+                            service: 'LazyAuth',
+                            message: 'router.handle is not found',
+                        }));
+                    }
                 }
-                if (!app) {
-                    throw new ValidationError(USER_VALIDATOR_OPERATIONAL_ERRORS.APP_IS_REQUIRED);
-                }
-                // do not add prefix because the router is mounted on the /<realm-name> route
-                const redirectUrl = `/${this.realm.name}/${app}/${client}/${action}`;
-                req.url = redirectUrl;
-                // because router.handle is private, we need to cast it to any
-                if (realmBuilderModule.router && realmBuilderModule.router.handle) {
-                    realmBuilderModule.router.handle(req, res, next);
-                }
-                else {
-                    next(new InternalError('INTERNAL_ERROR').updateContext({
-                        methodName: 'buildRealm',
-                        service: 'LazyAuth',
-                        message: 'router.handle is not found',
-                    }));
+                catch (error) {
+                    console.log(error);
+                    next(error);
                 }
             });
-            await realmBuilderModule.build();
             return realmBuilderModule;
         }
         catch (error) {

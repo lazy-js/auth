@@ -33,7 +33,7 @@ describe('Lazy Auth Testing Suite', () => {
 
     beforeAll(async () => {
         try {
-            const mongoDbUrl = 'mongodb://localhost:27017/for-deletde-dtfedsd1ddft21d13d';
+            const mongoDbUrl = 'mongodb://localhost:27017/for-deletde-dtfd';
             keycloakConfig.localMongoDbURL = mongoDbUrl;
             lazyAuthService = new LazyAuth(keycloakConfig, appConfig, testRealm, notificationSdk);
             kcApi = await KcApi.create({
