@@ -2,7 +2,7 @@ import { LazyAuth, KeycloakConfig, AppParams } from '..';
 import { testRealm, testPublicClient } from './utils/realm';
 import { MockNotificationClientSdk } from './utils/MockNotificationSdkClient';
 import { beforeAll, describe, it, afterAll, expect } from 'vitest';
-import { MongoMemoryServer } from 'mongodb-memory-server';
+// import { MongoMemoryServer } from 'mongodb-memory-server';
 import { KcApi } from '../modules/kcApi';
 import request from 'supertest';
 import mongoose from 'mongoose';
@@ -27,21 +27,15 @@ const appConfig: AppParams = {
 const notificationSdk = new MockNotificationClientSdk();
 
 describe('Lazy Auth Testing Suite', () => {
-    let mongoServer: MongoMemoryServer;
+    // let mongoServer: MongoMemoryServer;
     let lazyAuthService: LazyAuth;
     let kcApi: KcApi;
 
     beforeAll(async () => {
         try {
-            mongoServer = await MongoMemoryServer.create();
-            const mongoDbUrl = mongoServer.getUri();
+            const mongoDbUrl = 'mongodb://localhost:27017/for-deletde-dtfedsd1ddft21d13d';
             keycloakConfig.localMongoDbURL = mongoDbUrl;
-            lazyAuthService = new LazyAuth(
-                keycloakConfig,
-                appConfig,
-                testRealm,
-                notificationSdk,
-            );
+            lazyAuthService = new LazyAuth(keycloakConfig, appConfig, testRealm, notificationSdk);
             kcApi = await KcApi.create({
                 url: keycloakConfig.keycloakServiceUrl,
                 password: keycloakConfig.keycloakAdminPassword,
@@ -56,7 +50,7 @@ describe('Lazy Auth Testing Suite', () => {
 
     afterAll(async () => {
         try {
-            await mongoServer.stop();
+            // await mongoServer.stop();
         } catch (error) {
             console.error(error);
         }
@@ -138,10 +132,8 @@ describe('Lazy Auth Testing Suite', () => {
 
         it('should register a user', async () => {
             const verifiedByDefault =
-                testPublicClient.clientAuthConfiguration.registerConfig
-                    .status === 'public' &&
-                testPublicClient.clientAuthConfiguration.registerConfig
-                    .verified;
+                testPublicClient.clientAuthConfiguration.registerConfig.status === 'public' &&
+                testPublicClient.clientAuthConfiguration.registerConfig.verified;
             await request(lazyAuthService.app.expressApp)
                 .post(`${routerPrefix}${clientPath}${registerPath}`)
                 .set('Content-Type', 'application/json')
@@ -157,6 +149,36 @@ describe('Lazy Auth Testing Suite', () => {
                     expect(data.username).toBeDefined();
                     expect(data.method).toBe(newUser.method);
                     expect(data.email).toBe(newUser.email);
+                    expect(data.verified).toBe(verifiedByDefault);
+                    expect(data.createdAt).toBeDefined();
+                });
+        });
+        it('should register a user', async () => {
+            const anotherNewUser = {
+                method: 'email',
+                email: 'testuser2@example.com',
+                password: 'TestPassword123!',
+            };
+            const verifiedByDefault =
+                testPublicClient.clientAuthConfiguration.registerConfig.status === 'public' &&
+                testPublicClient.clientAuthConfiguration.registerConfig.verified;
+            await request(lazyAuthService.app.expressApp)
+                .post(`${routerPrefix}/${testRealm.name}${registerPath}`)
+                .set('Content-Type', 'application/json')
+                .send({
+                    method: anotherNewUser.method,
+                    email: anotherNewUser.email,
+                    password: anotherNewUser.password,
+                    app: testPublicClient.appName,
+                    client: testPublicClient.name,
+                })
+                .expect((res) => {
+                    const data = res.body.data;
+                    expect(data).toBeDefined();
+                    expect(data._id).toBeDefined();
+                    expect(data.username).toBeDefined();
+                    expect(data.method).toBe(anotherNewUser.method);
+                    expect(data.email).toBe(anotherNewUser.email);
                     expect(data.verified).toBe(verifiedByDefault);
                     expect(data.createdAt).toBeDefined();
                 });
@@ -226,11 +248,9 @@ describe('Lazy Auth Testing Suite', () => {
                 });
         });
         it('should verify the user', async () => {
-            const user = await mongoose.connection.db
-                ?.collection('users')
-                .findOne({
-                    email: newUser.email,
-                });
+            const user = await mongoose.connection.db?.collection('users').findOne({
+                email: newUser.email,
+            });
             const code = user?.linkedEmails[0].confirmCode;
             await request(lazyAuthService.app.expressApp)
                 .put(`${routerPrefix}${clientPath}${verifyPath}`)

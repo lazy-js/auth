@@ -7,6 +7,7 @@ const utils_1 = require("@lazy-js/utils");
 const UserService_1 = require("../service/UserService");
 // loggers
 const loggers_1 = require("../../../config/loggers");
+const constants_1 = require("../constants");
 // paths
 exports.registerPath = '/register';
 exports.loginPath = '/login';
@@ -22,22 +23,24 @@ class UserController extends server_1.BaseController {
         this.kcApi = kcApi;
         this.notificationClientSdk = notificationClientSdk;
         this.userService = new UserService_1.UserService(client, kcApi, notificationClientSdk);
-        this.post(exports.registerPath, this.register.bind(this));
-        this.post(exports.loginPath, this.login.bind(this));
-        this.post(exports.validateAccessTokenPath, this.validateAccessToken.bind(this));
-        this.post(exports.validateRolePath, this.validateRole.bind(this));
-        this.post(exports.refreshAccessTokenPath, this.refreshToken.bind(this));
-        this.put(exports.updatePasswordPath, this.updatePassword.bind(this));
-        this.put(exports.verifyPath, this.verify.bind(this));
+        this.post(constants_1.PATHNAMES.REGISTER, this.register.bind(this));
+        this.post(constants_1.PATHNAMES.LOGIN, this.login.bind(this));
+        this.post(constants_1.PATHNAMES.VALIDATE_ACCESS_TOKEN, this.validateAccessToken.bind(this));
+        this.post(constants_1.PATHNAMES.VALIDATE_ROLE, this.validateRole.bind(this));
+        this.post(constants_1.PATHNAMES.REFRESH_TOKEN, this.refreshToken.bind(this));
+        this.put(constants_1.PATHNAMES.UPDATE_OWN_PASSWORD, this.updatePassword.bind(this));
+        this.put(constants_1.PATHNAMES.VERIFY_OWN_ACCOUNT, this.verify.bind(this));
     }
     async register(req, res, next) {
         try {
+            console.log('registering user');
+            console.log(req.body);
             const accessToken = (0, server_1.Token)();
             const user = await this.userService.register({
                 body: req.body,
                 accessToken: accessToken,
             });
-            res.json((0, utils_1.successResponse)(user));
+            return res.json((0, utils_1.successResponse)(user));
         }
         catch (error) {
             next(error);

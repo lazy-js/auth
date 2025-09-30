@@ -22,6 +22,7 @@ const error_guard_1 = require("@lazy-js/error-guard");
 const index_1 = require("./modules/RealmBuilder/index");
 const index_2 = require("./modules/RealmManipulator/index");
 const utils_1 = require("./utils");
+const constants_1 = require("./modules/User/constants");
 // exports
 __exportStar(require("./modules/Realm"), exports);
 __exportStar(require("./utils"), exports);
@@ -58,6 +59,36 @@ class LazyAuth {
                 password: this.keycloakConfig.keycloakAdminPassword,
                 reAuthenticateIntervalMs: this.keycloakConfig.keycloakAdminReAuthenticateIntervalMs || 30000,
             }, this.notificationSdk);
+            // this is alternative router for the realmBuilderModule
+            // instead of sending request to /<realm-name>/<app-name>/<client-name>/<action>
+            // we send request to /<action>
+            // and put client and app in the body
+            // and the router will redirect to the /<realm-name>/<app-name>/<client-name>/<action> route
+            realmBuilderModule.router.all('/:action', (req, res, next) => {
+                const action = req.params.action;
+                const client = req.body.client;
+                const app = req.body.app;
+                if (!client) {
+                    throw new error_guard_1.ValidationError(constants_1.USER_VALIDATOR_OPERATIONAL_ERRORS.CLIENT_IS_REQUIRED);
+                }
+                if (!app) {
+                    throw new error_guard_1.ValidationError(constants_1.USER_VALIDATOR_OPERATIONAL_ERRORS.APP_IS_REQUIRED);
+                }
+                // do not add prefix because the router is mounted on the /<realm-name> route
+                const redirectUrl = `/${this.realm.name}/${app}/${client}/${action}`;
+                req.url = redirectUrl;
+                // because router.handle is private, we need to cast it to any
+                if (realmBuilderModule.router && realmBuilderModule.router.handle) {
+                    realmBuilderModule.router.handle(req, res, next);
+                }
+                else {
+                    next(new error_guard_1.InternalError('INTERNAL_ERROR').updateContext({
+                        methodName: 'buildRealm',
+                        service: 'LazyAuth',
+                        message: 'router.handle is not found',
+                    }));
+                }
+            });
             await realmBuilderModule.build();
             return realmBuilderModule;
         }

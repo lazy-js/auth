@@ -16,7 +16,7 @@ declare class UserController extends BaseController {
     kcApi: IKcApi;
     notificationClientSdk: INotificationClientSdk;
     constructor(client: IClient, kcApi: IKcApi, notificationClientSdk: INotificationClientSdk);
-    register(req: Request, res: Response, next: NextFunction): Promise<void>;
+    register(req: Request, res: Response, next: NextFunction): Promise<Response<any, Record<string, any>> | undefined>;
     login(req: Request, res: Response, next: NextFunction): Promise<void>;
     validateAccessToken(req: Request, res: Response, next: NextFunction): Promise<void>;
     validateRole(req: Request, res: Response, next: NextFunction): Promise<void>;

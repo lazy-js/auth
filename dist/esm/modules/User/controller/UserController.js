@@ -1,9 +1,10 @@
-import { BaseController, Token, Body, } from '@lazy-js/server';
+import { BaseController, Token, Body } from '@lazy-js/server';
 import { successResponse } from '@lazy-js/utils';
 // services
 import { UserService } from '../service/UserService';
 // loggers
 import { userControllerLogger } from '../../../config/loggers';
+import { PATHNAMES } from '../constants';
 // paths
 export const registerPath = '/register';
 export const loginPath = '/login';
@@ -19,22 +20,24 @@ class UserController extends BaseController {
         this.kcApi = kcApi;
         this.notificationClientSdk = notificationClientSdk;
         this.userService = new UserService(client, kcApi, notificationClientSdk);
-        this.post(registerPath, this.register.bind(this));
-        this.post(loginPath, this.login.bind(this));
-        this.post(validateAccessTokenPath, this.validateAccessToken.bind(this));
-        this.post(validateRolePath, this.validateRole.bind(this));
-        this.post(refreshAccessTokenPath, this.refreshToken.bind(this));
-        this.put(updatePasswordPath, this.updatePassword.bind(this));
-        this.put(verifyPath, this.verify.bind(this));
+        this.post(PATHNAMES.REGISTER, this.register.bind(this));
+        this.post(PATHNAMES.LOGIN, this.login.bind(this));
+        this.post(PATHNAMES.VALIDATE_ACCESS_TOKEN, this.validateAccessToken.bind(this));
+        this.post(PATHNAMES.VALIDATE_ROLE, this.validateRole.bind(this));
+        this.post(PATHNAMES.REFRESH_TOKEN, this.refreshToken.bind(this));
+        this.put(PATHNAMES.UPDATE_OWN_PASSWORD, this.updatePassword.bind(this));
+        this.put(PATHNAMES.VERIFY_OWN_ACCOUNT, this.verify.bind(this));
     }
     async register(req, res, next) {
         try {
+            console.log('registering user');
+            console.log(req.body);
             const accessToken = Token();
             const user = await this.userService.register({
                 body: req.body,
                 accessToken: accessToken,
             });
-            res.json(successResponse(user));
+            return res.json(successResponse(user));
         }
         catch (error) {
             next(error);
