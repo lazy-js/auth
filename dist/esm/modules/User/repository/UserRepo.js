@@ -65,5 +65,12 @@ export class UserRepository {
         });
         return await this.model.findOneAndUpdate({ email }, { $set: { linkedEmails: newLinkedEmails, updatedAt: new Date() } });
     }
+    async updateEmailConfirmCode(email, confirmCode) {
+        const user = await this.model.findOne({ email });
+        if (!user)
+            return null;
+        const linkedEmails = user.linkedEmails.map((el) => (el.email === email ? { ...el, confirmCode } : el));
+        return await this.model.findOneAndUpdate({ email }, { linkedEmails: linkedEmails });
+    }
 }
 //# sourceMappingURL=UserRepo.js.map

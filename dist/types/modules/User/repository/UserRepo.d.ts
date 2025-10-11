@@ -35,5 +35,6 @@ export declare class UserRepository implements IUserRepository {
     }> & {
         __v: number;
     }) | null>;
+    updateEmailConfirmCode(email: string, confirmCode: string): Promise<IUserSchema | null>;
 }
 //# sourceMappingURL=UserRepo.d.ts.map

@@ -80,7 +80,6 @@ class LazyAuth {
                     // do not add prefix because the router is mounted on the /<realm-name> route
                     const redirectUrl = `/${this.realm.name}/${app}/${client}/${action}`;
                     req.url = redirectUrl;
-                    console.log(req.url);
                     // because router.handle is private, we need to cast it to any
                     if (realmBuilderModule.router && realmBuilderModule.router.handle) {
                         realmBuilderModule.router.handle(req, res, next);
@@ -94,7 +93,6 @@ class LazyAuth {
                     }
                 }
                 catch (error) {
-                    console.log(error);
                     next(error);
                 }
             });

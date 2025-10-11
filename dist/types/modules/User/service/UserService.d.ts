@@ -1,4 +1,4 @@
-import { CreateUserParams, IUserRepository, IUserService, IUserValidator, UserCreationDto, PrivateUserService, VerifyDto } from './UserService.types';
+import { CreateUserParams, IUserRepository, IUserService, IUserValidator, UserCreationDto, PrivateUserService, VerifyDto, ResendVerifyCodeDto } from './UserService.types';
 import { IKcApi, TokenResponse, AccessTokenPayload } from '../../kcApi';
 import { IClient } from '../../Realm';
 import { INotificationClientSdk } from '../../../types';
@@ -36,6 +36,7 @@ export declare class UserService implements IUserService, PrivateUserService {
     login(loginParams: CreateUserParams): Promise<LoginReturn>;
     throwInvalidCredentialsError(): never;
     verify(verifyDto: VerifyDto): Promise<void>;
+    resendVerifyCode(resendVerifyCodeDto: ResendVerifyCodeDto): Promise<void>;
     updatePassword(accessToken: string, newPassword: string): Promise<void>;
     validateAccessToken<T extends string>(accessToken?: string): Promise<AccessTokenPayload<T> & {
         _id: string;

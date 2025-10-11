@@ -83,4 +83,12 @@ export class UserRepository implements IUserRepository {
             { $set: { linkedEmails: newLinkedEmails, updatedAt: new Date() } },
         );
     }
+
+    async updateEmailConfirmCode(email: string, confirmCode: string): Promise<IUserSchema | null> {
+        const user = await this.model.findOne({ email });
+        if (!user) return null;
+
+        const linkedEmails = user.linkedEmails.map((el) => (el.email === email ? { ...el, confirmCode } : el));
+        return await this.model.findOneAndUpdate({ email }, { linkedEmails: linkedEmails });
+    }
 }

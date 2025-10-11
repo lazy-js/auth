@@ -10,6 +10,7 @@ export declare const validateRolePath = "/validate-role";
 export declare const refreshAccessTokenPath = "/refresh-access-token";
 export declare const updatePasswordPath = "/me/password";
 export declare const verifyPath = "/me/verify";
+export declare const resendVerifyCodePath = "/resend-verify-code";
 declare class UserController extends BaseController {
     userService: UserService;
     client: IClient;
@@ -23,6 +24,7 @@ declare class UserController extends BaseController {
     refreshToken(req: Request, res: Response, next: NextFunction): Promise<void>;
     updatePassword(req: Request, res: Response, next: NextFunction): Promise<void>;
     verify(req: Request, res: Response, next: NextFunction): Promise<void>;
+    resendVerifyCode(req: Request, res: Response, next: NextFunction): Promise<void>;
 }
 export { UserController };
 //# sourceMappingURL=UserController.d.ts.map

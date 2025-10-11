@@ -13,6 +13,7 @@ export const validateRolePath = '/validate-role';
 export const refreshAccessTokenPath = '/refresh-access-token';
 export const updatePasswordPath = '/me/password';
 export const verifyPath = '/me/verify';
+export const resendVerifyCodePath = '/resend-verify-code';
 class UserController extends BaseController {
     constructor(client, kcApi, notificationClientSdk) {
         super({ pathname: `/${client.name}` });
@@ -27,6 +28,7 @@ class UserController extends BaseController {
         this.post(PATHNAMES.REFRESH_TOKEN, this.refreshToken.bind(this));
         this.put(PATHNAMES.UPDATE_OWN_PASSWORD, this.updatePassword.bind(this));
         this.put(PATHNAMES.VERIFY_OWN_ACCOUNT, this.verify.bind(this));
+        this.get(PATHNAMES.RESEND_VERIFY_CODE, this.resendVerifyCode.bind(this));
     }
     async register(req, res, next) {
         try {
@@ -101,6 +103,16 @@ class UserController extends BaseController {
     async verify(req, res, next) {
         try {
             await this.userService.verify(req.body);
+            res.json(successResponse());
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async resendVerifyCode(req, res, next) {
+        try {
+            const { email, method } = Body('email', 'method');
+            await this.userService.resendVerifyCode({ email, method });
             res.json(successResponse());
         }
         catch (error) {

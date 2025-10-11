@@ -23,5 +23,6 @@ export declare class IUserRepository {
     getUserByUsername(username: string): Promise<IUserSchema | null>;
     getUserByKeycloakId(uuid: string): Promise<IUserSchema | null>;
     verifyUserEmail(email: string): Promise<IUserSchema | null>;
+    updateEmailConfirmCode(email: string, confirmCode: string): Promise<IUserSchema | null>;
 }
 //# sourceMappingURL=UserRepo.types.d.ts.map

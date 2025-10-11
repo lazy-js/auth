@@ -41,6 +41,7 @@ export declare enum PATHNAMES {
     VALIDATE_ROLE = "/validate-role",
     REFRESH_TOKEN = "/refresh-access-token",
     UPDATE_OWN_PASSWORD = "/me/password",
-    VERIFY_OWN_ACCOUNT = "/me/verify"
+    VERIFY_OWN_ACCOUNT = "/me/verify",
+    RESEND_VERIFY_CODE = "/resend-verify-code"
 }
 //# sourceMappingURL=constants.d.ts.map

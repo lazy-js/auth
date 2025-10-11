@@ -1,10 +1,17 @@
-import { VerifyDto } from '../service/UserService.types';
+import { ResendVerifyCodeDto, VerifyDto } from '../service/UserService.types';
 import { UserCreationDto, PrimaryField, LoginDto } from '../shared.types';
 export declare class IUserValidator {
     validateUserCreationDto(userDto: UserCreationDto, primaryFields: PrimaryField[]): Promise<RegisterWithPhone | RegisterWithUsername | RegisterWithEmail>;
     validateLoginDto(loginDto: LoginDto, primaryFields: PrimaryField[]): Promise<LoginWithEmail | LoginWithPhone | LoginWithUsername>;
     validatePassword(password: string): Promise<string>;
     validateVerifyDto(verifyDto: VerifyDto): Promise<VerifyWithEmail | VerifyWithPhone>;
+    validateResendVerifyCodeDto(verifyDto: ResendVerifyCodeDto): Promise<{
+        method: 'email';
+        email: string;
+    } | {
+        method: 'phone';
+        phone: string;
+    }>;
     validateTokenString(token: string, tokenType: 'refresh' | 'access'): Promise<string>;
 }
 export interface RegisterWithUsername {

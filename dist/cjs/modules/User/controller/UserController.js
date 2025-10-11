@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserController = exports.verifyPath = exports.updatePasswordPath = exports.refreshAccessTokenPath = exports.validateRolePath = exports.validateAccessTokenPath = exports.loginPath = exports.registerPath = void 0;
+exports.UserController = exports.resendVerifyCodePath = exports.verifyPath = exports.updatePasswordPath = exports.refreshAccessTokenPath = exports.validateRolePath = exports.validateAccessTokenPath = exports.loginPath = exports.registerPath = void 0;
 const server_1 = require("@lazy-js/server");
 const utils_1 = require("@lazy-js/utils");
 // services
@@ -16,6 +16,7 @@ exports.validateRolePath = '/validate-role';
 exports.refreshAccessTokenPath = '/refresh-access-token';
 exports.updatePasswordPath = '/me/password';
 exports.verifyPath = '/me/verify';
+exports.resendVerifyCodePath = '/resend-verify-code';
 class UserController extends server_1.BaseController {
     constructor(client, kcApi, notificationClientSdk) {
         super({ pathname: `/${client.name}` });
@@ -30,6 +31,7 @@ class UserController extends server_1.BaseController {
         this.post(constants_1.PATHNAMES.REFRESH_TOKEN, this.refreshToken.bind(this));
         this.put(constants_1.PATHNAMES.UPDATE_OWN_PASSWORD, this.updatePassword.bind(this));
         this.put(constants_1.PATHNAMES.VERIFY_OWN_ACCOUNT, this.verify.bind(this));
+        this.get(constants_1.PATHNAMES.RESEND_VERIFY_CODE, this.resendVerifyCode.bind(this));
     }
     async register(req, res, next) {
         try {
@@ -104,6 +106,16 @@ class UserController extends server_1.BaseController {
     async verify(req, res, next) {
         try {
             await this.userService.verify(req.body);
+            res.json((0, utils_1.successResponse)());
+        }
+        catch (error) {
+            next(error);
+        }
+    }
+    async resendVerifyCode(req, res, next) {
+        try {
+            const { email, method } = (0, server_1.Body)('email', 'method');
+            await this.userService.resendVerifyCode({ email, method });
             res.json((0, utils_1.successResponse)());
         }
         catch (error) {

@@ -8,6 +8,7 @@ import {
     UserCreationDto,
     PrivateUserService,
     VerifyDto,
+    ResendVerifyCodeDto,
 } from './UserService.types';
 
 import { IKcApi, TokenResponse, AccessTokenPayload } from '../../kcApi';
@@ -171,6 +172,44 @@ export class UserService implements IUserService, PrivateUserService {
         }
     }
 
+    async resendVerifyCode(resendVerifyCodeDto: ResendVerifyCodeDto): Promise<void> {
+        // validate the dto
+        const validatedVerifyDto = await this.userValidator.validateResendVerifyCodeDto(resendVerifyCodeDto);
+
+        // verify the email
+        if (validatedVerifyDto.method === 'email') {
+            // get the user from the database
+            const userInDb = await this.userRepository.getUserByEmail(validatedVerifyDto.email);
+
+            // check if the user exists
+            if (!userInDb) {
+                throw new NotFoundError(USER_SERVICE_OPERATIONAL_ERRORS.USER_NOT_FOUND);
+            }
+
+            // check if the email is linked to the user
+            const linkedEmail = userInDb.linkedEmails.find(
+                (linkedEmail) => linkedEmail.email === validatedVerifyDto.email,
+            );
+
+            if (!linkedEmail) {
+                throw new NotFoundError(USER_SERVICE_OPERATIONAL_ERRORS.USER_NOT_FOUND);
+            }
+
+            // check if the email is already verified
+            if (linkedEmail.verified) {
+                throw new ConflictError(USER_SERVICE_OPERATIONAL_ERRORS.EMAIL_ALREADY_VERIFIED);
+            }
+
+            // send new code
+            const confirmCode = this._generateConfirmCode();
+            await this.userRepository.updateEmailConfirmCode(userInDb.email, confirmCode);
+            await this._sendVerificationCode(validatedVerifyDto as UserCreationDto, confirmCode);
+            return;
+        }
+        if (validatedVerifyDto.method === 'phone') {
+            return;
+        }
+    }
     async updatePassword(accessToken: string, newPassword: string): Promise<void> {
         const payload = await this.validateRole(accessToken, 'update-own-password');
 

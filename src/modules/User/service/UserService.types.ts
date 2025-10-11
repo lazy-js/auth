@@ -16,6 +16,12 @@ export interface VerifyDto {
     method: 'phone' | 'email';
 }
 
+export interface ResendVerifyCodeDto {
+    email?: string;
+    phone?: string;
+    method: 'phone' | 'email';
+}
+
 export type { UserCreationDto, IUserValidator, IUserRepository };
 
 export declare class IUserService {

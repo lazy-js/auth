@@ -49,5 +49,6 @@ var PATHNAMES;
     PATHNAMES["REFRESH_TOKEN"] = "/refresh-access-token";
     PATHNAMES["UPDATE_OWN_PASSWORD"] = "/me/password";
     PATHNAMES["VERIFY_OWN_ACCOUNT"] = "/me/verify";
+    PATHNAMES["RESEND_VERIFY_CODE"] = "/resend-verify-code";
 })(PATHNAMES || (exports.PATHNAMES = PATHNAMES = {}));
 //# sourceMappingURL=constants.js.map

@@ -45,4 +45,5 @@ export enum PATHNAMES {
     REFRESH_TOKEN = '/refresh-access-token',
     UPDATE_OWN_PASSWORD = '/me/password',
     VERIFY_OWN_ACCOUNT = '/me/verify',
+    RESEND_VERIFY_CODE = '/resend-verify-code',
 }

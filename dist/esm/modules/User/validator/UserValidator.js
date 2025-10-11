@@ -70,6 +70,13 @@ export class UserValidator {
         const verifyDtoSchema = z.discriminatedUnion('method', [verifyEmailSchema, verifyPhoneSchema]);
         return await verifyDtoSchema.parseAsync(verifyDto);
     }
+    async validateResendVerifyCodeDto(verifyDto) {
+        const verifyDtoSchema = z.discriminatedUnion('method', [
+            resendVerifyCodeEmailSchema,
+            resendVerifyCodePhoneSchema,
+        ]);
+        return await verifyDtoSchema.parseAsync(verifyDto);
+    }
     async validateTokenString(token, tokenType) {
         const res = await getJwtSchema(tokenType).parseAsync(token);
         return res;
@@ -227,6 +234,10 @@ const verifyEmailSchema = z.object({
     email: emailSchema,
     code: codeSchema,
 });
+const resendVerifyCodeEmailSchema = z.object({
+    method: z.literal('email'),
+    email: emailSchema,
+});
 /**
  * Phone verification schema
  *
@@ -236,6 +247,10 @@ const verifyPhoneSchema = z.object({
     method: z.literal('phone'),
     phone: phoneSchema,
     code: codeSchema,
+});
+const resendVerifyCodePhoneSchema = z.object({
+    method: z.literal('phone'),
+    phone: phoneSchema,
 });
 function getJwtSchema(tokenType) {
     let TOKEN_REQUIRED = USER_VALIDATOR_OPERATIONAL_ERRORS.ACCESS_OKEN_REQUIRED;

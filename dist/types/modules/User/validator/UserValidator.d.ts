@@ -16,7 +16,7 @@
  */
 import { UserCreationDto, PrimaryField, LoginDto } from '../shared.types';
 import { IUserValidator } from './UserValidator.types';
-import { VerifyDto } from '../service/UserService.types';
+import { ResendVerifyCodeDto, VerifyDto } from '../service/UserService.types';
 /**
  * Logger instance for UserValidator module
  * Configured to log all levels (debug, info, warn, error) for comprehensive debugging
@@ -80,6 +80,13 @@ export declare class UserValidator implements IUserValidator {
         method: "phone";
         phone: string;
         code: string;
+    }>;
+    validateResendVerifyCodeDto(verifyDto: ResendVerifyCodeDto): Promise<{
+        method: "email";
+        email: string;
+    } | {
+        method: "phone";
+        phone: string;
     }>;
     validateTokenString(token: string, tokenType: 'refresh' | 'access'): Promise<string>;
 }

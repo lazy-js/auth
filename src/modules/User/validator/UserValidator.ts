@@ -18,7 +18,7 @@
 import { ValidationError } from '@lazy-js/error-guard';
 import { UserCreationDto, PrimaryField, LoginDto } from '../shared.types';
 import { IUserValidator } from './UserValidator.types';
-import { VerifyDto } from '../service/UserService.types';
+import { ResendVerifyCodeDto, VerifyDto } from '../service/UserService.types';
 import { USER_VALIDATOR_OPERATIONAL_ERRORS } from '../constants';
 import z from 'zod';
 /**
@@ -82,6 +82,15 @@ export class UserValidator implements IUserValidator {
 
     async validateVerifyDto(verifyDto: VerifyDto) {
         const verifyDtoSchema = z.discriminatedUnion('method', [verifyEmailSchema, verifyPhoneSchema]);
+
+        return await verifyDtoSchema.parseAsync(verifyDto);
+    }
+
+    async validateResendVerifyCodeDto(verifyDto: ResendVerifyCodeDto) {
+        const verifyDtoSchema = z.discriminatedUnion('method', [
+            resendVerifyCodeEmailSchema,
+            resendVerifyCodePhoneSchema,
+        ]);
 
         return await verifyDtoSchema.parseAsync(verifyDto);
     }
@@ -258,7 +267,10 @@ const verifyEmailSchema = z.object({
     email: emailSchema,
     code: codeSchema,
 });
-
+const resendVerifyCodeEmailSchema = z.object({
+    method: z.literal('email'),
+    email: emailSchema,
+});
 /**
  * Phone verification schema
  *
@@ -268,6 +280,11 @@ const verifyPhoneSchema = z.object({
     method: z.literal('phone'),
     phone: phoneSchema,
     code: codeSchema,
+});
+
+const resendVerifyCodePhoneSchema = z.object({
+    method: z.literal('phone'),
+    phone: phoneSchema,
 });
 
 function getJwtSchema(tokenType: 'refresh' | 'access') {

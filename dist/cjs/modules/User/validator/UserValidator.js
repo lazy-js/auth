@@ -76,6 +76,13 @@ class UserValidator {
         const verifyDtoSchema = zod_1.default.discriminatedUnion('method', [verifyEmailSchema, verifyPhoneSchema]);
         return await verifyDtoSchema.parseAsync(verifyDto);
     }
+    async validateResendVerifyCodeDto(verifyDto) {
+        const verifyDtoSchema = zod_1.default.discriminatedUnion('method', [
+            resendVerifyCodeEmailSchema,
+            resendVerifyCodePhoneSchema,
+        ]);
+        return await verifyDtoSchema.parseAsync(verifyDto);
+    }
     async validateTokenString(token, tokenType) {
         const res = await getJwtSchema(tokenType).parseAsync(token);
         return res;
@@ -234,6 +241,10 @@ const verifyEmailSchema = zod_1.default.object({
     email: emailSchema,
     code: codeSchema,
 });
+const resendVerifyCodeEmailSchema = zod_1.default.object({
+    method: zod_1.default.literal('email'),
+    email: emailSchema,
+});
 /**
  * Phone verification schema
  *
@@ -243,6 +254,10 @@ const verifyPhoneSchema = zod_1.default.object({
     method: zod_1.default.literal('phone'),
     phone: phoneSchema,
     code: codeSchema,
+});
+const resendVerifyCodePhoneSchema = zod_1.default.object({
+    method: zod_1.default.literal('phone'),
+    phone: phoneSchema,
 });
 function getJwtSchema(tokenType) {
     let TOKEN_REQUIRED = constants_1.USER_VALIDATOR_OPERATIONAL_ERRORS.ACCESS_OKEN_REQUIRED;
