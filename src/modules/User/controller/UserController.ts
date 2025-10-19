@@ -41,9 +41,9 @@ class UserController extends BaseController {
         this.post(PATHNAMES.VALIDATE_ROLE, this.validateRole.bind(this));
         this.post(PATHNAMES.REFRESH_TOKEN, this.refreshToken.bind(this));
         this.post(PATHNAMES.RESEND_VERIFY_CODE, this.resendVerifyCode.bind(this));
-        this.patch(PATHNAMES.VERIFY_OWN_ACCOUNT, this.verify.bind(this));
+        this.post(PATHNAMES.VERIFY_OWN_ACCOUNT, this.verify.bind(this));
         // need fix (make it patch)
-        this.put(PATHNAMES.UPDATE_OWN_PASSWORD, this.updatePassword.bind(this));
+        this.post(PATHNAMES.UPDATE_OWN_PASSWORD, this.updatePassword.bind(this));
     }
 
     async register(req: Request, res: Response, next: NextFunction) {
