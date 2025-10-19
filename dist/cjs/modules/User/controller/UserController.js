@@ -15,7 +15,7 @@ exports.validateAccessTokenPath = '/validate-access-token';
 exports.validateRolePath = '/validate-role';
 exports.refreshAccessTokenPath = '/refresh-access-token';
 exports.updatePasswordPath = '/me/password';
-exports.verifyPath = '/me/verify';
+exports.verifyPath = '/verify';
 exports.resendVerifyCodePath = '/resend-verify-code';
 class UserController extends server_1.BaseController {
     constructor(client, kcApi, notificationClientSdk) {
@@ -30,8 +30,9 @@ class UserController extends server_1.BaseController {
         this.post(constants_1.PATHNAMES.VALIDATE_ROLE, this.validateRole.bind(this));
         this.post(constants_1.PATHNAMES.REFRESH_TOKEN, this.refreshToken.bind(this));
         this.post(constants_1.PATHNAMES.RESEND_VERIFY_CODE, this.resendVerifyCode.bind(this));
+        this.patch(constants_1.PATHNAMES.VERIFY_OWN_ACCOUNT, this.verify.bind(this));
+        // need fix (make it patch)
         this.put(constants_1.PATHNAMES.UPDATE_OWN_PASSWORD, this.updatePassword.bind(this));
-        this.put(constants_1.PATHNAMES.VERIFY_OWN_ACCOUNT, this.verify.bind(this));
     }
     async register(req, res, next) {
         try {

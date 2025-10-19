@@ -9,7 +9,7 @@ export declare const validateAccessTokenPath = "/validate-access-token";
 export declare const validateRolePath = "/validate-role";
 export declare const refreshAccessTokenPath = "/refresh-access-token";
 export declare const updatePasswordPath = "/me/password";
-export declare const verifyPath = "/me/verify";
+export declare const verifyPath = "/verify";
 export declare const resendVerifyCodePath = "/resend-verify-code";
 declare class UserController extends BaseController {
     userService: UserService;

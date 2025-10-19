@@ -20,7 +20,7 @@ export const validateAccessTokenPath = '/validate-access-token';
 export const validateRolePath = '/validate-role';
 export const refreshAccessTokenPath = '/refresh-access-token';
 export const updatePasswordPath = '/me/password';
-export const verifyPath = '/me/verify';
+export const verifyPath = '/verify';
 export const resendVerifyCodePath = '/resend-verify-code';
 
 class UserController extends BaseController {
@@ -41,8 +41,9 @@ class UserController extends BaseController {
         this.post(PATHNAMES.VALIDATE_ROLE, this.validateRole.bind(this));
         this.post(PATHNAMES.REFRESH_TOKEN, this.refreshToken.bind(this));
         this.post(PATHNAMES.RESEND_VERIFY_CODE, this.resendVerifyCode.bind(this));
+        this.patch(PATHNAMES.VERIFY_OWN_ACCOUNT, this.verify.bind(this));
+        // need fix (make it patch)
         this.put(PATHNAMES.UPDATE_OWN_PASSWORD, this.updatePassword.bind(this));
-        this.put(PATHNAMES.VERIFY_OWN_ACCOUNT, this.verify.bind(this));
     }
 
     async register(req: Request, res: Response, next: NextFunction) {
